@@ -1,0 +1,33 @@
+name: Publish docker images
+
+on: 
+  push:
+    branches:
+      - "deploy"
+  pull_request:
+    branches:
+      - "deploy"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/dotnet-setup@v4
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Restore dependencies 
+        run: dotnet restore
+
+      - name: Build projects
+        run: dotnet build -c Release
+
+      - name: Build docker images
+        run: docker build -f file_location -t image_name .
+
+      - name: Publish images
+        run: docker push image_name

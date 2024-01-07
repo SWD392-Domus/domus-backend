@@ -1,0 +1,23 @@
+name: Build projects
+
+on: [ "push", "pull_request" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with: 
+          dotnet-version: 7.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build projects
+        run: dotnet build -c Release
+
+      - name: Test
+        run: dotnet test
