@@ -2,11 +2,9 @@ name: Publish docker images
 
 on: 
   push:
-    branches:
-      - deploy
+    branches: [ "release" ]
   pull_request:
-    branches:
-      - deploy
+    branches: [ "release" ]
 
 jobs:
   publish:
