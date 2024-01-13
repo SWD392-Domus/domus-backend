@@ -1,9 +1,8 @@
 using System.Linq.Expressions;
-using Domus.Domain.Entities;
 
 namespace Domus.DAL.Interfaces;
 
-public interface IGenericRepository<T> where T : BaseEntity
+public interface IGenericRepository<T> where T : class
 {
  	void Add(T entity);
     Task AddAsync(T entity);

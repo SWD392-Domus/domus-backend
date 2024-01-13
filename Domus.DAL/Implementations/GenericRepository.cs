@@ -1,11 +1,10 @@
-using Domus.Domain.Entities;
 using Domus.DAL.Interfaces;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.DAL.Implementations;
 
-public abstract class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity 
+public abstract class GenericRepository<T> : IGenericRepository<T> where T : class 
 {
 	private readonly IAppDbContext _dbContext;
 
