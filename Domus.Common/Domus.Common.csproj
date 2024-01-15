@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="NLog" Version="5.2.5" />
+    <PackageReference Include="swashbuckle.aspnetcore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>

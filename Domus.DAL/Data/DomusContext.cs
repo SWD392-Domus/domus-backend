@@ -1,4 +1,5 @@
 ﻿using Domus.Common.Helpers;
+using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
 using Domus.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Domus.DAL.Data;
 
-public partial class DomusContext : IdentityDbContext<DomusUser>
+public partial class DomusContext : IdentityDbContext<DomusUser>, IAppDbContext
 {
     public DomusContext()
     {
@@ -45,4 +46,43 @@ public partial class DomusContext : IdentityDbContext<DomusUser>
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    public DbSet<T> CreateSet<T>() where T : class
+    {
+	    return base.Set<T>();
+    }
+
+    public new void Attach<T>(T entity) where T : class
+    {
+	    base.Attach(entity);
+    }
+
+    public void SetModified<T>(T entity) where T : class
+    {
+	    base.Entry(entity).State = EntityState.Modified;
+    }
+
+    public void SetDeleted<T>(T entity) where T : class
+    {
+	    base.Entry(entity).State = EntityState.Deleted;
+    }
+
+    public void Refresh<T>(T entity) where T : class
+    {
+	    base.Entry(entity).Reload();
+    }
+
+    public void Update<T>(T entity) where T : class
+    {
+	    throw new NotImplementedException();
+    }
+
+    public void SaveChanges()
+    {
+	    throw new NotImplementedException();
+    }
+
+    public async Task SaveChangesAsync()
+    {
+	    throw new NotImplementedException();
+    }
 }

@@ -1,8 +1,20 @@
 using System.Text;
+using AutoMapper;
 using Domus.Api.Constants;
 using Domus.Api.Exceptions;
 using Domus.Api.Settings;
+using Domus.Common.Constants;
+using Domus.Common.Exceptions;
+using Domus.Common.Settings;
+using Domus.DAL.Data;
+using Domus.DAL.Implementations;
+using Domus.DAL.Interfaces;
+using Domus.Domain.Entities;
+using Domus.Service.AutoMappings;
+using Domus.Service.Implementations;
+using Domus.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -80,6 +92,25 @@ public static class ServiceCollectionExtensions
                 builder.Build();
             });
         });
+        
+        return services;
+    }
+
+    public static IServiceCollection RegisterServices(this IServiceCollection services)
+    {
+        services.AddScoped<IAppDbContext, DomusContext>();
+        services.AddScoped<DomusContext>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddIdentity<DomusUser, IdentityRole>()
+            .AddEntityFrameworkStores<DomusContext>()
+            //.AddRoleManager<IdentityRole>()
+            .AddDefaultTokenProviders();
+        
+        var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
+        var mapper = config.CreateMapper();
+        services.AddSingleton(mapper);
         
         return services;
     }
