@@ -13,6 +13,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domus.DAL\Domus.DAL.csproj" />
+    <ProjectReference Include="..\Domus.Service\Domus.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+    <Folder Include="Models\Requests\" />
+    <Folder Include="Models\Responses\" />
   </ItemGroup>
 
 </Project>
