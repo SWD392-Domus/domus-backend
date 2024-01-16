@@ -100,12 +100,12 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IAppDbContext, DomusContext>();
         services.AddScoped<DomusContext>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
-            //.AddRoleManager<IdentityRole>()
             .AddDefaultTokenProviders();
         
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);

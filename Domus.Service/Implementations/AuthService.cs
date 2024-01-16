@@ -52,6 +52,7 @@ public class AuthService : IAuthService
 		var tokenResponse = new TokenResponse
 		{
 			AccessToken = _jwtService.GenerateToken(user, roles),
+			RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
 			ExpiresAt = DateTimeOffset.Now.AddHours(1)
 		};
 
