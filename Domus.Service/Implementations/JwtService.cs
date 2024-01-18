@@ -5,6 +5,7 @@ using Domus.Api.Settings;
 using Domus.Common.Exceptions;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
+using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -15,36 +16,47 @@ namespace Domus.Service.Implementations;
 public class JwtService : IJwtService
 {
     private readonly JwtSettings _jwtSettings;
-	private readonly IUserTokenRepository _userTokenRepository;
-	private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserTokenRepository _userTokenRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public JwtService(
-			IConfiguration configuration,
-			IUserTokenRepository userTokenRepository,
-			IUnitOfWork unitOfWork
-	)
+        IConfiguration configuration,
+        IUserTokenRepository userTokenRepository,
+        IUnitOfWork unitOfWork
+    )
     {
         _jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>() ?? throw new MissingJwtSettingsException();
-		_userTokenRepository = userTokenRepository;
-		_unitOfWork = unitOfWork;
+        _userTokenRepository = userTokenRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<string> GenerateRefreshToken(string userId)
-    {	
-		var refreshToken = new IdentityUserToken<string>
+    {
+        var existingRefreshToken = await _userTokenRepository.GetAsync(token =>
+            token.Name == TokenTypeConstants.REFRESH_TOKEN && token.LoginProvider == LoginProviderConstants.DOMUS_APP &&
+            token.UserId == userId);
+        if (existingRefreshToken is null)
         {
-			Name = "REFRESH_TOKEN",
-		 	UserId = userId,
-		 	LoginProvider = "DOMUS_APP",
-			Value = Guid.NewGuid().ToString()
-        };
-
-        await _userTokenRepository.AddAsync(refreshToken);
+            existingRefreshToken = new IdentityUserToken<string>
+            {
+                Name = TokenTypeConstants.REFRESH_TOKEN,
+                UserId = userId,
+                LoginProvider = LoginProviderConstants.DOMUS_APP,
+                Value = Guid.NewGuid().ToString()
+            };
+            await _userTokenRepository.AddAsync(existingRefreshToken);
+        }
+        else
+        {
+            existingRefreshToken.Value = Guid.NewGuid().ToString();
+            await _userTokenRepository.UpdateAsync(existingRefreshToken);
+        }
+        
         await _unitOfWork.CommitAsync();
-        return refreshToken.Value;
+        return existingRefreshToken.Value;
     }
 
-    public string GenerateToken(DomusUser user, IEnumerable<string> roles)
+    public string GenerateAccessToken(DomusUser user, IEnumerable<string> roles)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SigningKey));
         var claims = new List<Claim>
@@ -62,7 +74,7 @@ public class JwtService : IJwtService
             Audience = _jwtSettings.Audience,
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.Now,
-            Expires = DateTime.Now.AddHours(_jwtSettings.AccessTokenLifetimeInMinute),
+            Expires = DateTime.Now.AddMinutes(_jwtSettings.AccessTokenLifetimeInMinutes),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
         };
         

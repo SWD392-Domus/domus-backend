@@ -2,17 +2,17 @@
 
 namespace Domus.Service.Exceptions;
 
-public class UserDoesNotExistException : ArgumentNullException, IBusinessException
+public class UserAlreadyExistsException : ArgumentException, IBusinessException
 {
     private readonly string? _customMessage;
     public override string Message => _customMessage ?? Message;
 
-    public UserDoesNotExistException(string customMessage)
+    public UserAlreadyExistsException(string customMessage)
     {
         _customMessage = customMessage;
     }
     
-    public UserDoesNotExistException()
+    public UserAlreadyExistsException()
     {
     }
 }

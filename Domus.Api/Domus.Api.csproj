@@ -21,4 +21,9 @@
     <Folder Include="Models\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Scripts\1.Database_Initialization.sql" />
+    <EmbeddedResource Include="Scripts\1.Database_Initialization.sql" />
+  </ItemGroup>
+
 </Project>

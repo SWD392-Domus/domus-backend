@@ -32,5 +32,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+DataAccessHelper.EnsureMigrations(AppDomain.CurrentDomain.FriendlyName);
 app.Run();
+
 LogManager.Shutdown();
