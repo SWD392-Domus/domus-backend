@@ -1,4 +1,5 @@
 using Domus.Api.Extensions;
+using Domus.Common.Helpers;
 using NLog;
 
 LogManager.Setup()
@@ -6,6 +7,7 @@ LogManager.Setup()
     .GetCurrentClassLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+DataAccessHelper.InitConfiguration(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -13,6 +15,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCustomSwagger(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddDefaultCorsPolicy(builder.Configuration);
+builder.Services.RegisterServices();
 
 var app = builder.Build();
 
@@ -29,5 +32,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+DataAccessHelper.EnsureMigrations(AppDomain.CurrentDomain.FriendlyName);
 app.Run();
+
 LogManager.Shutdown();

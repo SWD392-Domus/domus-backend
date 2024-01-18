@@ -2,11 +2,9 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class Product : TrackableEntity<string>
+public partial class Product : BaseEntity<Guid>
 {
-    public Guid Id { get; set; }
-
-    public Guid CategoryId { get; set; }
+    public Guid ProductCategoryId { get; set; }
 
     public string ProductName { get; set; } = null!;
 
@@ -22,7 +20,11 @@ public partial class Product : TrackableEntity<string>
 
     public string? Description { get; set; }
 
-    public virtual Category Category { get; set; } = null!;
+    public bool? IsDeleted { get; set; }
+
+    public string? ConcurrencyStamp { get; set; }
+
+    public virtual ProductCategory ProductCategory { get; set; } = null!;
 
     public virtual ICollection<ProductDetail> ProductDetails { get; set; } = new List<ProductDetail>();
 }

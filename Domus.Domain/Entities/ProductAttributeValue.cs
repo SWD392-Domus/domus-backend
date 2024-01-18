@@ -1,9 +1,9 @@
-﻿namespace Domus.Domain.Entities;
+﻿using Domus.Domain.Entities.Base;
 
-public partial class ProductAttributeValue
+namespace Domus.Domain.Entities;
+
+public partial class ProductAttributeValue : BaseEntity<Guid>
 {
-    public Guid Id { get; set; }
-
     public Guid ProductAttributeId { get; set; }
 
     public Guid ProductDetailId { get; set; }

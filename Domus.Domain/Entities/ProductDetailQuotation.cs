@@ -1,9 +1,9 @@
-﻿namespace Domus.Domain.Entities;
+﻿using Domus.Domain.Entities.Base;
 
-public partial class ProductDetailQuotation
+namespace Domus.Domain.Entities;
+
+public partial class ProductDetailQuotation : BaseEntity<Guid>
 {
-    public Guid Id { get; set; }
-
     public Guid QuotationId { get; set; }
 
     public Guid ProductDetailId { get; set; }

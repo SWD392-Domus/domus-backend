@@ -1,14 +1,10 @@
-﻿namespace Domus.Domain.Entities;
+﻿using Domus.Domain.Entities.Base;
 
-public partial class ProductDetail
+namespace Domus.Domain.Entities;
+
+public partial class ProductDetail : BaseEntity<Guid>
 {
-    public Guid Id { get; set; }
-
     public Guid ProductId { get; set; }
-
-    public double Quantity { get; set; }
-
-    public string QuantityType { get; set; } = null!;
 
     public virtual Product Product { get; set; } = null!;
 
