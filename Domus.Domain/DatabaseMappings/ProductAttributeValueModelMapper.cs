@@ -18,13 +18,11 @@ public class ProductAttributeValueModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.ProductAttribute).WithMany(p => p.ProductAttributeValues)
                 .HasForeignKey(d => d.ProductAttributeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductAt__Produ__5DCAEF64");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductAttributeValues)
                 .HasForeignKey(d => d.ProductDetailId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductAt__Produ__5EBF139D");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

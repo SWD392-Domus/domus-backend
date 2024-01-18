@@ -17,8 +17,7 @@ public class ProductDetailQuotationRevisionModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.ProductDetailQuotation).WithMany(p => p.ProductDetailQuotationRevisions)
                 .HasForeignKey(d => d.ProductDetailQuotationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__6A30C649");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

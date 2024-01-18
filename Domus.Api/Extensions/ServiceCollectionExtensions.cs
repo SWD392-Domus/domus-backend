@@ -103,7 +103,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+        services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()

@@ -17,10 +17,9 @@ public class QuotationNegotiationLogModelMapper : IDatabaseModelMapper
             entity.Property(e => e.IsClosed).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartAt).HasColumnType("date");
 
-            entity.HasOne(d => d.Quotation).WithMany(p => p.QuotationNegotiationLogs)
-                .HasForeignKey(d => d.QuotationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Quotation__Quota__6EF57B66");
+            entity.HasOne(d => d.Quotation).WithOne(p => p.QuotationNegotiationLog)
+                .HasForeignKey<Quotation>(d => d.QuotationNegotiationLogId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }
