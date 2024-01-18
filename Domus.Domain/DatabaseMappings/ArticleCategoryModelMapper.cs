@@ -12,7 +12,7 @@ public class ArticleCategoryModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(ArticleCategory));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Name).HasMaxLength(256);
         });
     }

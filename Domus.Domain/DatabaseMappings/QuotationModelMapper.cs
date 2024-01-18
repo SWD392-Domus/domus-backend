@@ -24,39 +24,33 @@ public class QuotationModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.QuotationCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Quotation__Creat__656C112C");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.QuotationCustomers)
                 .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Quotation__Custo__6383C8BA");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.LastUpdatedByNavigation).WithMany(p => p.QuotationLastUpdatedByNavigations)
-                .HasForeignKey(d => d.LastUpdatedBy)
-                .HasConstraintName("FK__Quotation__LastU__66603565");
+                .HasForeignKey(d => d.LastUpdatedBy);
 
-            entity.HasOne(d => d.QuotationNegotiationLog).WithMany(p => p.Quotations)
-                .HasForeignKey(d => d.QuotationNegotiationLogId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Quotation__Quota__6754599E");
+            entity.HasOne(d => d.QuotationNegotiationLog)
+				.WithOne(d => d.Quotation)
+                .HasForeignKey<QuotationNegotiationLog>(d => d.QuotationId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Staff).WithMany(p => p.QuotationStaffs)
                 .HasForeignKey(d => d.StaffId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Quotation__Staff__6477ECF3");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasMany(d => d.Services).WithMany(p => p.Quotations)
                 .UsingEntity<Dictionary<string, object>>(
                     "QuotationService",
                     r => r.HasOne<Service>().WithMany()
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Quotation__Servi__73BA3083"),
+                        .OnDelete(DeleteBehavior.ClientSetNull),
                     l => l.HasOne<Quotation>().WithMany()
                         .HasForeignKey("Quotationid")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Quotation__Quota__72C60C4A"),
+                        .OnDelete(DeleteBehavior.ClientSetNull),
                     j =>
                     {
                         j.HasKey("Quotationid", "ServiceId");

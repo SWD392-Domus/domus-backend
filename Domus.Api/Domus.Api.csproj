@@ -24,6 +24,12 @@
   <ItemGroup>
     <None Remove="Scripts\1.Database_Initialization.sql" />
     <EmbeddedResource Include="Scripts\1.Database_Initialization.sql" />
+    <None Remove="Scripts\2.Add_Quotation_Constraint.sql" />
+    <EmbeddedResource Include="Scripts\2.Add_Quotation_Constraint.sql" />
+    <None Remove="Scripts\3.Add_Package.sql" />
+    <EmbeddedResource Include="Scripts\3.Add_Package.sql" />
+    <None Remove="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
+    <EmbeddedResource Include="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
   </ItemGroup>
 
 </Project>

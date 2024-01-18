@@ -14,5 +14,5 @@ public partial class QuotationNegotiationLog : BaseEntity<Guid>
 
     public virtual Quotation Quotation { get; set; } = null!;
 
-    public virtual ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
+    public virtual ICollection<NegotiationMessage> NegotiationMessages { get; set; } = new List<NegotiationMessage>();
 }

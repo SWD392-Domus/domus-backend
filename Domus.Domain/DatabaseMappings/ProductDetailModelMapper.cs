@@ -16,8 +16,7 @@ public class ProductDetailModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductDetails)
                 .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__60A75C0F");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

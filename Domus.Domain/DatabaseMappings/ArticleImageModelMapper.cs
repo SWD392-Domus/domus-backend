@@ -16,8 +16,7 @@ public class ArticleImageModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.Article).WithMany(p => p.ArticleImages)
                 .HasForeignKey(d => d.ArticleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ArticleIm__Artic__6E01572D");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

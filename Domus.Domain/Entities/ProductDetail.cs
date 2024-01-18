@@ -15,4 +15,6 @@ public partial class ProductDetail : BaseEntity<Guid>
     public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 
     public virtual ICollection<ProductPrice> ProductPrices { get; set; } = new List<ProductPrice>();
+
+    public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
 }
