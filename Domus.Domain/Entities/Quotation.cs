@@ -2,19 +2,31 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class Quotation : TrackableEntity<string>
+public partial class Quotation : TrackableEntity<Guid, string>
 {
-    public Guid Id { get; set; }
-
     public string CustomerId { get; set; } = null!;
 
     public string StaffId { get; set; } = null!;
 
-    public string? Status { get; set; }
+    public Guid QuotationStatusId { get; set; }
+
+    public Guid QuotationNegotiationLogId { get; set; }
+
+    public DateTime? ExpireAt { get; set; }
+
+    public string? ConcurrencyStamp { get; set; }
+
+    public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 
     public virtual DomusUser Customer { get; set; } = null!;
 
     public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
 
+    public virtual QuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
+
+    public virtual ICollection<QuotationNegotiationLog> QuotationNegotiationLogs { get; set; } = new List<QuotationNegotiationLog>();
+
     public virtual DomusUser Staff { get; set; } = null!;
+
+    public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 }

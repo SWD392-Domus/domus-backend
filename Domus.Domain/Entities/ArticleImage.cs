@@ -2,9 +2,9 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class ProductImage : BaseEntity<Guid>
+public partial class ArticleImage : BaseEntity<Guid>
 {
-    public Guid ProductDetailId { get; set; }
+    public Guid ArticleId { get; set; }
 
     public string ImageUrl { get; set; } = null!;
 
@@ -12,5 +12,5 @@ public partial class ProductImage : BaseEntity<Guid>
 
     public int? Height { get; set; }
 
-    public virtual ProductDetail ProductDetail { get; set; } = null!;
+    public virtual Article Article { get; set; } = null!;
 }

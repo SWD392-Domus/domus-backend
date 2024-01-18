@@ -14,11 +14,12 @@ public class ProductPriceModelMapper : IDatabaseModelMapper
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.MonetaryUnit).HasMaxLength(256);
+            entity.Property(e => e.QuantityType).HasMaxLength(256);
 
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductPrices)
                 .HasForeignKey(d => d.ProductDetailId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductPr__Produ__5812160E");
+                .HasConstraintName("FK__ProductPr__Produ__619B8048");
         });
     }
 }

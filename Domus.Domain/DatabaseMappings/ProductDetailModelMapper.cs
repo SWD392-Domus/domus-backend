@@ -13,12 +13,11 @@ public class ProductDetailModelMapper : IDatabaseModelMapper
             entity.ToTable(nameof(ProductDetail));
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.QuantityType).HasMaxLength(256);
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductDetails)
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__571DF1D5");
+                .HasConstraintName("FK__ProductDe__Produ__60A75C0F");
         });
     }
 }

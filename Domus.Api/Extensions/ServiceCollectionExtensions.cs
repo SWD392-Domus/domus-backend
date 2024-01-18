@@ -102,6 +102,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DomusContext>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserTokenRepository, UserTokenRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddIdentity<DomusUser, IdentityRole>()

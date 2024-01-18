@@ -2,11 +2,11 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class Category : TrackableEntity<string>
+public partial class ProductCategory : DeletableEntity<Guid>
 {
-    public Guid Id { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string CategoryName { get; set; } = null!;
+    public string? ConcurrencyStamp { get; set; }
 
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

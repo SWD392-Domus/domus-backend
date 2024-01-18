@@ -1,6 +1,6 @@
 namespace Domus.Domain.Entities.Base;
 
-public abstract class BaseEntity
+public abstract class BaseEntity<TKey>
 {
-    public string? ConcurrencyStamp { get; set; }
+    public TKey Id { get; set; }
 }

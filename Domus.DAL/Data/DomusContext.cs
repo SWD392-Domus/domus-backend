@@ -71,18 +71,18 @@ public partial class DomusContext : IdentityDbContext<DomusUser>, IAppDbContext
 	    base.Entry(entity).Reload();
     }
 
-    public void Update<T>(T entity) where T : class
+    public new void Update<T>(T entity) where T : class
     {
-	    throw new NotImplementedException();
+	    base.Update(entity);
     }
 
-    public void SaveChanges()
+    public new void SaveChanges()
     {
-	    throw new NotImplementedException();
+	    base.SaveChanges();
     }
 
     public async Task SaveChangesAsync()
     {
-	    throw new NotImplementedException();
+	    await base.SaveChangesAsync();
     }
 }

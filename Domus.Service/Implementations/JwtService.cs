@@ -63,7 +63,7 @@ public class JwtService : IJwtService
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.Now,
             Expires = DateTime.Now.AddHours(_jwtSettings.AccessTokenLifetimeInMinute),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
         };
         
         var tokenHandler = new JwtSecurityTokenHandler();

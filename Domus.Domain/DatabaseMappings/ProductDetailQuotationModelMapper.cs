@@ -19,12 +19,12 @@ public class ProductDetailQuotationModelMapper : IDatabaseModelMapper
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductDetailQuotations)
                 .HasForeignKey(d => d.ProductDetailId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__5EBF139D");
+                .HasConstraintName("FK__ProductDe__Produ__693CA210");
 
             entity.HasOne(d => d.Quotation).WithMany(p => p.ProductDetailQuotations)
                 .HasForeignKey(d => d.QuotationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Quota__5DCAEF64");
+                .HasConstraintName("FK__ProductDe__Quota__68487DD7");
         });
     }
 }

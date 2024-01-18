@@ -3,6 +3,7 @@ using AutoMapper;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
+using Domus.Service.Constants;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
@@ -19,19 +20,22 @@ public class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IJwtService _jwtService;
+    private readonly IUnitOfWork _unitOfWork;
 
 	public AuthService(
 		UserManager<DomusUser> userManager,
 		RoleManager<IdentityRole> roleManager,
 		IMapper mapper,
 		IJwtService jwtService,
-		IUserRepository userRepository)
+		IUserRepository userRepository,
+		IUnitOfWork unitOfWork)
 	{
 		_userManager = userManager;
 		_roleManager = roleManager;
 		_mapper = mapper;
 		_jwtService = jwtService;
 		_userRepository = userRepository;
+		_unitOfWork = unitOfWork;
 	}
 
     public async Task<ServiceActionResult> LoginAsync(LoginRequest request)
@@ -72,10 +76,7 @@ public class AuthService : IAuthService
 		    throw new UserDoesNotExistException($"User '{request.Email}' does not exist.");
 	    }
 
-	    if (!await _roleManager.RoleExistsAsync(request.RoleName))
-	    {
-		    await _roleManager.CreateAsync(new IdentityRole(request.RoleName));
-	    }
+	    await EnsureRoleExistsAsync(request.RoleName);
 
 	    await _userManager.AddToRoleAsync(user, request.RoleName);
 	    return new ServiceActionResult(true);
@@ -86,6 +87,8 @@ public class AuthService : IAuthService
 	    var user = _mapper.Map<DomusUser>(request);
 
 	    var result = await _userManager.CreateAsync(user, request.Password);
+	    await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
+	    await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
 	    if (result.Succeeded)
 	    {
 		    var userToReturn = await _userRepository.GetAsync(u => u.Email == request.Email);
@@ -94,5 +97,13 @@ public class AuthService : IAuthService
 
 	    var error = result.Errors.First();
 	    return new ServiceActionResult(false, error.Description);
+    }
+
+    private async Task EnsureRoleExistsAsync(string role)
+    {
+	    if (!await _roleManager.RoleExistsAsync(role))
+	    {
+		    await _roleManager.CreateAsync(new IdentityRole(role));
+	    }
     }
 }
