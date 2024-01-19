@@ -1,7 +1,5 @@
 using System.Text;
 using AutoMapper;
-using Azure.Storage.Blobs;
-using Domus.Api.Constants;
 using Domus.Api.Exceptions;
 using Domus.Api.Settings;
 using Domus.Common.Constants;
@@ -123,23 +121,22 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
         services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IJwtService, JwtService>();
+		services.AddScoped<IEmailService, EmailService>();
+		services.AddScoped<IProductService, ProductService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IFileService, FileService>();
    
-        
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
         services.AddSingleton(mapper);
         
         return services;
     }
-    
-    
-    
 }
