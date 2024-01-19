@@ -46,7 +46,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpPost("create")]
+	[HttpPost]
 	public async Task<IActionResult> CreateArticle(CreateArticleRequest request)
 	{
 		return await ExecuteServiceLogic(
@@ -54,7 +54,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpPut("update/{id:guid}")]
+	[HttpPut("{id:guid}")]
 	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId)
 	{
 		return await ExecuteServiceLogic(
@@ -62,7 +62,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpDelete("delete/{id:guid}")]
+	[HttpDelete("{id:guid}")]
 	public async Task<IActionResult> DeleteArticle(Guid articleId)
 	{
 		return await ExecuteServiceLogic(
