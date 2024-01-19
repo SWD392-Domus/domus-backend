@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Domus.Api.Models.Common;
 using Domus.Common.Exceptions;
 using Domus.Common.Helpers;
