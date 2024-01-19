@@ -12,7 +12,7 @@ public class ArticleModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(Article));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedAt).HasColumnType("date");
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");

@@ -1,7 +1,7 @@
 using AutoMapper;
 using Domus.Common.Models;
 
-namespace NetCore.WebApiCommon.Core.Common.Helpers;
+namespace Domus.Common.Helpers;
 
 public static class PaginationHelper
 {
@@ -14,7 +14,7 @@ public static class PaginationHelper
             {
                 PageIndex = 1,
                 PageSize = pageSize,
-                Data = new List<TDto>(),
+                Items = new List<TDto>(),
                 LastPage = 1,
                 IsLastPage = true,
                 Total = total
@@ -36,22 +36,23 @@ public static class PaginationHelper
             Total = total
         };
         
-        if (pageIndex > lastPage / 2)
-        {
-            var mod = total % pageSize;
-            var skip = Math.Max((lastPage - pageIndex - 1) * pageSize + mod, 0);
-            var take = isLastPage ? mod : pageSize;
-            var reverse = source.Reverse();
-            
-            var res = reverse.Skip(skip).Take(take);
-            paginatedResult.Data = mapper is null ? res.Reverse() : mapper.Map<TDto>(res.Reverse());
-            return paginatedResult;
-        }
+        // if (pageIndex > lastPage / 2)
+        // {
+        //     var mod = total % pageSize;
+        //     var skip = Math.Max((lastPage - pageIndex - 1) * pageSize + mod, 0);
+        //     var take = isLastPage ? mod : pageSize;
+        //     var reverse = source.Reverse();
+        //     
+        //     var res = reverse.Skip(skip).Take(take);
+        //     var list = res.Reverse().AsEnumerable().ToList();
+        //     paginatedResult.Items = mapper is null ? res.Reverse() : mapper.Map<IEnumerable<TDto>>(list);
+        //     return paginatedResult;
+        // }
         
         var results = source.Skip((pageIndex - 1) * pageSize)
             .Take(pageSize);
-        paginatedResult.Data = results;
-        paginatedResult.Data = mapper is null ? results : mapper.Map<TDto>(results);
+        paginatedResult.Items = results;
+        paginatedResult.Items = mapper is null ? results : mapper.Map<IEnumerable<TDto>>(results.AsEnumerable());
         return paginatedResult;
     }
     

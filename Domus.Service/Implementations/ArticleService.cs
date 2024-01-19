@@ -1,4 +1,6 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
@@ -7,7 +9,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Base;
-using NetCore.WebApiCommon.Core.Common.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
@@ -32,38 +34,82 @@ public class ArticleService : IArticleService
 
     public async Task<ServiceActionResult> CreateArticle(CreateArticleRequest request)
     {
-		var article = _mapper.Map<Article>(request);
-		var articleCategory = await _articleCategoryRepository.GetAsync(c => c.Id == request.CategoryId);
-		if (articleCategory is null)
+		if (!await _articleCategoryRepository.ExistsAsync(c => c.Id == request.ArticleCategoryId))
 			throw new ArticleCategoryNotFoundException();
 
+		var article = _mapper.Map<Article>(request);
+		article.CreatedBy = "7f93140f-3749-4d33-8966-329077ec8bc7";
+		article.CreatedAt = DateTime.Now;
+		article.LastUpdatedAt = DateTime.Now;
 		await _articleRepository.AddAsync(article);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
     }
 
-    public Task<ServiceActionResult> DeleteArticle(DeleteArticleRequest request)
+    public async Task<ServiceActionResult> DeleteArticle(Guid articleId)
     {
-        throw new NotImplementedException();
+		var article = await _articleRepository.GetAsync(a => a.Id == articleId);
+		if (article is null)
+			throw new ArticleNotFoundException();
+
+		article.IsDeleted = true;
+		article.LastUpdatedAt = DateTime.Now;
+		await _articleRepository.UpdateAsync(article);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
     }
 
     public async Task<ServiceActionResult> GetAllArticles()
     {
 		var articles = await _articleRepository.GetAllAsync();
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoArticle>>(articles) };
+		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoArticleWithoutCategory>>(articles) };
+    }
+
+    public async Task<ServiceActionResult> GetArticle(Guid articleId)
+    {
+		var article = await _articleRepository.GetAsync(a => a.Id == articleId);
+		if (article is null)
+			throw new ArticleNotFoundException();
+
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoArticleWithoutCategory>(article) };
     }
 
     public async Task<ServiceActionResult> GetPaginatedArticles(BasePaginatedRequest request)
     {
-		var paginatedResult = PaginationHelper.BuildPaginatedResult<Article, DtoArticle>(_mapper, await _articleRepository.GetAllAsync(), request.PageSize, request.PageIndex);
+		var queryableArticles = (await _articleRepository.GetAllAsync()).ProjectTo<DtoArticle>(_mapper.ConfigurationProvider);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableArticles, request.PageSize, request.PageIndex);
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public Task<ServiceActionResult> UpdateArticle(UpdateArticleRequest request)
+    public async Task<ServiceActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId)
     {
-        throw new NotImplementedException();
+		if (!await _articleCategoryRepository.ExistsAsync(c => c.Id == request.ArticleCategoryId))
+			throw new ArticleCategoryNotFoundException();
+
+		var article = await (await _articleRepository.FindAsync(a => a.Id == articleId))
+			.Include(a => a.ArticleImages)
+			.FirstOrDefaultAsync(); 
+		if (article is null)
+			throw new ArticleNotFoundException();
+
+		_mapper.Map(article, request);
+		if (request.ReplaceImages)
+			article.ArticleImages = _mapper.Map<ICollection<ArticleImage>>(request.ArticleImages);
+		else 
+		{
+			foreach (var image in _mapper.Map<ICollection<ArticleImage>>(request.ArticleImages))
+			{
+				article.ArticleImages.Add(image);
+			}
+		}
+
+		await _articleRepository.UpdateAsync(article);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
     }
 }

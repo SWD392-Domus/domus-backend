@@ -12,7 +12,7 @@ public class ProductAttributeModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(ProductAttribute));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.AttributeName).HasMaxLength(256);
         });
     }

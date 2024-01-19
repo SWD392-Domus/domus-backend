@@ -12,7 +12,7 @@ public class ProductModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(Product));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Brand).HasMaxLength(256);
             entity.Property(e => e.Color).HasMaxLength(256);
             entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");

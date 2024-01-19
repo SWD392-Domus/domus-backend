@@ -12,7 +12,7 @@ public class QuotationNegotiationLogModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(QuotationNegotiationLog));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CloseAt).HasColumnType("date");
             entity.Property(e => e.IsClosed).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartAt).HasColumnType("date");

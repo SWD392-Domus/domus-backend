@@ -23,6 +23,7 @@ public static class AutoMapperConfiguration
 
 		mapper.CreateMap<CreateArticleRequest, Article>();
 		mapper.CreateMap<Article, DtoArticle>();
+		mapper.CreateMap<Article, DtoArticleWithoutCategory>();
 
 		#endregion
 		

@@ -5,7 +5,7 @@ namespace Domus.Service.Models.Requests.Articles;
 public class CreateArticleRequest
 {
 	[Required]
-	public Guid CategoryId { get; set; }
+	public Guid ArticleCategoryId { get; set; }
 
 	[Required]
 	public string Title { get; set; } = null!;

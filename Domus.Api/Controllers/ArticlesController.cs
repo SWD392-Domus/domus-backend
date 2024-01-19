@@ -37,6 +37,15 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[AllowAnonymous]
+	[HttpGet("{id:guid}")]
+	public async Task<IActionResult> GetArticle(Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _articleService.GetArticle(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 	[HttpPost("create")]
 	public async Task<IActionResult> CreateArticle(CreateArticleRequest request)
 	{
@@ -45,19 +54,19 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpPut("update")]
-	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request)
+	[HttpPut("update/{id:guid}")]
+	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.UpdateArticle(request).ConfigureAwait(false)
+			async () => await _articleService.UpdateArticle(request, articleId).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
-	[HttpDelete("delete")]
-	public async Task<IActionResult> DeleteArticle(DeleteArticleRequest request)
+	[HttpDelete("delete/{id:guid}")]
+	public async Task<IActionResult> DeleteArticle(Guid articleId)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.DeleteArticle(request).ConfigureAwait(false)
+			async () => await _articleService.DeleteArticle(articleId).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

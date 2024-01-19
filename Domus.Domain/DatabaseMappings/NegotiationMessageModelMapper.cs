@@ -12,7 +12,7 @@ public class NegotiationMessageModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(NegotiationMessage));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.SentAt).HasColumnType("date");
 
 			entity.HasOne(d => d.QuotationNegotiationLog)
