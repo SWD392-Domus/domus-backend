@@ -1,5 +1,6 @@
 using AutoMapper;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
@@ -51,12 +52,12 @@ public class ArticleService : IArticleService
     {
 		var articles = await _articleRepository.GetAllAsync();
 
-		return new ServiceActionResult(true) { Data = articles };
+		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoArticle>>(articles) };
     }
 
     public async Task<ServiceActionResult> GetPaginatedArticles(BasePaginatedRequest request)
     {
-		var paginatedResult = PaginationHelper.BuildPaginatedResult(await _articleRepository.GetAllAsync(), request.PageSize, request.PageIndex);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult<Article, DtoArticle>(_mapper, await _articleRepository.GetAllAsync(), request.PageSize, request.PageIndex);
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }

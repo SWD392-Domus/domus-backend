@@ -1,11 +1,14 @@
 using Domus.Api.Controllers.Base;
+using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Domus.Api.Controllers;
+namespace Domus.Api.Controllers; 
 
+[Authorize(Roles = $"{UserRoleConstants.ADMIN},{UserRoleConstants.STAFF}", AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class ArticlesController : BaseApiController
 {
@@ -16,19 +19,21 @@ public class ArticlesController : BaseApiController
 		_articleService = articleService;
 	}
 
+	[AllowAnonymous]
 	[HttpGet]
 	public async Task<IActionResult> GetPaginatedArticles([FromQuery] BasePaginatedRequest request)
 	{
 		return await ExecuteServiceLogic(
-				async () => await _articleService.GetPaginatedArticles(request).ConfigureAwait(false)
-				).ConfigureAwait(false);
+			async () => await _articleService.GetPaginatedArticles(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
 	}
 
+	[AllowAnonymous]
 	[HttpGet("all")]
 	public async Task<IActionResult> GetAllArticles()
 	{
 		return await ExecuteServiceLogic(
-				async () => await _articleService.GetAllArticles().ConfigureAwait(false)
+			async () => await _articleService.GetAllArticles().ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
@@ -36,7 +41,7 @@ public class ArticlesController : BaseApiController
 	public async Task<IActionResult> CreateArticle(CreateArticleRequest request)
 	{
 		return await ExecuteServiceLogic(
-				async () => await _articleService.CreateArticle(request).ConfigureAwait(false)
+			async () => await _articleService.CreateArticle(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
@@ -44,7 +49,7 @@ public class ArticlesController : BaseApiController
 	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request)
 	{
 		return await ExecuteServiceLogic(
-				async () => await _articleService.UpdateArticle(request).ConfigureAwait(false)
+			async () => await _articleService.UpdateArticle(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
@@ -52,7 +57,7 @@ public class ArticlesController : BaseApiController
 	public async Task<IActionResult> DeleteArticle(DeleteArticleRequest request)
 	{
 		return await ExecuteServiceLogic(
-				async () => await _articleService.DeleteArticle(request).ConfigureAwait(false)
+			async () => await _articleService.DeleteArticle(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

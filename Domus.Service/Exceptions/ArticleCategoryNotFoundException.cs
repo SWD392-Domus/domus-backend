@@ -2,7 +2,7 @@ using Domus.Common.Exceptions;
 
 namespace Domus.Service.Exceptions;
 
-public class ArticleCategoryNotFoundException : ArgumentNullException, IBusinessException
+public class ArticleCategoryNotFoundException : ArgumentNullException, INotFoundException
 {
     private readonly string? _customMessage;
     public override string Message => _customMessage ?? Message;

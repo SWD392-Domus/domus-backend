@@ -1,11 +1,11 @@
 using Domus.Service.Enums;
-using Domus.Service.Models.Common;
 
-namespace Domus.Api.Models.Common;
+namespace Domus.Service.Models.Common;
 
 public class ApiResponse<T>
 {
     public bool IsSuccess { get; set; }
+    public int StatusCode { get; set; }
     public T? Data { get; set; }
     public IList<ApiMessage> Messages { get; set; }
     public ApiResponse(bool isSuccess)

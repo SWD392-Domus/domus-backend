@@ -1,8 +1,8 @@
 using Domus.Api.Constants;
-using Domus.Api.Models.Common;
 using Domus.Common.Exceptions;
 using Domus.Common.Helpers;
 using Domus.Service.Models;
+using Domus.Service.Models.Common;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using ILogger = NLog.ILogger;
@@ -17,7 +17,8 @@ public abstract class BaseApiController : ControllerBase
 	{
 		var successResult = new ApiResponse(true)
 		{
-			Data = result.Data
+			Data = result.Data,
+			StatusCode = StatusCodes.Status200OK
 		};
 
 		var detail = result.Detail ?? ApiMessageConstants.SUCCESS;
@@ -30,13 +31,14 @@ public abstract class BaseApiController : ControllerBase
 		var errorResult = new ApiResponse(false);
 		errorResult.AddErrorMessage(ex.Message);
 
-		var statusCode = StatusCodes.Status500InternalServerError;
+		var statusCode = 500;
 		if (ex.GetType().IsAssignableTo(typeof(INotFoundException)))
 			statusCode = StatusCodes.Status404NotFound;
 		else if (ex.GetType().IsAssignableTo(typeof(IBusinessException)))
 			statusCode = StatusCodes.Status409Conflict;
 
-		return StatusCode(statusCode, errorResult);
+		errorResult.StatusCode = statusCode;
+		return base.Ok(errorResult);
 	}
 
 	protected async Task<IActionResult> ExecuteServiceLogic(Func<Task<ServiceActionResult>> serviceLogicFunc)
