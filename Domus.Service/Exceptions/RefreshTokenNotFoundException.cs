@@ -2,17 +2,18 @@
 
 namespace Domus.Service.Exceptions;
 
-public class UserDoesNotExistException : ArgumentNullException, IBusinessException
+public class RefreshTokenNotFoundException : ArgumentNullException, INotFoundException 
 {
     private readonly string? _customMessage;
     public override string Message => _customMessage ?? Message;
 
-    public UserDoesNotExistException(string customMessage)
+    public RefreshTokenNotFoundException(string customMessage)
     {
         _customMessage = customMessage;
     }
     
-    public UserDoesNotExistException()
+    public RefreshTokenNotFoundException()
     {
+		_customMessage = "Refresh token not found";
     }
 }
