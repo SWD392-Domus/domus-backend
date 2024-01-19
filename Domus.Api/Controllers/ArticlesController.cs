@@ -63,10 +63,10 @@ public class ArticlesController : BaseApiController
 	}
 
 	[HttpDelete("{id:guid}")]
-	public async Task<IActionResult> DeleteArticle(Guid articleId)
+	public async Task<IActionResult> DeleteArticle(Guid id)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.DeleteArticle(articleId).ConfigureAwait(false)
+			async () => await _articleService.DeleteArticle(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

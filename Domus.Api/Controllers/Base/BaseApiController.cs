@@ -31,7 +31,7 @@ public abstract class BaseApiController : ControllerBase
 		var errorResult = new ApiResponse(false);
 		errorResult.AddErrorMessage(ex.Message);
 
-		var statusCode = 500;
+		var statusCode = StatusCodes.Status500InternalServerError;
 		if (ex.GetType().IsAssignableTo(typeof(INotFoundException)))
 			statusCode = StatusCodes.Status404NotFound;
 		else if (ex.GetType().IsAssignableTo(typeof(IBusinessException)))

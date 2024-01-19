@@ -111,6 +111,7 @@ public static class ServiceCollectionExtensions
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
+        services.AddScoped<IEmailService, EmailService>();
         
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
