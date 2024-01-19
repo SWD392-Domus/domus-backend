@@ -12,7 +12,7 @@ public class QuotationStatusModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(QuotationStatus));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.StatusType).HasMaxLength(256);
         });
     }

@@ -48,7 +48,7 @@ public class AuthService : IAuthService
 		var user = await _userRepository.GetAsync(u => u.UserName!.ToLower() == request.Email.ToLower());
 		if (user == null)
 		{
-			throw new UserDoesNotExistException($"User '{request.Email}' does not exist");
+			throw new UserNotFoundException($"User '{request.Email}' does not exist");
 		}
         
 		var validPassword = await _userManager.CheckPasswordAsync(user, request.Password);
@@ -72,11 +72,11 @@ public class AuthService : IAuthService
     {
 	    var refreshToken = await _userTokenRepository.GetAsync(t => t.Value == request.RefreshToken);
 	    if (refreshToken is null)
-		    throw new RefreshTokenDoesNotExistException("Refresh token does not exist");
+		    throw new RefreshTokenNotFoundException("Refresh token does not exist");
 
 	    var user = await _userRepository.GetAsync(u => u.Id == refreshToken.UserId);
 	    if (user is null)
-		    throw new UserDoesNotExistException($"User '{refreshToken.UserId}' does not exist");
+		    throw new UserNotFoundException($"User '{refreshToken.UserId}' does not exist");
 	    
 	    var roles = await _userManager.GetRolesAsync(user);
 		var tokenResponse = new TokenResponse
@@ -94,7 +94,7 @@ public class AuthService : IAuthService
 	    var user = await _userRepository.GetAsync(u => u.Email == request.Email);
 	    if (user == null)
 	    {
-		    throw new UserDoesNotExistException($"User '{request.Email}' does not exist.");
+		    throw new UserNotFoundException($"User '{request.Email}' does not exist.");
 	    }
 
 	    await EnsureRoleExistsAsync(request.RoleName);

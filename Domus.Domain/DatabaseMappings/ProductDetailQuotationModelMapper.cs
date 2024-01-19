@@ -12,7 +12,7 @@ public class ProductDetailQuotationModelMapper : IDatabaseModelMapper
         {
             entity.ToTable("ProductDetail_Quotation");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.MonetaryUnit).HasMaxLength(256);
             entity.Property(e => e.QuantityType).HasMaxLength(256);
 

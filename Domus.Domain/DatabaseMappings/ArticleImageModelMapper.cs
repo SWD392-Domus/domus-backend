@@ -12,7 +12,7 @@ public class ArticleImageModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(ArticleImage));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.Article).WithMany(p => p.ArticleImages)
                 .HasForeignKey(d => d.ArticleId)
