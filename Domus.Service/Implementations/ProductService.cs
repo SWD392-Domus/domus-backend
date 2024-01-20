@@ -1,4 +1,9 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
+using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
@@ -8,11 +13,18 @@ namespace Domus.Service.Implementations;
 
 public class ProductService : IProductService
 {
-	private IProductRepository _productRepository;
+	private readonly IProductRepository _productRepository;
+	private readonly IUnitOfWork _unitOfWork;
+	private readonly IMapper _mapper;
 	
-	public ProductService(IProductRepository productRepository)
+	public ProductService(
+			IProductRepository productRepository,
+			IUnitOfWork unitOfWork,
+			IMapper mapper)
 	{
 		_productRepository = productRepository;
+		_unitOfWork = unitOfWork;
+		_mapper = mapper;
 	}
 
     public Task<ServiceActionResult> CreateProduct(CreateProductRequest request)
@@ -20,24 +32,41 @@ public class ProductService : IProductService
         throw new NotImplementedException();
     }
 
-    public Task<ServiceActionResult> DeleteProduct(Guid id)
+    public async Task<ServiceActionResult> DeleteProduct(Guid id)
     {
-        throw new NotImplementedException();
+		var product = await _productRepository.GetAsync(p => p.Id == id);
+		if (product is null)
+			throw new ProductNotFoundException();
+
+		product.IsDeleted = true;
+		await _productRepository.UpdateAsync(product);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
     }
 
-    public Task<ServiceActionResult> GetAllProducts()
+    public async Task<ServiceActionResult> GetAllProducts()
     {
-        throw new NotImplementedException();
+		var products = await _productRepository.GetAllAsync();
+
+		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoProduct>>(products) };
     }
 
-    public Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request)
+    public async Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request)
     {
-        throw new NotImplementedException();
+		var queryableProducts = (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableProducts, request.PageSize, request.PageIndex);
+
+		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public Task<ServiceActionResult> GetProduct(Guid id)
+    public async Task<ServiceActionResult> GetProduct(Guid id)
     {
-        throw new NotImplementedException();
+		var product = await _productRepository.GetAsync(p => p.Id == id);
+		if (product is null)
+			throw new ProductNotFoundException();
+
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProduct>(product) };
     }
 
     public Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id)

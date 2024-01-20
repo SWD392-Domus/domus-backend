@@ -38,5 +38,11 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<ArticleImage, DtoArticleImage>();
 
 		#endregion
+
+		#region Products maps
+
+		mapper.CreateMap<Product, DtoProduct>();
+
+		#endregion
 	}
 }
