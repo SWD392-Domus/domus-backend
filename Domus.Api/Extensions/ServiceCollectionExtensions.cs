@@ -121,6 +121,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
         services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+        services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();

@@ -3,6 +3,7 @@ using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests;
 using Domus.Service.Models.Requests.Articles;
+using Domus.Service.Models.Requests.Products;
 
 namespace Domus.Service.AutoMappings;
 
@@ -42,6 +43,20 @@ public static class AutoMapperConfiguration
 		#region Products maps
 
 		mapper.CreateMap<Product, DtoProduct>();
+		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
+		mapper.CreateMap<CreateProductRequest, Product>();
+
+		#endregion
+
+		#region Product category maps
+
+		mapper.CreateMap<ProductCategory, DtoProductCategory>();
+
+		#endregion
+
+		#region Product detail maps
+
+		mapper.CreateMap<ProductDetail, DtoProductDetail>();
 
 		#endregion
 	}

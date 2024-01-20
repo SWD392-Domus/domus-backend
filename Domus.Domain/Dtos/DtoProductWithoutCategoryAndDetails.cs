@@ -1,6 +1,6 @@
 namespace Domus.Domain.Dtos;
 
-public class DtoProduct
+public class DtoProductWithoutCategoryAndDetails
 {
 	public Guid Id { get; set; }
 
@@ -17,8 +17,4 @@ public class DtoProduct
     public string? Brand { get; set; }
 
     public string? Description { get; set; }
-
-    public DtoProductCategory ProductCategory { get; set; } = null!;
-
-    public ICollection<DtoProductDetail> ProductDetails { get; set; } = new List<DtoProductDetail>();
 }
