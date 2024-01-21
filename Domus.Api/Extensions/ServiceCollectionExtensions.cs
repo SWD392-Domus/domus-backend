@@ -123,11 +123,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
         services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IJwtService, JwtService>();
 		services.AddScoped<IEmailService, EmailService>();
 		services.AddScoped<IProductService, ProductService>();
+		services.AddScoped<IProductDetailService, ProductDetailService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();

@@ -1,0 +1,25 @@
+using System.ComponentModel.DataAnnotations;
+using Domus.Service.Attributes;
+
+namespace Domus.Service.Models.Requests;
+
+public class CreateProductDetailRequest
+{
+	[RequiredGuid]
+	public Guid ProductId { get; set; }
+
+	[Required]
+	public string Name { get; set; } = null!;
+
+	public string? Description { get; set; }
+
+	public float Price { get; set; }
+
+	public string MonetaryUnit { get; set; } = null!;
+
+	public float Quantity { get; set; }
+
+	public string QuantityType { get; set; } = null!;
+
+	public Dictionary<string, string> Attributes { get; set; } = new();
+}

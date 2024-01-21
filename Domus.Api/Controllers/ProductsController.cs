@@ -1,11 +1,14 @@
 using Domus.Api.Controllers.Base;
+using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Products;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
 
+[Authorize(Roles = $"{UserRoleConstants.ADMIN},{UserRoleConstants.STAFF}")]
 [Route("api/[controller]")]
 public class ProductsController : BaseApiController
 {
@@ -16,6 +19,7 @@ public class ProductsController : BaseApiController
 		_productService = productService;
 	}
 	
+	[AllowAnonymous]
 	[HttpGet]
 	public async Task<IActionResult> GetPaginatedProducts([FromQuery] BasePaginatedRequest request)
 	{
@@ -24,6 +28,7 @@ public class ProductsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[AllowAnonymous]
 	[HttpGet("all")]
 	public async Task<IActionResult> GetAllProducts()
 	{
@@ -32,6 +37,7 @@ public class ProductsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[AllowAnonymous]
 	[HttpGet("{id:guid}")]
 	public async Task<IActionResult> GetProduct(Guid id)
 	{
