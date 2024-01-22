@@ -1,5 +1,6 @@
 using System.Text;
 using AutoMapper;
+using Azure.Storage.Blobs;
 using Domus.Api.Constants;
 using Domus.Api.Exceptions;
 using Domus.Api.Settings;
@@ -112,6 +113,8 @@ public static class ServiceCollectionExtensions
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IFileService, FileService>();
+   
         
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
