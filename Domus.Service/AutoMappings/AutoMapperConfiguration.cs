@@ -57,6 +57,7 @@ public static class AutoMapperConfiguration
 		#region Product detail maps
 
 		mapper.CreateMap<ProductDetail, DtoProductDetail>();
+		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
 
 		#endregion
 	}

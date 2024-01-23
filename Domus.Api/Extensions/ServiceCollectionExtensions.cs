@@ -124,6 +124,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
+        services.AddScoped<IProductPriceRepository, ProductPriceRepository>();
+        services.AddScoped<IProductAttributeRepository, ProductAttributeRepository>();
+        services.AddScoped<IProductAttributeValueRepository, ProductAttributeValueRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IJwtService, JwtService>();

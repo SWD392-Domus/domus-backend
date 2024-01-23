@@ -19,17 +19,26 @@ public class ProductDetailService : IProductDetailService
 	private readonly IProductRepository _productRepository;
 	private readonly IMapper _mapper;
 	private readonly IUnitOfWork _unitOfWork;
+	private readonly IProductPriceRepository _productPriceRepository;
+	private readonly IProductAttributeValueRepository _productAttributeValueRepository;
+	private readonly IProductAttributeRepository _productAttributeRepository;
 
 	public ProductDetailService(
 			IProductDetailRepository productDetailRepository,
 			IMapper mapper,
 			IUnitOfWork unitOfWork,
-			IProductRepository productRepository)
+			IProductRepository productRepository,
+			IProductPriceRepository productPriceRepository,
+			IProductAttributeValueRepository productAttributeValueRepository,
+			IProductAttributeRepository productAttributeRepository)
 	{
 		_productDetailRepository = productDetailRepository;
 		_mapper = mapper;
 		_unitOfWork = unitOfWork;
 		_productRepository = productRepository;
+		_productPriceRepository = productPriceRepository;
+		_productAttributeValueRepository = productAttributeValueRepository;
+		_productAttributeRepository = productAttributeRepository;
 	}
 
     public async Task<ServiceActionResult> CreateProductDetail(CreateProductDetailRequest request)

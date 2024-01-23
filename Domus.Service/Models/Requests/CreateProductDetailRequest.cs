@@ -21,5 +21,6 @@ public class CreateProductDetailRequest
 
 	public string QuantityType { get; set; } = null!;
 
-	public Dictionary<string, string> Attributes { get; set; } = new();
+	public Dictionary<string, ProductAttributeValueRequest> Attributes { get; set; }
 }
+
