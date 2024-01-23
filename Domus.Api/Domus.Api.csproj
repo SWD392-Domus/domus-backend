@@ -30,6 +30,8 @@
     <EmbeddedResource Include="Scripts\3.Add_Package.sql" />
     <None Remove="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
     <EmbeddedResource Include="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
+    <None Remove="Scripts\5.Add_UserProfileImage.sql" />
+    <EmbeddedResource Include="Scripts\5.Add_UserProfileImage.sql" />
   </ItemGroup>
 
 </Project>
