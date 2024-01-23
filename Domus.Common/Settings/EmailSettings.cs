@@ -1,6 +1,6 @@
-﻿namespace Domus.Service.Models.Email;
+﻿namespace Domus.Common.Settings;
 
-public class EmailConfig
+public class EmailSettings
 {
     public string EmailHost { get; set; }
     public string EmailUsername { get; set; }
