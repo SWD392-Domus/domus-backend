@@ -1,6 +1,10 @@
 using Domus.Api.Controllers.Base;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
@@ -30,7 +34,9 @@ public class AuthController : BaseApiController
             async () => await _authService.LoginAsync(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+
     
+  
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
     {
@@ -38,4 +44,7 @@ public class AuthController : BaseApiController
             async () => await _authService.RefreshTokenAsync(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+    
+   
+    
 }

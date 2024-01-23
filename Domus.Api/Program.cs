@@ -1,5 +1,7 @@
 using Domus.Api.Extensions;
 using Domus.Common.Helpers;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using NLog;
 
 LogManager.Setup()
@@ -16,6 +18,10 @@ builder.Services.AddCustomSwagger(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddDefaultCorsPolicy(builder.Configuration);
 builder.Services.RegisterServices();
+builder.Services.AddGgAuthentication(builder.Configuration);
+
+
+
 
 var app = builder.Build();
 

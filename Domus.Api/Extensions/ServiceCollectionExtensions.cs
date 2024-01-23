@@ -14,6 +14,8 @@ using Domus.Domain.Entities;
 using Domus.Service.AutoMappings;
 using Domus.Service.Implementations;
 using Domus.Service.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -70,7 +72,22 @@ public static class ServiceCollectionExtensions
                 ClockSkew = TimeSpan.Zero
             };
         });
-        
+        return services;
+    }
+
+    public static IServiceCollection AddGgAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        var googleSettings = configuration.GetSection(nameof(GoogleSettings)).Get<GoogleSettings>();
+        services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+            }).AddCookie()
+            .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+            {
+                options.ClientId = googleSettings.ClientId;
+                options.ClientSecret = googleSettings.ClientSecret;
+            });
         return services;
     }
 
@@ -122,4 +139,7 @@ public static class ServiceCollectionExtensions
         
         return services;
     }
+    
+    
+    
 }

@@ -1,6 +1,7 @@
 ﻿using Domus.Api.Controllers.Base;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
@@ -13,7 +14,6 @@ public class FileController : BaseApiController
     {
         _fileService = fileService;
     }
-
     [HttpGet("/get")]
     public async Task<IActionResult> GetFile(string fileName)
     {
