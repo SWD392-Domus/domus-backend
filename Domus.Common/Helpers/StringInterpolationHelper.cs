@@ -46,4 +46,9 @@ public static class StringInterpolationHelper
     {
         Builder.Append(content);
     }
+
+    public static string TrimSpaceString(this string content)
+    {
+        return content.Replace(" ", "");
+    }
 }

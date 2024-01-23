@@ -6,6 +6,6 @@ namespace Domus.Service.Interfaces;
 
 public interface IFileService
 {
-    Task<ServiceActionResult> UplooadFile(FileModels fileModels);
-    Task<ServiceActionResult> GetFile();
+    Task<ServiceActionResult> UploadFile(FileModels fileModels);
+    Task<Stream> GetFile(string fileName);
 }
