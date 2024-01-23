@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Domus.Common.Settings;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Email;
@@ -24,7 +25,7 @@ public class EmailService : IEmailService
     
     public async Task<ServiceActionResult> SendEmail(Email request)
     {
-        var emailConfig = _config.GetSection(nameof(EmailConfig)).Get<EmailConfig>() ?? throw new Exception();
+        var emailConfig = _config.GetSection(nameof(EmailSettings)).Get<EmailSettings>() ?? throw new Exception("Invalid SMTP configuration. Check SMTP settings value.");
         var email = new MimeMessage();
         email.From.Add(MailboxAddress.Parse(emailConfig.EmailUsername));
         email.To.Add(MailboxAddress.Parse(request.To));
