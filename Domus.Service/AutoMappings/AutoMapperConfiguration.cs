@@ -11,54 +11,40 @@ public static class AutoMapperConfiguration
 {
 	public static void RegisterMaps(IMapperConfigurationExpression mapper)
 	{
-		#region User maps
+		CreateUserMaps(mapper);
 
+		CreateArticleMaps(mapper);
+		
+		CreateProductMaps(mapper);
+	}
+
+	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
+	{
 		mapper.CreateMap<RegisterRequest, DomusUser>()
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email));
 		mapper.CreateMap<LoginRequest, DomusUser>();
 		mapper.CreateMap<DomusUser, DtoDomusUser>();
-		
-		#endregion
+	}
 
-		#region Article maps
-
+	private static void CreateArticleMaps(IMapperConfigurationExpression mapper)
+	{
 		mapper.CreateMap<CreateArticleRequest, Article>();
 		mapper.CreateMap<Article, DtoArticle>();
 		mapper.CreateMap<Article, DtoArticleWithoutCategory>();
 
-		#endregion
-		
-		#region	Article category maps 
-
 		mapper.CreateMap<ArticleCategory, DtoArticleCategory>();
-
-		#endregion
-
-		#region Article image maps
-
 		mapper.CreateMap<ArticleImage, DtoArticleImage>();
+	}
 
-		#endregion
-
-		#region Products maps
-
+	private static void CreateProductMaps(IMapperConfigurationExpression mapper)
+	{
 		mapper.CreateMap<Product, DtoProduct>();
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<CreateProductRequest, Product>();
 
-		#endregion
-
-		#region Product category maps
-
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
-
-		#endregion
-
-		#region Product detail maps
 
 		mapper.CreateMap<ProductDetail, DtoProductDetail>();
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
-
-		#endregion
 	}
 }

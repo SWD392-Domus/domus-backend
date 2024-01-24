@@ -15,6 +15,8 @@ public class CreateProductDetailRequest
 
 	public float Price { get; set; }
 
+	public float DisplayPrice { get; set; }
+
 	public string MonetaryUnit { get; set; } = null!;
 
 	public float Quantity { get; set; }
