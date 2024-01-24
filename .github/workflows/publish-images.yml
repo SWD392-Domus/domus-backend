@@ -2,9 +2,10 @@ name: Publish docker images
 
 on: 
   push:
-    branches: [ "release" ]
-  pull_request:
-    branches: [ "release" ]
+    tags: [ "v*" ]
+
+env:
+  IMAGE_NAME: ${{ secrets.REGISTRY }}/domus-api
 
 jobs:
   publish:
@@ -24,8 +25,12 @@ jobs:
       - name: Build projects
         run: dotnet build -c Release
 
+      - name: Get version
+        id: version
+        uses: battila7/get-version-action@v2
+
       - name: Build docker images
-        run: docker build -f file_location -t image_name .
+        run: docker build -f Domus.Api/Dockerfile -t ${{ IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }} .
 
       - name: Publish images
-        run: docker push image_name
+        run: docker push ${{ IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
