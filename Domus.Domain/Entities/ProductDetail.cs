@@ -2,7 +2,7 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class ProductDetail : BaseEntity<Guid>
+public partial class ProductDetail : DeletableEntity<Guid>
 {
     public Guid ProductId { get; set; }
 

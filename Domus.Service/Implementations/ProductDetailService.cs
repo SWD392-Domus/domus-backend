@@ -43,11 +43,48 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> CreateProductDetail(CreateProductDetailRequest request)
     {
-		if (!await _productRepository.ExistsAsync(p => p.Id == request.ProductId))
+		var product = await _productRepository.GetAsync(p => p.Id == request.ProductId);
+		if (product == null)
 			throw new ProductNotFoundException();
 
 		var productDetail = _mapper.Map<ProductDetail>(request);
-		await _productDetailRepository.AddAsync(productDetail);
+
+		var productPrice = new ProductPrice
+		{
+			ProductDetailId = productDetail.Id,
+			Price = request.Price,
+			MonetaryUnit = request.MonetaryUnit,
+			Quantity = request.Quantity,
+			QuantityType = request.QuantityType
+		};
+		
+		var productAttributeValues = new List<ProductAttributeValue>();
+		foreach (var productAttributeValue in request.Attributes)
+		{
+			var productAttribute = await _productAttributeRepository.GetAsync(pa => pa.AttributeName == productAttributeValue.Name);
+			if (productAttribute == null)
+			{
+				productAttribute = new ProductAttribute
+				{
+					AttributeName = productAttributeValue.Name
+				};
+			}
+
+			var productAttributeValueEntity = new ProductAttributeValue
+			{
+				ProductAttributeId = productAttribute.Id,
+				ProductAttribute = productAttribute,
+				Value = productAttributeValue.Value,
+				ValueType = productAttributeValue.ValueType
+			};
+
+			productAttributeValues.Add(productAttributeValueEntity);
+		}
+
+		product.ProductDetails.Add(productDetail);
+		productDetail.ProductPrices.Add(productPrice);
+		productDetail.ProductAttributeValues = productAttributeValues;
+		await _productRepository.UpdateAsync(product);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProductDetail>(productDetail) };
@@ -55,9 +92,12 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> DeleteProductDetail(Guid id)
     {
-		if (!await _productDetailRepository.ExistsAsync(pd => pd.Id == id))
+		var productDetail = await _productDetailRepository.GetAsync(pd => pd.Id == id);
+		if (productDetail == null)
 			throw new ProductDetailNotFoundException();
 
+		productDetail.IsDeleted = true;
+		await _productDetailRepository.UpdateAsync(productDetail);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
@@ -66,7 +106,10 @@ public class ProductDetailService : IProductDetailService
     public async Task<ServiceActionResult> GetAllProductDetails()
     {
 		var queryableProductDetails = (await _productDetailRepository.GetAllAsync())
-			.Include(pd => pd.ProductPrices);
+			.Include(pd => pd.Product)
+			.Include(pd => pd.ProductPrices)
+			.Include(pd => pd.ProductAttributeValues)
+			.ThenInclude(pav => pav.ProductAttribute);
 		var productDetails = _mapper.Map<IEnumerable<DtoProductDetail>>(queryableProductDetails);
 
 		return new ServiceActionResult(true) { Data = productDetails };
