@@ -1,0 +1,2 @@
+ALTER TABLE [Package]
+ADD [Discount] FLOAT DEFAULT 0 NOT NULL

@@ -1,2 +1,2 @@
-﻿Alter table DomusUser 
-add ProfileImage varchar(256)
+﻿ALTER TABLE [DomusUser] 
+ADD [ProfileImage] VARCHAR(256)
