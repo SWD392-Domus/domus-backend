@@ -6,6 +6,8 @@ public class DtoProductDetail
 
     public Guid ProductId { get; set; }
 
+    public string ProductName { get; set; } = null!;
+
 	public double DisplayPrice { get; set; }
 
     public virtual ICollection<DtoProductAttributeValue> ProductAttributeValues { get; set; } = new List<DtoProductAttributeValue>();

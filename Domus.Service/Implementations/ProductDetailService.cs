@@ -82,13 +82,9 @@ public class ProductDetailService : IProductDetailService
 		}
 
 		product.ProductDetails.Add(productDetail);
-		// await _productRepository.UpdateAsync(product);
-		// await _unitOfWork.CommitAsync();
-
 		productDetail.ProductPrices.Add(productPrice);
 		productDetail.ProductAttributeValues = productAttributeValues;
 		await _productRepository.UpdateAsync(product);
-		// await _productDetailRepository.UpdateAsync(productDetail);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProductDetail>(productDetail) };
@@ -107,7 +103,10 @@ public class ProductDetailService : IProductDetailService
     public async Task<ServiceActionResult> GetAllProductDetails()
     {
 		var queryableProductDetails = (await _productDetailRepository.GetAllAsync())
-			.Include(pd => pd.ProductPrices);
+			.Include(pd => pd.Product)
+			.Include(pd => pd.ProductPrices)
+			.Include(pd => pd.ProductAttributeValues)
+			.ThenInclude(pav => pav.ProductAttribute);
 		var productDetails = _mapper.Map<IEnumerable<DtoProductDetail>>(queryableProductDetails);
 
 		return new ServiceActionResult(true) { Data = productDetails };
