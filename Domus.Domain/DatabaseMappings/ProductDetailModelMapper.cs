@@ -13,6 +13,7 @@ public class ProductDetailModelMapper : IDatabaseModelMapper
             entity.ToTable(nameof(ProductDetail));
 
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
+			entity.Property(e => e.DisplayPrice).HasColumnType("float");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductDetails)
                 .HasForeignKey(d => d.ProductId)

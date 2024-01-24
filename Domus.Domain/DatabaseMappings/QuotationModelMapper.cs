@@ -21,6 +21,7 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.Property(e => e.LastUpdatedAt).HasColumnType("date");
             entity.Property(e => e.LastUpdatedBy).HasMaxLength(450);
             entity.Property(e => e.StaffId).HasMaxLength(450);
+            entity.Property(e => e.Status).HasMaxLength(256);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.QuotationCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)

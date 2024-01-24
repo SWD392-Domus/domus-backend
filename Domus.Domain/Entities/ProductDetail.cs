@@ -8,6 +8,8 @@ public partial class ProductDetail : BaseEntity<Guid>
 
     public virtual Product Product { get; set; } = null!;
 
+	public double DisplayPrice { get; set; }
+
     public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; } = new List<ProductAttributeValue>();
 
     public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();

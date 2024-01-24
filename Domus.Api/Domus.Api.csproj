@@ -32,6 +32,12 @@
     <EmbeddedResource Include="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
     <None Remove="Scripts\5.Add_UserProfileImage.sql" />
     <EmbeddedResource Include="Scripts\5.Add_UserProfileImage.sql" />
+    <None Remove="Scripts\6.Update_Quotation_Status.sql" />
+    <EmbeddedResource Include="Scripts\6.Update_Quotation_Status.sql" />
+    <None Remove="Scripts\7.Add_Package_Discount.sql" />
+    <EmbeddedResource Include="Scripts\7.Add_Package_Discount.sql" />
+    <None Remove="Scripts\8.Add_ProductDetail_DisplayPrice.sql" />
+    <EmbeddedResource Include="Scripts\8.Add_ProductDetail_DisplayPrice.sql" />
   </ItemGroup>
 
 </Project>

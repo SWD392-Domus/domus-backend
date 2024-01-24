@@ -14,6 +14,7 @@ public class PackageModelMapper : IDatabaseModelMapper
 
 			entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Name).HasMaxLength(256);
+			entity.Property(e => e.Discount).HasColumnType("float");
 		});
     }
 }
