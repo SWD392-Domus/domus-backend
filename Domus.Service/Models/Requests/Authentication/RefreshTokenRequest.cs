@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Domus.Service.Models.Requests;
+namespace Domus.Service.Models.Requests.Authentication;
 
 public class RefreshTokenRequest
 {

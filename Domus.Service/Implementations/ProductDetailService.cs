@@ -7,8 +7,8 @@ using Domus.Domain.Entities;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
-using Domus.Service.Models.Requests;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.ProductDetails;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;

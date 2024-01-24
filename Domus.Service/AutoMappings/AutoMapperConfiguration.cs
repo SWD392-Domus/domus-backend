@@ -1,8 +1,9 @@
 using AutoMapper;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
-using Domus.Service.Models.Requests;
 using Domus.Service.Models.Requests.Articles;
+using Domus.Service.Models.Requests.Authentication;
+using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
 
 namespace Domus.Service.AutoMappings;

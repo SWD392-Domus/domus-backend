@@ -7,7 +7,7 @@ using Domus.Service.Constants;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
-using Domus.Service.Models.Requests;
+using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Responses;
 using Microsoft.AspNetCore.Identity;
 
@@ -119,7 +119,7 @@ public class AuthService : IAuthService
 	    if (result.Succeeded)
 	    {
 		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email);
-		    return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(returnedUser ) };
+		    return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(returnedUser) };
 	    }
 
 	    var error = result.Errors.First();

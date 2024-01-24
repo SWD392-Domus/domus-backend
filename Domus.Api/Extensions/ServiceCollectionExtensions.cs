@@ -75,7 +75,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddGgAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var googleSettings = configuration.GetSection(nameof(GoogleSettings)).Get<GoogleSettings>();
+        var googleSettings = configuration.GetSection(nameof(GoogleSettings)).Get<GoogleSettings>() ?? throw new MissingGoogleSettingsException();
         services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;

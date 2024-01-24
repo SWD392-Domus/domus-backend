@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Domus.Service.Attributes;
 
-namespace Domus.Service.Models.Requests;
+namespace Domus.Service.Models.Requests.ProductDetails;
 
 public class CreateProductDetailRequest
 {
@@ -23,6 +23,6 @@ public class CreateProductDetailRequest
 
 	public string QuantityType { get; set; } = null!;
 
-	public Dictionary<string, ProductAttributeValueRequest> Attributes { get; set; }
+	public ICollection<CreateProductAttributeRequest> Attributes { get; set; } = new List<CreateProductAttributeRequest>();
 }
 

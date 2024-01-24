@@ -1,8 +1,8 @@
 using Domus.Api.Controllers.Base;
 using Domus.Service.Constants;
 using Domus.Service.Interfaces;
-using Domus.Service.Models.Requests;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.ProductDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
