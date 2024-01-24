@@ -5,7 +5,7 @@ on:
     tags: [ "v*" ]
 
 env:
-  IMAGE_NAME: ${{ secrets.REGISTRY }}/${{ github.action_repository }}/domus-api
+  IMAGE_NAME: ${{ secrets.REGISTRY }}/SWD392-Domus/domus-api
 
 jobs:
   publish:
