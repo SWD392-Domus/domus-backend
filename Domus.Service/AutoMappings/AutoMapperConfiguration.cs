@@ -45,7 +45,9 @@ public static class AutoMapperConfiguration
 
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
 
-		mapper.CreateMap<ProductDetail, DtoProductDetail>();
+		mapper.CreateMap<ProductDetail, DtoProductDetail>()
+			.ForMember(dest => dest.DisplayPrice, opt => opt.MapFrom((src) => src.DisplayPrice))
+			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })));
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
 	}
 }
