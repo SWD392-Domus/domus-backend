@@ -92,9 +92,12 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> DeleteProductDetail(Guid id)
     {
-		if (!await _productDetailRepository.ExistsAsync(pd => pd.Id == id))
+		var productDetail = await _productDetailRepository.GetAsync(pd => pd.Id == id);
+		if (productDetail == null)
 			throw new ProductDetailNotFoundException();
 
+		productDetail.IsDeleted = true;
+		await _productDetailRepository.UpdateAsync(productDetail);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
