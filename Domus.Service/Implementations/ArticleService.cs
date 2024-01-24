@@ -38,7 +38,7 @@ public class ArticleService : IArticleService
 			throw new ArticleCategoryNotFoundException();
 
 		var article = _mapper.Map<Article>(request);
-		article.CreatedBy = "7f93140f-3749-4d33-8966-329077ec8bc7";
+		article.CreatedBy = "1729f5b6-3bee-48f3-bc29-f59bffb084d2";
 		article.CreatedAt = DateTime.Now;
 		article.LastUpdatedAt = DateTime.Now;
 		await _articleRepository.AddAsync(article);

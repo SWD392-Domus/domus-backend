@@ -17,7 +17,7 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : cla
 
     public void Add(T entity)
     {
-        _dbSet.AddAsync(entity);
+        _dbSet.Add(entity);
     }
 
     public async Task AddAsync(T entity)
@@ -40,10 +40,10 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : cla
         _dbContext.Update<T>(entity);
     }
 
-    public Task UpdateAsync(T entity)
+    public async Task UpdateAsync(T entity)
     {
         _dbContext.Update<T>(entity);
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
 
     public void UpdateMany(IEnumerable<T> entities)
@@ -63,14 +63,14 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : cla
         }
     }
 
-    public Task UpdateManyAsync(IEnumerable<T> entities)
+    public async Task UpdateManyAsync(IEnumerable<T> entities)
     {
         foreach (var entity in entities)
         {
             _dbContext.Update<T>(entity);
         }
 
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
 
     public async Task UpdateManyAsync(Expression<Func<T, bool>> predicate)
@@ -106,9 +106,9 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : cla
         return _dbSet.SingleOrDefault(predicate);
     }
 
-    public Task<T?> GetAsync(Expression<Func<T, bool>> predicate)
+    public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate)
     {
-        return _dbSet.FirstOrDefaultAsync(predicate);
+        return await _dbSet.FirstOrDefaultAsync(predicate);
     }
 
     public IQueryable<T> Find(Expression<Func<T, bool>> predicate)
