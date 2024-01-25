@@ -40,6 +40,8 @@
     <EmbeddedResource Include="Scripts\8.Add_ProductDetail_DisplayPrice.sql" />
     <None Remove="Scripts\9.Add_ProductDetail_IsDeleted.sql" />
     <EmbeddedResource Include="Scripts\9.Add_ProductDetail_IsDeleted.sql" />
+    <None Remove="Scripts\10.Add_IsDeleteAtt.sql" />
+    <EmbeddedResource Include="Scripts\10.Add_IsDeleteAtt.sql" />
   </ItemGroup>
 
 </Project>

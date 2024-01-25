@@ -2,9 +2,13 @@ using AutoMapper;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests.Articles;
+
+
 using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
+
+
 
 namespace Domus.Service.AutoMappings;
 
@@ -17,6 +21,8 @@ public static class AutoMapperConfiguration
 		CreateArticleMaps(mapper);
 		
 		CreateProductMaps(mapper);
+
+		CreateServiceMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -36,12 +42,13 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<ArticleCategory, DtoArticleCategory>();
 		mapper.CreateMap<ArticleImage, DtoArticleImage>();
 	}
-
+	
 	private static void CreateProductMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<Product, DtoProduct>();
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<CreateProductRequest, Product>();
+
 
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
 
@@ -50,5 +57,10 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })))
 			.ForMember(dest => dest.ProductName, opt => opt.MapFrom((src) => src.Product.ProductName));
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
+	}
+
+	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<Domain.Entities.Service, DtoService>();
 	}
 }
