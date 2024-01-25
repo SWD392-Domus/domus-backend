@@ -1,4 +1,6 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Service.Exceptions;
@@ -47,9 +49,12 @@ public class QuotationService : IQuotationService
 		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoQuotation>>(quotations) };
     }
 
-    public Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request)
+    public async Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request)
     {
-        throw new NotImplementedException();
+		var queryableQuotations = (await _quotationRepository.GetAllAsync()).ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableQuotations, request.PageSize, request.PageIndex);
+
+		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     public async Task<ServiceActionResult> GetQuotationById(Guid id)
