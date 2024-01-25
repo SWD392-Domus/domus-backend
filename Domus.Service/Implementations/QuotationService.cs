@@ -52,9 +52,13 @@ public class QuotationService : IQuotationService
         throw new NotImplementedException();
     }
 
-    public Task<ServiceActionResult> GetQuotationById(Guid id)
+    public async Task<ServiceActionResult> GetQuotationById(Guid id)
     {
-        throw new NotImplementedException();
+		var quotation = await _quotationRepository.GetAsync(q => q.Id == id);
+		if (quotation == null)
+			throw new QuotationNotFoundException();
+
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoQuotation>(quotation) };
     }
 
     public Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
