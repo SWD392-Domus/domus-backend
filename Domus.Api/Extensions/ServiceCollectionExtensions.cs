@@ -118,6 +118,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DomusContext>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
         services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
@@ -129,6 +130,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductAttributeValueRepository, ProductAttributeValueRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();
+        services.AddScoped<IServiceService, ServiceService>();
         services.AddScoped<IJwtService, JwtService>();
 		services.AddScoped<IEmailService, EmailService>();
 		services.AddScoped<IProductService, ProductService>();
