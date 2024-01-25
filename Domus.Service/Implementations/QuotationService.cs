@@ -1,4 +1,6 @@
+using AutoMapper;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
@@ -11,11 +13,13 @@ public class QuotationService : IQuotationService
 {
 	private readonly IQuotationRepository _quotationRepository;
 	private readonly IUnitOfWork _unitOfWork;
+	private readonly IMapper _mapper;
 
-	public QuotationService(IQuotationRepository quotationRepository, IUnitOfWork unitOfWork)
+	public QuotationService(IQuotationRepository quotationRepository, IUnitOfWork unitOfWork, IMapper mapper)
 	{
 		_quotationRepository = quotationRepository;
 		_unitOfWork = unitOfWork;
+		_mapper = mapper;
 	}
 
     public Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request)
@@ -38,8 +42,9 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetAllQuotations()
     {
-		await Task.CompletedTask;
-		return new ServiceActionResult(true);
+		var quotations = await _quotationRepository.GetAllAsync();
+
+		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoQuotation>>(quotations) };
     }
 
     public Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request)
