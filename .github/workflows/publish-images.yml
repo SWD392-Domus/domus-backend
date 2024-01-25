@@ -32,5 +32,8 @@ jobs:
       - name: Build docker images
         run: docker build -f Domus.Api/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }} .
 
+      - name: Authenticate
+        run: echo ${{ secrets.AUTH_TOKEN }} | docker login ${{ secrets.REGISTRY }} -u swd392-domus --password-stdin
+
       - name: Publish images
         run: docker push ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
