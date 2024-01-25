@@ -112,8 +112,18 @@ public class QuotationService : IQuotationService
 		return new ServiceActionResult(true) { Data = _mapper.Map<DtoQuotation>(quotation) };
     }
 
-    public Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
+    public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
     {
-        throw new NotImplementedException();
+		var quotation = await _quotationRepository.GetAsync(q => q.Id == id);
+		if (quotation == null)
+			throw new QuotationNotFoundException();
+
+		_mapper.Map(request, quotation);
+		quotation.LastUpdatedAt = DateTime.Now;
+
+		await _quotationRepository.UpdateAsync(quotation);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
     }
 }
