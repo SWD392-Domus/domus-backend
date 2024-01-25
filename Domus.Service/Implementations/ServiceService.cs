@@ -70,7 +70,8 @@ public class ServiceService : IServiceService
     public async Task<ServiceActionResult> DeleteService(Guid serviceId)
     {
         var service = await _serviceRepository.GetAsync(x => x.Id == serviceId) ?? throw new ServiceNotFoundException();
-        await _serviceRepository.DeleteManyAsync(x => x.Id == serviceId);
+        service.IsDeleted = true;
+        await _serviceRepository.UpdateAsync(service);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }

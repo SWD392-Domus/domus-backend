@@ -1,0 +1,1 @@
+﻿alter table Service add  isDelete bit default 0

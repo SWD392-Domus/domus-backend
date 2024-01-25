@@ -2,7 +2,7 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class Service : BaseEntity<Guid>
+public partial class Service : DeletableEntity<Guid>
 {
     public string Name { get; set; } = null!;
 

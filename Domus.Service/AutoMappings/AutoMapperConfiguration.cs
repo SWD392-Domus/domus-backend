@@ -61,10 +61,6 @@ public static class AutoMapperConfiguration
 
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
 	{
-
-	
-
-
 		mapper.CreateMap<Domain.Entities.Service, DtoService>();
 	}
 }
