@@ -2,13 +2,10 @@ using AutoMapper;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests.Articles;
-
-
 using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
-
-
+using Domus.Service.Models.Requests.Quotations;
 
 namespace Domus.Service.AutoMappings;
 
@@ -23,6 +20,8 @@ public static class AutoMapperConfiguration
 		CreateProductMaps(mapper);
 
 		CreateServiceMaps(mapper);
+
+		CreateQuotationMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -62,5 +61,12 @@ public static class AutoMapperConfiguration
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<Domain.Entities.Service, DtoService>();
+	}
+
+	private static void CreateQuotationMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<CreateQuotationRequest, Quotation>()
+			.ForMember(dest => dest.Services, opt => opt.Ignore());
+		mapper.CreateMap<Quotation, DtoQuotation>();
 	}
 }
