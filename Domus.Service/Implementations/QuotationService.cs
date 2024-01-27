@@ -4,12 +4,12 @@ using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
+using Domus.Service.Constants;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Quotations;
-using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
@@ -22,6 +22,7 @@ public class QuotationService : IQuotationService
 	private readonly IProductDetailRepository _productDetailRepository;
 	private readonly IProductDetailQuotationRepository _productDetailQuotationRepository;
 	private readonly IQuotationNegotiationLogRepository _quotationNegotiationLogRepository;
+	private readonly IServiceRepository _serviceRepository;
 
 	public QuotationService(
 			IQuotationRepository quotationRepository,
@@ -43,40 +44,53 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request)
     {
-		if (!await _userRepository.ExistsAsync(u => u.Id == request.CustomerId))
+		var customer = await _userRepository.GetAsync(u => u.Id == request.CustomerId);
+		if (customer == null)
 			throw new UserNotFoundException("Customer not found");
 		if (!await _userRepository.ExistsAsync(u => u.Id == request.StaffId))
 			throw new UserNotFoundException("Staff not found");
-
-		var customer = await _userRepository.GetAsync(u => u.Id == request.CustomerId);
-		var staff = await (await _userRepository.GetAllAsync())
-			.Include(u => u.QuotationCreatedByNavigations)
-			.FirstOrDefaultAsync(u => u.Id == request.StaffId);
-
-		var negotiationLog = new QuotationNegotiationLog
-		{
-			IsClosed = false,
-			StartAt = DateTime.Now,
-		};
 
 		var quotation = new Quotation
 		{
 			CustomerId = request.CustomerId,
 			StaffId = request.StaffId,
-			Staff = staff!,
-			Customer = customer!,
-			QuotationNegotiationLog = negotiationLog,
+			CreatedBy = request.CustomerId,
 			CreatedAt = DateTime.Now,
 			ExpireAt = DateTime.Now.AddDays(30),
-			Status = "Pending",
+			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
-			CreatedBy = request.StaffId,
-			CreatedByNavigation = staff!
 		};
 
-		await _userRepository.UpdateAsync(staff!);
-		// await _quotationNegotiationLogRepository.AddAsync(negotiationLog);
-		// await _quotationRepository.AddAsync(quotation);
+		foreach (var productDetailId in request.ProductDetails)
+		{
+			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetailId);
+			if (productDetailEntity == null)
+				throw new ProductDetailNotFoundException();
+
+			var productDetailQuotation = new ProductDetailQuotation
+			{
+				ProductDetailId = productDetailId,
+				QuotationId = quotation.Id,
+				Quantity = 1,
+				Price = productDetailEntity.DisplayPrice,
+				MonetaryUnit = "USD",
+				QuantityType = "Unit",
+			};
+
+			quotation.ProductDetailQuotations.Add(productDetailQuotation);
+		}
+
+		foreach (var serviceId in request.Services)
+		{
+			var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == serviceId);
+			if (serviceEntity == null)
+				throw new ServiceNotFoundException();
+
+			quotation.Services.Add(serviceEntity);
+		}
+
+		customer.QuotationCreatedByNavigations.Add(quotation);
+		await _userRepository.UpdateAsync(customer);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
