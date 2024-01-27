@@ -1,6 +1,7 @@
 using Domus.Domain.Entities;
 using Domus.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 
 namespace Domus.Domain.DatabaseMappings;
 
@@ -12,7 +13,7 @@ public class QuotationModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(Quotation));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+			entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedAt).HasColumnType("date");
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.CustomerId).HasMaxLength(450);
@@ -22,6 +23,7 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.Property(e => e.LastUpdatedBy).HasMaxLength(450);
             entity.Property(e => e.StaffId).HasMaxLength(450);
             entity.Property(e => e.Status).HasMaxLength(256);
+			entity.Property(e => e.ConcurrencyStamp).IsConcurrencyToken().HasValueGenerator(typeof(StringValueGenerator));
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.QuotationCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
@@ -50,11 +52,11 @@ public class QuotationModelMapper : IDatabaseModelMapper
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     l => l.HasOne<Quotation>().WithMany()
-                        .HasForeignKey("Quotationid")
+                        .HasForeignKey("QuotationId")
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j =>
                     {
-                        j.HasKey("Quotationid", "ServiceId");
+                        j.HasKey("QuotationId", "ServiceId");
                         j.ToTable("QuotationService");
                     });
         });

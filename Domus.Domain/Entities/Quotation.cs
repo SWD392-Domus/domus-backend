@@ -10,8 +10,6 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public string Status { get; set; } = null!;
 
-    public Guid QuotationNegotiationLogId { get; set; }
-
     public DateTime? ExpireAt { get; set; }
 
     public string? ConcurrencyStamp { get; set; }

@@ -128,6 +128,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductPriceRepository, ProductPriceRepository>();
         services.AddScoped<IProductAttributeRepository, ProductAttributeRepository>();
         services.AddScoped<IProductAttributeValueRepository, ProductAttributeValueRepository>();
+        services.AddScoped<IQuotationRepository, QuotationRepository>();
+        services.AddScoped<IProductDetailQuotationRepository, ProductDetailQuotationRepository>();
+        services.AddScoped<IQuotationNegotiationLogRepository, QuotationNegotiationLogRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IServiceService, ServiceService>();
@@ -135,6 +138,7 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IEmailService, EmailService>();
 		services.AddScoped<IProductService, ProductService>();
 		services.AddScoped<IProductDetailService, ProductDetailService>();
+		services.AddScoped<IQuotationService, QuotationService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();

@@ -7,6 +7,7 @@ using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
+using Domus.Service.Models.Requests.Quotations;
 
 
 
@@ -22,7 +23,11 @@ public static class AutoMapperConfiguration
 		
 		CreateProductMaps(mapper);
 
+<<<<<<< HEAD
 		CreateServiceMaps(mapper);
+=======
+		CreateQuotationMaps(mapper);
+>>>>>>> 4ed70de ([Quotations manamentment][Duy] Remove 'QuotationNegotiationLogId' from 'Quotation' entity)
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -59,8 +64,16 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
 	}
 
+<<<<<<< HEAD
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<Domain.Entities.Service, DtoService>();
+=======
+	private static void CreateQuotationMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<CreateQuotationRequest, Quotation>()
+			.ForMember(dest => dest.Services, opt => opt.Ignore());
+		mapper.CreateMap<Quotation, DtoQuotation>();
+>>>>>>> 4ed70de ([Quotations manamentment][Duy] Remove 'QuotationNegotiationLogId' from 'Quotation' entity)
 	}
 }
