@@ -1,7 +1,6 @@
 using Domus.Api.Extensions;
+using Domus.Common.Constants;
 using Domus.Common.Helpers;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using NLog;
 
 LogManager.Setup()
@@ -30,6 +29,8 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors(CorsConstants.APP_CORS_POLICY);
 
 app.UseHttpsRedirection();
 
