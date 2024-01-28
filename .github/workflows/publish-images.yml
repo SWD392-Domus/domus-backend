@@ -19,6 +19,9 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
+      - name: Encrypt Production appsettings
+        run: gpg --quiet --batch --yes --decrypt --passphrase ${{ secrets.GPG_PASS_PHRASE }} --output Domus.Api/appsettings.Production.json appsettings.Production.json.gpg
+
       - name: Restore dependencies 
         run: dotnet restore
 
