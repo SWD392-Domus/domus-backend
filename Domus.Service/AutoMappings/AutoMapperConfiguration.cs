@@ -45,17 +45,16 @@ public static class AutoMapperConfiguration
 	private static void CreateProductMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<Product, DtoProduct>();
+		mapper.CreateMap<Product, DtoProductWithoutCategory>();
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<CreateProductRequest, Product>();
-
-
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
-
 		mapper.CreateMap<ProductDetail, DtoProductDetail>()
-			.ForMember(dest => dest.DisplayPrice, opt => opt.MapFrom((src) => src.DisplayPrice))
+			.ForMember(dest => dest.DisplayPrice, opt => opt.MapFrom(src => Math.Round(src.DisplayPrice, 2)))
 			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })))
 			.ForMember(dest => dest.ProductName, opt => opt.MapFrom((src) => src.Product.ProductName));
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
+		mapper.CreateMap<ProductImage, DtoProductImage>();
 	}
 
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
