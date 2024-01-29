@@ -36,7 +36,7 @@ public class ServicesController : BaseApiController
     }
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromBody] Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
         return await ExecuteServiceLogic(
             async () => await _service.GetService(id).ConfigureAwait(false)

@@ -2,5 +2,5 @@
 
 public abstract class DeletableEntity<TKey> : BaseEntity<TKey>
 {
-    public bool IsDeleted { get; set; }
+    public bool IsDeleted { get; set; } 
 }

@@ -26,9 +26,8 @@ public class ServiceService : IServiceService
     }
     public async Task<ServiceActionResult> GetAllServices()
     {
-
-        var list = (await _serviceRepository.GetAllAsync()).ProjectTo<DtoService>(_mapper.ConfigurationProvider)
-            .ToList();
+        var list = (await _serviceRepository.FindAsync(x=> x.IsDeleted == false))
+            .ProjectTo<DtoService>(_mapper.ConfigurationProvider).ToList();
         return new ServiceActionResult()
         {
             IsSuccess = true,
@@ -38,7 +37,7 @@ public class ServiceService : IServiceService
 
     public async Task<ServiceActionResult> GetPaginatedServices(BasePaginatedRequest request)
     {
-        var dtoList = (await _serviceRepository.GetAllAsync()).ProjectTo<DtoService>(_mapper.ConfigurationProvider);
+        var dtoList = (await _serviceRepository.FindAsync(x=> x.IsDeleted==false)).ProjectTo<DtoService>(_mapper.ConfigurationProvider);
         var paginatedResult = PaginationHelper.BuildPaginatedResult(dtoList, request.PageSize, request.PageIndex);
         return new ServiceActionResult()
         {
@@ -60,8 +59,8 @@ public class ServiceService : IServiceService
 
     public async Task<ServiceActionResult> UpdateService(UpdateServiceRequest request, Guid serviceId)
     {
-        var service = await _serviceRepository.GetAsync(x => x.Id == serviceId) ?? throw new ServiceNotFoundException();
-        _mapper.Map(service, request);
+        var service = await _serviceRepository.GetAsync(x => x.Id == serviceId && x.IsDeleted == false) ?? throw new ServiceNotFoundException();
+        _mapper.Map(request,service);
         await _serviceRepository.UpdateAsync(service);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
@@ -69,7 +68,7 @@ public class ServiceService : IServiceService
 
     public async Task<ServiceActionResult> DeleteService(Guid serviceId)
     {
-        var service = await _serviceRepository.GetAsync(x => x.Id == serviceId) ?? throw new ServiceNotFoundException();
+        var service = await _serviceRepository.GetAsync(x => x.Id == serviceId && x.IsDeleted == false) ?? throw new ServiceNotFoundException();
         service.IsDeleted = true;
         await _serviceRepository.UpdateAsync(service);
         await _unitOfWork.CommitAsync();
@@ -78,7 +77,7 @@ public class ServiceService : IServiceService
 
     public async Task<ServiceActionResult> GetService(Guid serviceId)
     {
-        var service = await _serviceRepository.GetAsync(x => x.Id == serviceId) ?? throw new ServiceNotFoundException();
+        var service = await _serviceRepository.GetAsync(x => x.Id == serviceId && x.IsDeleted == false) ?? throw new ServiceNotFoundException();
         return new ServiceActionResult()
         {
             IsSuccess = true,
