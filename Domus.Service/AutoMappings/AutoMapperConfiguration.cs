@@ -6,6 +6,7 @@ using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
+using Domus.Service.Models.Requests.Services;
 
 namespace Domus.Service.AutoMappings;
 
@@ -59,7 +60,9 @@ public static class AutoMapperConfiguration
 
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
 	{
-		mapper.CreateMap<Domain.Entities.Service, DtoService>();
+		mapper.CreateMap<Domain.Entities.Service, DtoService>().ReverseMap();
+		mapper.CreateMap<CreateServiceRequest,Domain.Entities.Service>();
+		mapper.CreateMap<UpdateServiceRequest, Domain.Entities.Service>();
 	}
 
 	private static void CreateQuotationMaps(IMapperConfigurationExpression mapper)

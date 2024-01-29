@@ -44,6 +44,8 @@
     <EmbeddedResource Include="Scripts\10.Add_IsDeleteAtt.sql" />
     <None Remove="Scripts\11.Remove_NegotiationLogId_In_Quotation.sql" />
     <EmbeddedResource Include="Scripts\11.Remove_NegotiationLogId_In_Quotation.sql" />
+    <None Remove="Scripts\12.Fix_Typo.sql" />
+    <EmbeddedResource Include="Scripts\12.Fix_Typo.sql" />
   </ItemGroup>
 
 </Project>
