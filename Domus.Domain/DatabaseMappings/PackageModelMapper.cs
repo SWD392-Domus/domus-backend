@@ -11,7 +11,7 @@ public class PackageModelMapper : IDatabaseModelMapper
 		modelBuilder.Entity<Package>(entity => 
 		{
 			entity.ToTable(nameof(Package));
-
+			entity.Property(e => e.IsDeleted).HasDefaultValueSql("0");
 			entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Name).HasMaxLength(256);
 			entity.Property(e => e.Discount).HasColumnType("float");

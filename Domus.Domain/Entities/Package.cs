@@ -2,7 +2,7 @@ using Domus.Domain.Entities.Base;
 
 namespace Domus.Domain.Entities;
 
-public partial class Package : BaseEntity<Guid>
+public partial class Package : DeletableEntity<Guid>
 {
 	public string Name { get; set; } = null!;
 
