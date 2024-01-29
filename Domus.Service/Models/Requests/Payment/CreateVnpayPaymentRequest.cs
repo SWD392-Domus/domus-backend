@@ -1,5 +1,5 @@
 namespace Domus.Service.Models.Requests.Payment;
 
-public abstract class CreatePaymentRequest
+public class CreateVnpayPaymentRequest : CreatePaymentRequest
 {
 }

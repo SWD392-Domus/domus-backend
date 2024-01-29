@@ -6,4 +6,5 @@ namespace Domus.Service.Interfaces;
 public interface IPaymentService
 {
 	Task<ServiceActionResult> CreatePaymentUrlAsync(CreatePaymentRequest request);
+	Task<ServiceActionResult> ProcessPaymentResponse(PaymentResponse response);
 }

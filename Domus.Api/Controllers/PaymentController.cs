@@ -16,10 +16,18 @@ public class PaymentController : BaseApiController
 	}
 
 	[HttpPost("vnpay/create-payment-url")]
-	public async Task<IActionResult> CreatePaymentUrl(CreatePaymentRequest request)
+	public async Task<IActionResult> CreateVnpPaymentUrl(CreateVnpayPaymentRequest request)
 	{
 		return await ExecuteServiceLogic(
-				async () => await _vnpayService.CreatePaymentUrlAsync(request).ConfigureAwait(false))
+			async () => await _vnpayService.CreatePaymentUrlAsync(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpGet("vnpay/payment-response")]
+	public async Task<IActionResult> ReceiveVnpayPaymentResponse(VnpayPaymentResponse response)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _vnpayService.ProcessPaymentResponse(response).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

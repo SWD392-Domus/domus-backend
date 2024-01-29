@@ -144,6 +144,7 @@ public static class ServiceCollectionExtensions
             .AddDefaultTokenProviders();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IVnpayService, VnpayService>();
    
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
