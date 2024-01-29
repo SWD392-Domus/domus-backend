@@ -17,13 +17,13 @@ public class VnpayPaymentResponse : PaymentResponse
 	public string Vnp_OrderInfo { get; set; } = null!;
 
 	[Required]
-	public string Vnp_TransactionNo { get; set; } = null!;
+	public long Vnp_TransactionNo { get; set; }
 
 	[Required]
-	public string Vnp_ResponseCode { get; set; } = null!;
+	public long Vnp_ResponseCode { get; set; }
 
 	[Required]
-	public string Vnp_TransactionStatus { get; set; } = null!;
+	public int Vnp_TransactionStatus { get; set; }
 
 	[Required]
 	public string Vnp_TxnRef { get; set; } = null!;
@@ -37,5 +37,5 @@ public class VnpayPaymentResponse : PaymentResponse
 
 	public string? Vnp_CardType { get; set; }
 
-	public string? Vnp_PayDate { get; set; }
+	public long Vnp_PayDate { get; set; }
 }

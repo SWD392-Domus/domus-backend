@@ -24,7 +24,7 @@ public class PaymentController : BaseApiController
 	}
 
 	[HttpGet("vnpay/payment-response")]
-	public async Task<IActionResult> ReceiveVnpayPaymentResponse(VnpayPaymentResponse response)
+	public async Task<IActionResult> ReceiveVnpayPaymentResponse([FromQuery] VnpayPaymentResponse response)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _vnpayService.ProcessPaymentResponse(response).ConfigureAwait(false)

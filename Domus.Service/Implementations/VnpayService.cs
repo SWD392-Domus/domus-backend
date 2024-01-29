@@ -51,6 +51,6 @@ public class VnpayService : IVnpayService
 		var vnpayResponse = (VnpayPaymentResponse)response;
 
 		await Task.CompletedTask;
-		return new ServiceActionResult(true);
+		return new ServiceActionResult(true) { Data = vnpayResponse };
 	}
 }
