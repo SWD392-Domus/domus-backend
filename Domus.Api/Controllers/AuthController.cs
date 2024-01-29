@@ -30,8 +30,6 @@ public class AuthController : BaseApiController
             async () => await _authService.LoginAsync(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
-
-    
   
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
