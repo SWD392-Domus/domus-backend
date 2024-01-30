@@ -50,6 +50,8 @@
     <EmbeddedResource Include="Scripts\13.Add_Package_isDeleted.sql" />
     <None Remove="Scripts\14.Fix_Typo.sql" />
     <EmbeddedResource Include="Scripts\14.Fix_Typo.sql" />
+    <None Remove="Scripts\15.Add_PackageImage.sql" />
+    <EmbeddedResource Include="Scripts\15.Add_PackageImage.sql" />
   </ItemGroup>
 
 </Project>
