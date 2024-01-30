@@ -22,14 +22,15 @@ public class EmailController : BaseApiController
     }
 
     [HttpPost("otp-mail")]
-    public async Task<IActionResult> sendEmail(OtpEmail email)
+    public async Task<IActionResult> SendEmail(OtpEmail email)
     {
         return await ExecuteServiceLogic(
             async() => await _emailService.SendEmail(email).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+    
     [HttpPost("password-mail")]
-    public async Task<IActionResult> sendEmail(PasswordEmail passwordEmail)
+    public async Task<IActionResult> SendEmail(PasswordEmail passwordEmail)
     {
         return await ExecuteServiceLogic(
             async() => await _emailService.SendEmail(passwordEmail).ConfigureAwait(false)
