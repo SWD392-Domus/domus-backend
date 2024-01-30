@@ -6,7 +6,7 @@ using Domus.Domain.Entities;
 
 namespace Domus.Service.Models.Email;
 
-public class OtpEmail : Email,IBaseTemplateEmail 
+public class OtpEmail : BaseEmail 
 {
     [Required]
     public  string UserName { get; set; } = string.Empty;
@@ -16,12 +16,12 @@ public class OtpEmail : Email,IBaseTemplateEmail
     
     public override string EmailBody => GenerateEmailBody();
 
-    public string GenerateEmailBody()
+    protected override string GenerateEmailBody()
     {
         return LoadEmailTemplate().Replace("{"+$"{nameof(OtpEmail.UserName)}"+"}", UserName)
             .Replace("{"+$"{nameof(OtpEmail.Otp)}"+"}", Otp);;
     }
-    public string LoadEmailTemplate()
+    protected override string LoadEmailTemplate()
     {
         return File.ReadAllText(EmailTemplatePathConstants.OtpEmailPath);
     }
