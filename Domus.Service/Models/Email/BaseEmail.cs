@@ -9,7 +9,7 @@ public abstract class BaseEmail
     public string To { get; set; } =  Empty;
     [Required]
     public string Subject { get; set; } = Empty;
-    public virtual string EmailBody { get; set; } = Empty;
+    public virtual string EmailBody { get;  } = Empty;
     protected abstract string GenerateEmailBody();
     protected abstract string LoadEmailTemplate();
 }
