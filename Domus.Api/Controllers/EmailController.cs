@@ -20,4 +20,12 @@ public class EmailController : BaseApiController
            async() => await _emailService.SendEmail(email).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+
+    [HttpPost("otp-mail")]
+    public async Task<IActionResult> sendOtpEmail(OtpEmail email)
+    {
+        return await ExecuteServiceLogic(
+            async() => await _emailService.SendOtpEmail(email).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
 }
