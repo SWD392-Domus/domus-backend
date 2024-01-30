@@ -5,8 +5,8 @@ namespace Domus.Service.Interfaces;
 
 public interface IEmailService
 {
-    Task<ServiceActionResult> SendEmail(Email email);
+    Task<ServiceActionResult> SendEmail(BaseEmail baseEmail);
     Task<ServiceActionResult> SendSeveralEmail(ServeralEmail email);
 
-    Task<ServiceActionResult> SendOtpEmail(OtpEmail otpEmail);
+   
 }

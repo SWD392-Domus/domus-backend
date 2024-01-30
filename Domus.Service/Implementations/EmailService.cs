@@ -25,7 +25,7 @@ public class EmailService : IEmailService
 
     
     
-    public async Task<ServiceActionResult> SendEmail(Email request)
+    public async Task<ServiceActionResult> SendEmail(BaseEmail request)
     {
         var email = new MimeMessage();
         email.From.Add(MailboxAddress.Parse(_emailSettings.EmailUsername));
@@ -62,17 +62,12 @@ public class EmailService : IEmailService
 
     public async Task<ServiceActionResult> SendOtpEmail(OtpEmail request)
     {
-        var email = new MimeMessage();
-        email.From.Add(MailboxAddress.Parse(_emailSettings.EmailUsername));
-        email.To.Add(MailboxAddress.Parse(request.To));
-        email.Subject = request.Subject;
-        email.Body = new TextPart(TextFormat.Html) { Text = request.EmailBody };
-        using var smtp = new SmtpClient();
-        await smtp.ConnectAsync(_emailSettings.EmailHost, 587, SecureSocketOptions.StartTls);
-        await smtp.AuthenticateAsync(_emailSettings.EmailUsername, _emailSettings.EmailPassword);
-        await smtp.SendAsync(email);
-        await smtp.DisconnectAsync(true);
-        return new ServiceActionResult(true);
+        return await SendEmail(request);
+    }
+
+    public async Task<ServiceActionResult> SendPasswordEmail(PasswordEmail request)
+    {
+        return await SendEmail(request);
     }
     
     

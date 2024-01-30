@@ -14,18 +14,25 @@ public class EmailController : BaseApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendMail(Email email)
+    public async Task<IActionResult> SendMail(BaseEmail baseEmail)
     {
         return await ExecuteServiceLogic(
-           async() => await _emailService.SendEmail(email).ConfigureAwait(false)
+           async() => await _emailService.SendEmail(baseEmail).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 
     [HttpPost("otp-mail")]
-    public async Task<IActionResult> sendOtpEmail(OtpEmail email)
+    public async Task<IActionResult> sendEmail(OtpEmail email)
     {
         return await ExecuteServiceLogic(
-            async() => await _emailService.SendOtpEmail(email).ConfigureAwait(false)
+            async() => await _emailService.SendEmail(email).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+    [HttpPost("password-mail")]
+    public async Task<IActionResult> sendEmail(PasswordEmail passwordEmail)
+    {
+        return await ExecuteServiceLogic(
+            async() => await _emailService.SendEmail(passwordEmail).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 }
