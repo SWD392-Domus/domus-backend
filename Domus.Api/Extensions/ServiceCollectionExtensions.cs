@@ -145,6 +145,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IVnpayService, VnpayService>();
+        services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
    
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
