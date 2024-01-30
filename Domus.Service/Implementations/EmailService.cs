@@ -15,25 +15,26 @@ namespace Domus.Service.Implementations;
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _config ;
+    private readonly EmailSettings _emailSettings;
 
     public EmailService(IConfiguration config)
     {
         _config = config;
+        _emailSettings = _config.GetSection(nameof(EmailSettings)).Get<EmailSettings>() ?? throw new Exception("Invalid SMTP configuration. Check SMTP settings value.");
     }
 
     
     
     public async Task<ServiceActionResult> SendEmail(Email request)
     {
-        var emailConfig = _config.GetSection(nameof(EmailSettings)).Get<EmailSettings>() ?? throw new Exception("Invalid SMTP configuration. Check SMTP settings value.");
         var email = new MimeMessage();
-        email.From.Add(MailboxAddress.Parse(emailConfig.EmailUsername));
+        email.From.Add(MailboxAddress.Parse(_emailSettings.EmailUsername));
         email.To.Add(MailboxAddress.Parse(request.To));
         email.Subject = request.Subject;
         email.Body = new TextPart(TextFormat.Html) { Text = request.EmailBody };
         using var smtp = new SmtpClient();
-        await smtp.ConnectAsync(emailConfig.EmailHost, 587, SecureSocketOptions.StartTls);
-        await smtp.AuthenticateAsync(emailConfig.EmailUsername, emailConfig.EmailPassword);
+        await smtp.ConnectAsync(_emailSettings.EmailHost, 587, SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(_emailSettings.EmailUsername, _emailSettings.EmailPassword);
         await smtp.SendAsync(email);
         await smtp.DisconnectAsync(true);
         return new ServiceActionResult(true);
@@ -58,4 +59,21 @@ public class EmailService : IEmailService
 
         return new ServiceActionResult(true);
     }
+
+    public async Task<ServiceActionResult> SendOtpEmail(OtpEmail request)
+    {
+        var email = new MimeMessage();
+        email.From.Add(MailboxAddress.Parse(_emailSettings.EmailUsername));
+        email.To.Add(MailboxAddress.Parse(request.To));
+        email.Subject = request.Subject;
+        email.Body = new TextPart(TextFormat.Html) { Text = request.EmailBody };
+        using var smtp = new SmtpClient();
+        await smtp.ConnectAsync(_emailSettings.EmailHost, 587, SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(_emailSettings.EmailUsername, _emailSettings.EmailPassword);
+        await smtp.SendAsync(email);
+        await smtp.DisconnectAsync(true);
+        return new ServiceActionResult(true);
+    }
+    
+    
 }
