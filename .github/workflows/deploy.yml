@@ -36,5 +36,6 @@ jobs:
                     'bash -s' <<EOF
               docker ps -q | xargs -r docker stop
               docker container prune -f
-            docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
+              docker pull ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
+              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
           EOF
