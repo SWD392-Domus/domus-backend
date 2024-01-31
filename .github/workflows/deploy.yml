@@ -23,9 +23,7 @@ jobs:
         
       - name: Configure SSH Key
         run: |
-          if [ ! -d $HOME/.ssh ]; then
-            mkdir $HOME/.ssh
-          fi
+          mkdir $HOME/.ssh
           echo "${{ secrets.AZURE_SSH_KEY }}" | base64 -d > $HOME/.ssh/azure_vm_key
           chmod 600 ~/.ssh/azure_vm_key
           
