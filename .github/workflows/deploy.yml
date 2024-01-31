@@ -1,33 +1,25 @@
 ﻿name: Deploy to Azure
 
 on:
-  push:
-    branches:
-      - dev
+  workflow_run:
+    workflows:
+      - Publish docker images
+    types: ["completed"]
 jobs: 
   build:
     runs-on: self-hosted
-      
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: success()
-      
-    steps:
       - name: Set Docker Tag
         id: set-docket-tag
-        run: echo "::set-output name=tag::$(some-script-to-get-tag)"
-        
+        run: echo "::set-output name=tag::${{ needs.publish-images.outputs.tag }}"
       - name: Configure SSH Key
         run: |
           mkdir -p $HOME/.ssh
           touch $HOME/.ssh/azure_vm_key
           echo "${{ secrets.AZURE_SSH_KEY }}" > $HOME/.ssh/azure_vm_key
           chmod 600 $HOME/.ssh/azure_vm_key
-          
       - name: Deploy to Azure VM
         run: |
           ssh -i ~/.ssh/azure_vm_key \
