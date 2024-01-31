@@ -5,29 +5,32 @@ on:
     branches:
       - dev
 jobs: 
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: self-hosted
       
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+      
+    steps:
       - name: Set Docker Tag
         id: set-docket-tag
         run: echo "::set-output name=tag::$(some-script-to-get-tag)"
+        
+      - name: Configure SSH Key
+        run: echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/azure_vm_key && chmod 600 ~/.ssh/azure_vm_key
           
       - name: Deploy to Azure VM
         run: |
-          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/azure_vm_key
-          chmod 600 ~/.ssh/azure_vm_key
-          
           ssh -i ~/.ssh/azure_vm_key \
                     -o StrictHostKeyChecking=no \
                     ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
-                    'bash -s' < deploy-script.sh
-          
-          docker ps -q | xargs -r docker stop
-          
-          docker container prune -f
-          
-          docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
+                    'bash -s' <<EOF
+              docker ps -q | xargs -r docker stop
+              docker container prune -f
+            docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
+          EOF
