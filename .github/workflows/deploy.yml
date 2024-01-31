@@ -2,8 +2,7 @@
 
 on:
   workflow_run:
-    workflows:
-      - Publish docker images
+    workflows: ["Publish docker images"]
     types: ["completed"]
 jobs: 
   build:
