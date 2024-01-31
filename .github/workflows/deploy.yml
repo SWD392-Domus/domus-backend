@@ -3,7 +3,8 @@
 on:
   workflow_run:
     workflows: ["Publish docker images"]
-    types: ["completed"]
+    types:
+      - completed
 jobs: 
   build:
     runs-on: self-hosted
