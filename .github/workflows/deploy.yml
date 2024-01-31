@@ -1,21 +1,24 @@
 ﻿name: Deploy to Azure
 
 on:
-  workflow_run:
-    workflows: ["Publish docker images"]
-    types:
-      - completed
-    branches:
-      - 'dev'
+#  workflow_run:
+#    workflows: ["Publish docker images"]
+#    branches:
+#      - dev
+#    types:
+#      - completed
+    push:
+      branches:
+        - dev
 jobs: 
   build:
     runs-on: self-hosted
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: Set Docker Tag
-        id: set-docket-tag
-        run: echo "::set-output name=tag::${{ needs.publish-images.outputs.tag }}"
+#      - name: Set Docker Tag
+#        id: set-docket-tag
+#        run: echo "::set-output name=tag::${{ needs.publish-images.outputs.tag }}" 
       - name: Configure SSH Key
         run: |
           mkdir -p $HOME/.ssh
@@ -30,6 +33,6 @@ jobs:
                     'bash -s' <<EOF
               docker ps -q | xargs -r docker stop
               docker container prune -f
-              docker pull ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
-              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ steps.set-docker-tag.outputs.tag }}
+              docker pull ghcr.io/swd392-domus/domus-api:1.0.6
+              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:1.0.6
           EOF
