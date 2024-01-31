@@ -23,10 +23,10 @@ jobs:
         
       - name: Configure SSH Key
         run: |
-          if [ ! -d ~/.ssh ]; then
-          mkdir ~/.ssh
+          if [ ! -d $HOME/.ssh ]; then
+            mkdir $HOME/.ssh
           fi
-          echo "${{ secrets.AZURE_SSH_KEY }}" | base64 -d > ~/.ssh/azure_vm_key
+          echo "${{ secrets.AZURE_SSH_KEY }}" | base64 -d > $HOME/.ssh/azure_vm_key
           chmod 600 ~/.ssh/azure_vm_key
           
       - name: Deploy to Azure VM
