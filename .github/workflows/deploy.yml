@@ -5,6 +5,8 @@ on:
     workflows: ["Publish docker images"]
     types:
       - completed
+    branches:
+      - 'dev'
 jobs: 
   build:
     runs-on: self-hosted
