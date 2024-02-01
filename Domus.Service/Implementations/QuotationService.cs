@@ -24,7 +24,6 @@ public class QuotationService : IQuotationService
 	private readonly IProductDetailQuotationRepository _productDetailQuotationRepository;
 	private readonly IQuotationNegotiationLogRepository _quotationNegotiationLogRepository;
 	private readonly IServiceRepository _serviceRepository;
-	// private readonly INegotiationMessageRepository _negotiationMessageRespository;
 
 	public QuotationService(
 			IQuotationRepository quotationRepository,
@@ -33,7 +32,6 @@ public class QuotationService : IQuotationService
 			IUserRepository userRepository,
 			IProductDetailRepository productDetailRepository,
 			IProductDetailQuotationRepository productDetailQuotationRepository,
-			// INegotiationMessageRepository negotiationMessageRespository,
 			IServiceRepository serviceRepository,
 			IQuotationNegotiationLogRepository quotationNegotiationLogRepository)
 	{
@@ -43,7 +41,6 @@ public class QuotationService : IQuotationService
 		_productDetailRepository = productDetailRepository;
 		_productDetailQuotationRepository = productDetailQuotationRepository;
 		_quotationNegotiationLogRepository = quotationNegotiationLogRepository;
-		// _negotiationMessageRespository = negotiationMessageRespository;
 		_serviceRepository = serviceRepository;
 		_mapper = mapper;
 	}
@@ -51,25 +48,34 @@ public class QuotationService : IQuotationService
     public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
     {
 		var quotation = (await _quotationRepository.FindAsync(q => q.Id == id && !q.IsDeleted))
-			.Include(q => q.QuotationNegotiationLog)
-			.ThenInclude(qnl => qnl.NegotiationMessages)
+			// .Include(q => q.QuotationNegotiationLog)
+			// .ThenInclude(qnl => qnl.NegotiationMessages)
 			.FirstOrDefault();
-		if (quotation == null)
-			throw new QuotationNotFoundException();
+		// if (quotation == null)
+		// 	throw new QuotationNotFoundException();
+		//
+		// if (quotation.QuotationNegotiationLog == null)
+		// 	quotation.QuotationNegotiationLog = new QuotationNegotiationLog
+		// 	{
+		// 		QuotationId = quotation.Id,
+		// 		IsClosed = false,
+		// 		StartAt = DateTime.Now,
+		// 		CloseAt = null
+		// 	};
 
-		if (quotation.QuotationNegotiationLog == null)
-			quotation.QuotationNegotiationLog = new QuotationNegotiationLog
-			{
-				QuotationId = quotation.Id,
-				IsClosed = false,
-				StartAt = DateTime.Now,
-				CloseAt = null
-			};
-
-		var message = _mapper.Map<NegotiationMessage>(request);
-		quotation.QuotationNegotiationLog.NegotiationMessages.Add(message);
+		// var message = _mapper.Map<NegotiationMessage>(request);
+		// quotation.QuotationNegotiationLog.NegotiationMessages.Add(message);
+		var negotiationLog = new QuotationNegotiationLog
+		{
+			// QuotationId = quotation.Id,
+			IsClosed = false,
+			StartAt = DateTime.Now,
+			CloseAt = null
+		};
+		quotation!.QuotationNegotiationLog = negotiationLog;
+		// await _quotationNegotiationLogRepository.AddAsync(negotiationLog);
 		await _quotationRepository.UpdateAsync(quotation);
-		await _unitOfWork.CommitAsync();
+		// await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
     }
