@@ -10,6 +10,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Quotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
@@ -23,6 +24,7 @@ public class QuotationService : IQuotationService
 	private readonly IProductDetailQuotationRepository _productDetailQuotationRepository;
 	private readonly IQuotationNegotiationLogRepository _quotationNegotiationLogRepository;
 	private readonly IServiceRepository _serviceRepository;
+	// private readonly INegotiationMessageRepository _negotiationMessageRespository;
 
 	public QuotationService(
 			IQuotationRepository quotationRepository,
@@ -31,6 +33,8 @@ public class QuotationService : IQuotationService
 			IUserRepository userRepository,
 			IProductDetailRepository productDetailRepository,
 			IProductDetailQuotationRepository productDetailQuotationRepository,
+			// INegotiationMessageRepository negotiationMessageRespository,
+			IServiceRepository serviceRepository,
 			IQuotationNegotiationLogRepository quotationNegotiationLogRepository)
 	{
 		_quotationRepository = quotationRepository;
@@ -39,8 +43,36 @@ public class QuotationService : IQuotationService
 		_productDetailRepository = productDetailRepository;
 		_productDetailQuotationRepository = productDetailQuotationRepository;
 		_quotationNegotiationLogRepository = quotationNegotiationLogRepository;
+		// _negotiationMessageRespository = negotiationMessageRespository;
+		_serviceRepository = serviceRepository;
 		_mapper = mapper;
 	}
+
+    public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
+    {
+		var quotation = (await _quotationRepository.FindAsync(q => q.Id == id && !q.IsDeleted))
+			.Include(q => q.QuotationNegotiationLog)
+			.ThenInclude(qnl => qnl.NegotiationMessages)
+			.FirstOrDefault();
+		if (quotation == null)
+			throw new QuotationNotFoundException();
+
+		if (quotation.QuotationNegotiationLog == null)
+			quotation.QuotationNegotiationLog = new QuotationNegotiationLog
+			{
+				QuotationId = quotation.Id,
+				IsClosed = false,
+				StartAt = DateTime.Now,
+				CloseAt = null
+			};
+
+		var message = _mapper.Map<NegotiationMessage>(request);
+		quotation.QuotationNegotiationLog.NegotiationMessages.Add(message);
+		await _quotationRepository.UpdateAsync(quotation);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
+    }
 
     public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request)
     {

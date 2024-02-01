@@ -1,6 +1,7 @@
 using Domus.Domain.Entities;
 using Domus.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 
 namespace Domus.Domain.DatabaseMappings;
 
@@ -16,6 +17,7 @@ public class DomusUserModelMapper : IDatabaseModelMapper
             entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
             entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
             entity.Property(e => e.UserName).HasMaxLength(256);
+            entity.Property(e => e.ConcurrencyStamp).IsConcurrencyToken().HasValueGenerator<StringValueGenerator>();
         });
     }
 }

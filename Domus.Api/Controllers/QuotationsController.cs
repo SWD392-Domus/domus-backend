@@ -63,4 +63,12 @@ public class QuotationsController : BaseApiController
 			async () => await _quotationService.DeleteQuotation(id)
 		);
 	}
+
+	[HttpPost("{id:guid}/negotations/messages")]
+	public async Task<IActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.CreateNegotiationMessage(request, id)
+		);
+	}
 }
