@@ -72,5 +72,6 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Quotation, DtoQuotation>();
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
 			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));
+		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
 	}
 }

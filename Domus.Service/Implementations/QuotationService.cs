@@ -23,6 +23,7 @@ public class QuotationService : IQuotationService
 	private readonly IProductDetailRepository _productDetailRepository;
 	private readonly IProductDetailQuotationRepository _productDetailQuotationRepository;
 	private readonly IQuotationNegotiationLogRepository _quotationNegotiationLogRepository;
+	private readonly INegotiationMessageRepository _negotiationMessageRepository;
 	private readonly IServiceRepository _serviceRepository;
 
 	public QuotationService(
@@ -33,6 +34,7 @@ public class QuotationService : IQuotationService
 			IProductDetailRepository productDetailRepository,
 			IProductDetailQuotationRepository productDetailQuotationRepository,
 			IServiceRepository serviceRepository,
+			INegotiationMessageRepository negotiationMessageRepository,
 			IQuotationNegotiationLogRepository quotationNegotiationLogRepository)
 	{
 		_quotationRepository = quotationRepository;
@@ -42,6 +44,7 @@ public class QuotationService : IQuotationService
 		_productDetailQuotationRepository = productDetailQuotationRepository;
 		_quotationNegotiationLogRepository = quotationNegotiationLogRepository;
 		_serviceRepository = serviceRepository;
+		_negotiationMessageRepository = negotiationMessageRepository;
 		_mapper = mapper;
 	}
 
@@ -137,6 +140,14 @@ public class QuotationService : IQuotationService
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
+    }
+
+    public async Task<ServiceActionResult> GetAllNegotiationMessages(Guid quotatioId)
+    {
+		var queryableNegotiationMessages = (await _negotiationMessageRepository.FindAsync(m => m.QuotationNegotiationLog.QuotationId == quotatioId))
+			.ProjectTo<DtoNegotiationMessage>(_mapper.ConfigurationProvider);
+
+		return new ServiceActionResult(true) { Data = queryableNegotiationMessages };
     }
 
     public async Task<ServiceActionResult> GetAllQuotations()
