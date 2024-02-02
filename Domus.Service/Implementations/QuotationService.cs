@@ -45,37 +45,29 @@ public class QuotationService : IQuotationService
 		_mapper = mapper;
 	}
 
-    public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
+    public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid quotationId)
     {
-		var quotation = (await _quotationRepository.FindAsync(q => q.Id == id && !q.IsDeleted))
-			// .Include(q => q.QuotationNegotiationLog)
-			// .ThenInclude(qnl => qnl.NegotiationMessages)
-			.FirstOrDefault();
-		// if (quotation == null)
-		// 	throw new QuotationNotFoundException();
-		//
-		// if (quotation.QuotationNegotiationLog == null)
-		// 	quotation.QuotationNegotiationLog = new QuotationNegotiationLog
-		// 	{
-		// 		QuotationId = quotation.Id,
-		// 		IsClosed = false,
-		// 		StartAt = DateTime.Now,
-		// 		CloseAt = null
-		// 	};
+		var customer = (await _userRepository.FindAsync(u => true))
+			.Include(u => u.QuotationCustomers)
+			.ThenInclude(qc => qc.QuotationNegotiationLog)
+			.Where(u => u.QuotationCustomers.Any(qc => qc.Id == quotationId && !qc.IsDeleted))
+			.FirstOrDefault() ?? throw new QuotationNotFoundException();
 
-		// var message = _mapper.Map<NegotiationMessage>(request);
-		// quotation.QuotationNegotiationLog.NegotiationMessages.Add(message);
-		var negotiationLog = new QuotationNegotiationLog
+		if (customer.QuotationCustomers.First().QuotationNegotiationLog == null)
 		{
-			// QuotationId = quotation.Id,
-			IsClosed = false,
-			StartAt = DateTime.Now,
-			CloseAt = null
-		};
-		quotation!.QuotationNegotiationLog = negotiationLog;
-		// await _quotationNegotiationLogRepository.AddAsync(negotiationLog);
-		await _quotationRepository.UpdateAsync(quotation);
-		// await _unitOfWork.CommitAsync();
+			var negotiationLog = new QuotationNegotiationLog
+			{
+				IsClosed = false,
+				StartAt = DateTime.Now,
+				CloseAt = null
+			};
+			customer.QuotationCustomers.First().QuotationNegotiationLog = negotiationLog;
+		}
+		var negotiationMessage = _mapper.Map<NegotiationMessage>(request);
+		customer.QuotationCustomers.First().QuotationNegotiationLog.NegotiationMessages.Add(negotiationMessage);
+
+		await _userRepository.UpdateAsync(customer);
+		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
     }
