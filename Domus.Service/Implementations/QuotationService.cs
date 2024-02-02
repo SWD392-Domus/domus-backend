@@ -61,10 +61,10 @@ public class QuotationService : IQuotationService
 				StartAt = DateTime.Now,
 				CloseAt = null
 			};
-			customer.QuotationCustomers.First().QuotationNegotiationLog = negotiationLog;
+			customer.QuotationCustomers.First(qc => qc.Id == quotationId && !qc.IsDeleted).QuotationNegotiationLog = negotiationLog;
 		}
 		var negotiationMessage = _mapper.Map<NegotiationMessage>(request);
-		customer.QuotationCustomers.First().QuotationNegotiationLog.NegotiationMessages.Add(negotiationMessage);
+		customer.QuotationCustomers.First(qc => qc.Id == quotationId && !qc.IsDeleted).QuotationNegotiationLog.NegotiationMessages.Add(negotiationMessage);
 
 		await _userRepository.UpdateAsync(customer);
 		await _unitOfWork.CommitAsync();
