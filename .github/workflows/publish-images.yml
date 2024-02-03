@@ -1,9 +1,14 @@
 name: Publish docker images
 
-on: 
+#on: 
+#  push:
+#    tags: [ "v*" ]
+  
+on:
   push:
-    tags: [ "v*" ]
-
+    branches:
+      - cd
+  
 env:
   IMAGE_NAME: ${{ secrets.REGISTRY }}/swd392-domus/domus-api
 
@@ -21,7 +26,7 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      - name: Encrypt Production appsettings
+      - name: Decrypt Production appsettings
         run: gpg --quiet --batch --yes --decrypt --passphrase ${{ secrets.GPG_PASS_PHRASE }} --output Domus.Api/appsettings.Production.json Domus.Api/appsettings.Production.json.gpg
 
       - name: Restore dependencies 
@@ -61,4 +66,4 @@ jobs:
           ssh -i ~/.ssh/azure_vm_key \
                     -o StrictHostKeyChecking=no \
                     ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
-                    'bash -s' < ./deploy_script.sh
+                    'bash -s' < deploy_script.sh
