@@ -3,13 +3,20 @@ name: Publish docker images
 on: 
   push:
     tags: [ "v*" ]
-
-env:
+  
+#on:
+#  push:
+#    branches:
+#      - cd
+  
+env:  
   IMAGE_NAME: ${{ secrets.REGISTRY }}/swd392-domus/domus-api
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version-without-v }}
   
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +26,7 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      - name: Encrypt Production appsettings
+      - name: Decrypt Production appsettings
         run: gpg --quiet --batch --yes --decrypt --passphrase ${{ secrets.GPG_PASS_PHRASE }} --output Domus.Api/appsettings.Production.json Domus.Api/appsettings.Production.json.gpg
 
       - name: Restore dependencies 
@@ -32,10 +39,6 @@ jobs:
         id: version
         uses: battila7/get-version-action@v2
         
-      - name: Set tag as an output variable
-        id: set-tag
-        run: echo "::set-output name=tag::${{ steps.version.outputs.version-without-v }}"
-          
       - name: Build docker images
         run: docker build -f Domus.Api/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }} .
 
@@ -44,5 +47,26 @@ jobs:
 
       - name: Publish images
         run: docker push ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
-    outputs: 
-      tag: ${{ steps.set-tag.outputs.tag }}
+  deploy:
+    needs: publish
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Configure SSH Key
+        run: |
+          mkdir -p $HOME/.ssh
+          touch $HOME/.ssh/azure_vm_key
+          echo "${{ secrets.AZURE_SSH_KEY }}" > $HOME/.ssh/azure_vm_key
+          chmod 600 $HOME/.ssh/azure_vm_key
+      - name: Deploy to Azure VM
+        run: |
+          ssh -i ~/.ssh/azure_vm_key \
+                    -o StrictHostKeyChecking=no \
+                    ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
+                     'docker ps -q | xargs -r docker stop &&
+                      docker container prune -f &&
+                      docker pull ghcr.io/swd392-domus/domus-api:${{ needs.publish.outputs.version }} &&
+                      docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ needs.publish.outputs.version }}'

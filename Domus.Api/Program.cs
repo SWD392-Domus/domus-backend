@@ -18,7 +18,6 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddDefaultCorsPolicy(builder.Configuration);
 builder.Services.RegisterServices();
 builder.Services.AddGgAuthentication(builder.Configuration);
-
 var app = builder.Build();
 
 // if (app.Environment.IsDevelopment())
@@ -29,14 +28,10 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
-app.UseCors(CorsConstants.APP_CORS_POLICY);
-
+app.UseCors();
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 DataAccessHelper.EnsureMigrations(AppDomain.CurrentDomain.FriendlyName);
