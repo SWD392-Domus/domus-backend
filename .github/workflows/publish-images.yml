@@ -32,9 +32,8 @@ jobs:
         id: version
         uses: battila7/get-version-action@v2
         
-      - name: Set tag as an output variable
-        id: set-tag
-        run: echo "::set-output name=tag::${{ steps.version.outputs.version-without-v }}"
+      - name: Set value for tag version
+        run: echo "TAG_VERSION=${{ steps.version.outputs.version-without-v }}"
           
       - name: Build docker images
         run: docker build -f Domus.Api/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }} .
@@ -44,5 +43,3 @@ jobs:
 
       - name: Publish images
         run: docker push ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
-    outputs: 
-      tag: ${{ steps.set-tag.outputs.tag }}

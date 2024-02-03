@@ -1,15 +1,13 @@
 ﻿name: Deploy to Azure
 
 on:
-#  workflow_run:
-#    workflows: ["Publish docker images"]
-#    branches:
-#      - dev
-#    types:
-#      - completed
-    push:
-      branches:
-        - dev
+  workflow_run:
+    workflows: ["Publish docker images"]
+    branches:
+      - cd
+    types:
+      - completed
+
 jobs: 
   build:
     runs-on: self-hosted
@@ -19,20 +17,23 @@ jobs:
 #      - name: Set Docker Tag
 #        id: set-docket-tag
 #        run: echo "::set-output name=tag::${{ needs.publish-images.outputs.tag }}" 
+      - name: Get the tag
+        run: echo " This tag value is $TAG_VERSION"
+      
       - name: Configure SSH Key
         run: |
           mkdir -p $HOME/.ssh
           touch $HOME/.ssh/azure_vm_key
           echo "${{ secrets.AZURE_SSH_KEY }}" > $HOME/.ssh/azure_vm_key
           chmod 600 $HOME/.ssh/azure_vm_key
-      - name: Deploy to Azure VM
-        run: |
-          ssh -i ~/.ssh/azure_vm_key \
-                    -o StrictHostKeyChecking=no \
-                    ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
-                    'bash -s' <<EOF
-              docker ps -q | xargs -r docker stop
-              docker container prune -f
-              docker pull ghcr.io/swd392-domus/domus-api:1.0.6
-              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:1.0.6
-          EOF
+#      - name: Deploy to Azure VM
+#        run: |
+#          ssh -i ~/.ssh/azure_vm_key \
+#                    -o StrictHostKeyChecking=no \
+#                    ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
+#                    'bash -s' <<EOF
+#              docker ps -q | xargs -r docker stop
+#              docker container prune -f
+#              docker pull ghcr.io/swd392-domus/domus-api:1.0.6
+#              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:1.0.6
+#          EOF
