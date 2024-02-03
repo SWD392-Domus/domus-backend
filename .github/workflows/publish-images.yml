@@ -10,6 +10,8 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version-without-v }}
   
     steps:
       - uses: actions/checkout@v4
@@ -32,9 +34,6 @@ jobs:
         id: version
         uses: battila7/get-version-action@v2
         
-      - name: Set value for tag version
-        run: echo "TAG_VERSION=${{ steps.version.outputs.version-without-v }}"
-          
       - name: Build docker images
         run: docker build -f Domus.Api/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }} .
 
@@ -43,3 +42,28 @@ jobs:
 
       - name: Publish images
         run: docker push ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
+  deploy:
+    needs: publish
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Configure SSH Key
+        run: |
+          mkdir -p $HOME/.ssh
+          touch $HOME/.ssh/azure_vm_key
+          echo "${{ secrets.AZURE_SSH_KEY }}" > $HOME/.ssh/azure_vm_key
+          chmod 600 $HOME/.ssh/azure_vm_key
+      - name: Deploy to Azure VM
+        run: |
+          ssh -i ~/.ssh/azure_vm_key \
+                    -o StrictHostKeyChecking=no \
+                    ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
+                    'bash -s' <<EOF
+              docker ps -q | xargs -r docker stop
+              docker container prune -f
+              docker pull ghcr.io/swd392-domus/domus-api:${{ needs.publish.outputs.version }}"
+              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ needs.publish.outputs.version }}"
+          EOF
