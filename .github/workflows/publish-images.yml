@@ -61,9 +61,4 @@ jobs:
           ssh -i ~/.ssh/azure_vm_key \
                     -o StrictHostKeyChecking=no \
                     ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
-                    'bash -s' <<EOF
-              docker ps -q | xargs -r docker stop
-              docker container prune -f
-              docker pull ghcr.io/swd392-domus/domus-api:${{ needs.publish.outputs.version }}"
-              docker run -d -p 443:80 ghcr.io/swd392-domus/domus-api:${{ needs.publish.outputs.version }}"
-          EOF
+                    'bash -s' < ./deploy_script.sh
