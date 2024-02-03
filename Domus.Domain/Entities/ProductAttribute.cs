@@ -1,9 +1,9 @@
-﻿namespace Domus.Domain.Entities;
+﻿using Domus.Domain.Entities.Base;
 
-public partial class ProductAttribute
+namespace Domus.Domain.Entities;
+
+public partial class ProductAttribute : BaseEntity<Guid>
 {
-    public Guid Id { get; set; }
-
     public string AttributeName { get; set; } = null!;
 
     public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; } = new List<ProductAttributeValue>();

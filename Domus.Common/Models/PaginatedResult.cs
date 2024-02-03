@@ -7,5 +7,5 @@ public class PaginatedResult
 	public long LastPage { get; set; }
 	public bool IsLastPage { get; set; }
 	public long Total { get; set; }
-	public object? Data { get; set; }
+	public object? Items { get; set; }
 }

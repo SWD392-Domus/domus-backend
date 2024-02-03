@@ -1,9 +1,9 @@
-﻿namespace Domus.Domain.Entities;
+﻿using Domus.Domain.Entities.Base;
 
-public partial class ProductImage
+namespace Domus.Domain.Entities;
+
+public partial class ProductImage : BaseEntity<Guid>
 {
-    public Guid Id { get; set; }
-
     public Guid ProductDetailId { get; set; }
 
     public string ImageUrl { get; set; } = null!;

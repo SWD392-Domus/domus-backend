@@ -1,8 +1,21 @@
 using System.Text;
-using Domus.Api.Constants;
+using AutoMapper;
 using Domus.Api.Exceptions;
 using Domus.Api.Settings;
+using Domus.Common.Constants;
+using Domus.Common.Exceptions;
+using Domus.Common.Settings;
+using Domus.DAL.Data;
+using Domus.DAL.Implementations;
+using Domus.DAL.Interfaces;
+using Domus.Domain.Entities;
+using Domus.Service.AutoMappings;
+using Domus.Service.Implementations;
+using Domus.Service.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -57,7 +70,22 @@ public static class ServiceCollectionExtensions
                 ClockSkew = TimeSpan.Zero
             };
         });
-        
+        return services;
+    }
+
+    public static IServiceCollection AddGgAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        var googleSettings = configuration.GetSection(nameof(GoogleSettings)).Get<GoogleSettings>() ?? throw new MissingGoogleSettingsException();
+        services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+            }).AddCookie()
+            .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+            {
+                options.ClientId = googleSettings.ClientId;
+                options.ClientSecret = googleSettings.ClientSecret;
+            });
         return services;
     }
 
@@ -80,6 +108,49 @@ public static class ServiceCollectionExtensions
                 builder.Build();
             });
         });
+        
+        return services;
+    }
+
+    public static IServiceCollection RegisterServices(this IServiceCollection services)
+    {
+        services.AddScoped<IAppDbContext, DomusContext>();
+        services.AddScoped<DomusContext>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IServiceRepository, ServiceRepository>();
+        services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+        services.AddScoped<IArticleRepository, ArticleRepository>();
+        services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+        services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
+        services.AddScoped<IProductPriceRepository, ProductPriceRepository>();
+        services.AddScoped<IProductAttributeRepository, ProductAttributeRepository>();
+        services.AddScoped<IProductAttributeValueRepository, ProductAttributeValueRepository>();
+        services.AddScoped<IQuotationRepository, QuotationRepository>();
+        services.AddScoped<IProductDetailQuotationRepository, ProductDetailQuotationRepository>();
+        services.AddScoped<IQuotationNegotiationLogRepository, QuotationNegotiationLogRepository>();
+        services.AddScoped<INegotiationMessageRepository, NegotiationMessageRepository>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IArticleService, ArticleService>();
+        services.AddScoped<IServiceService, ServiceService>();
+        services.AddScoped<IJwtService, JwtService>();
+		services.AddScoped<IEmailService, EmailService>();
+		services.AddScoped<IProductService, ProductService>();
+		services.AddScoped<IProductDetailService, ProductDetailService>();
+		services.AddScoped<IQuotationService, QuotationService>();
+        services.AddIdentity<DomusUser, IdentityRole>()
+            .AddEntityFrameworkStores<DomusContext>()
+            .AddDefaultTokenProviders();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IVnpayService, VnpayService>();
+        services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
+   
+        var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
+        var mapper = config.CreateMapper();
+        services.AddSingleton(mapper);
         
         return services;
     }

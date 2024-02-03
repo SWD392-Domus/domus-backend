@@ -1,5 +1,5 @@
-using Domus.Api.Enums;
-using Domus.Api.Models.Common;
+using Domus.Service.Enums;
+using Domus.Service.Models.Common;
 using NLog;
 using ILogger = NLog.ILogger;
 

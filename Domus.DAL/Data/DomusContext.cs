@@ -1,4 +1,5 @@
 ﻿using Domus.Common.Helpers;
+using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
 using Domus.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Domus.DAL.Data;
 
-public partial class DomusContext : IdentityDbContext<DomusUser>
+public partial class DomusContext : IdentityDbContext<DomusUser>, IAppDbContext
 {
     public DomusContext()
     {
@@ -24,7 +25,9 @@ public partial class DomusContext : IdentityDbContext<DomusUser>
 		if (optionsBuilder.IsConfigured)
 			return;
 
-		optionsBuilder.UseSqlServer(DataAccessHelper.GetDefaultConnectionString());
+		optionsBuilder.UseSqlServer(DataAccessHelper.GetDefaultConnectionString())
+			.EnableSensitiveDataLogging()
+			.LogTo(Console.WriteLine);
 	}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,4 +48,43 @@ public partial class DomusContext : IdentityDbContext<DomusUser>
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    public DbSet<T> CreateSet<T>() where T : class
+    {
+	    return base.Set<T>();
+    }
+
+    public new void Attach<T>(T entity) where T : class
+    {
+	    base.Attach(entity);
+    }
+
+    public void SetModified<T>(T entity) where T : class
+    {
+	    base.Entry(entity).State = EntityState.Modified;
+    }
+
+    public void SetDeleted<T>(T entity) where T : class
+    {
+	    base.Entry(entity).State = EntityState.Deleted;
+    }
+
+    public void Refresh<T>(T entity) where T : class
+    {
+	    base.Entry(entity).Reload();
+    }
+
+    public new void Update<T>(T entity) where T : class
+    {
+	    base.Update(entity);
+    }
+
+    public new void SaveChanges()
+    {
+	    base.SaveChanges();
+    }
+
+    public async Task SaveChangesAsync()
+    {
+	    await base.SaveChangesAsync();
+    }
 }

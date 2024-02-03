@@ -4,17 +4,15 @@ namespace Domus.Domain.Entities;
 
 public partial class DomusUser : IdentityUser
 {
+    public string? ProfileImage { get; set; }
+    
     public virtual ICollection<Article> ArticleCreatedByNavigations { get; set; } = new List<Article>();
 
     public virtual ICollection<Article> ArticleLastUpdatedByNavigations { get; set; } = new List<Article>();
 
-    public virtual ICollection<Category> CategoryCreatedByNavigations { get; set; } = new List<Category>();
+    public virtual ICollection<Contract> ContractCreatedByNavigations { get; set; } = new List<Contract>();
 
-    public virtual ICollection<Category> CategoryLastUpdatedByNavigations { get; set; } = new List<Category>();
-
-    public virtual ICollection<Product> ProductCreatedByNavigations { get; set; } = new List<Product>();
-
-    public virtual ICollection<Product> ProductLastUpdatedByNavigations { get; set; } = new List<Product>();
+    public virtual ICollection<Contract> ContractLastUpdatedByNavigations { get; set; } = new List<Contract>();
 
     public virtual ICollection<Quotation> QuotationCreatedByNavigations { get; set; } = new List<Quotation>();
 
@@ -23,4 +21,5 @@ public partial class DomusUser : IdentityUser
     public virtual ICollection<Quotation> QuotationLastUpdatedByNavigations { get; set; } = new List<Quotation>();
 
     public virtual ICollection<Quotation> QuotationStaffs { get; set; } = new List<Quotation>();
+    
 }

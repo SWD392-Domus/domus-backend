@@ -1,0 +1,1 @@
+﻿EXEC sp_rename 'Service.isDelete', 'isDeleted', 'COLUMN';

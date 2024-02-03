@@ -1,7 +1,8 @@
-using Domus.Api.Models.Common;
+using Domus.Api.Constants;
 using Domus.Common.Exceptions;
 using Domus.Common.Helpers;
 using Domus.Service.Models;
+using Domus.Service.Models.Common;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using ILogger = NLog.ILogger;
@@ -16,22 +17,28 @@ public abstract class BaseApiController : ControllerBase
 	{
 		var successResult = new ApiResponse(true)
 		{
-			Data = result.Data
+			Data = result.Data,
+			StatusCode = StatusCodes.Status200OK
 		};
 
-		var detail = result.Detail ?? string.Empty;
+		var detail = result.Detail ?? ApiMessageConstants.SUCCESS;
 		successResult.AddSuccessMessage(detail);
 		return base.Ok(successResult);
 	}
 	
-	private IActionResult BuildErrorResult(string detail)
+	private IActionResult BuildErrorResult(Exception ex)
 	{
-		var errorResult = new ApiResponse(false)
-		{
-		};
-		errorResult.AddErrorMessage(detail);
+		var errorResult = new ApiResponse(false);
+		errorResult.AddErrorMessage(ex.Message);
 
-		return StatusCode(StatusCodes.Status409Conflict, errorResult);
+		var statusCode = StatusCodes.Status500InternalServerError;
+		if (ex.GetType().IsAssignableTo(typeof(INotFoundException)))
+			statusCode = StatusCodes.Status404NotFound;
+		else if (ex.GetType().IsAssignableTo(typeof(IBusinessException)))
+			statusCode = StatusCodes.Status409Conflict;
+
+		errorResult.StatusCode = statusCode;
+		return base.Ok(errorResult);
 	}
 
 	protected async Task<IActionResult> ExecuteServiceLogic(Func<Task<ServiceActionResult>> serviceLogicFunc)
@@ -59,7 +66,7 @@ public abstract class BaseApiController : ControllerBase
 
 			return result.IsSuccess ? BuildSuccessResult(result) : Problem(result.Detail);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
 			if (errorHandler is not null)
 				await errorHandler();
@@ -68,10 +75,10 @@ public abstract class BaseApiController : ControllerBase
 			StringInterpolationHelper.Append(methodInfo);
 			StringInterpolationHelper.Append($"]]. IsSuccess: false");
 			StringInterpolationHelper.Append(". Detail: ");
-			StringInterpolationHelper.Append(e.Message);
+			StringInterpolationHelper.Append(ex.Message);
 			logger.Info(StringInterpolationHelper.BuildAndClear());
 
-			return e.GetType().IsAssignableTo(typeof(IBusinessException)) ? BuildErrorResult(e.Message) : StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+			return BuildErrorResult(ex);
 		}
 		finally
 		{

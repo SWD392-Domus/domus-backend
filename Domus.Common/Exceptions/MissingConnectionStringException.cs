@@ -2,12 +2,12 @@ namespace Domus.Common.Exceptions;
 
 public class MissingConnectionStringException : ArgumentNullException
 {
-	public override string Message => CustomeMessage ?? Message;
-	private string? CustomeMessage { get; set; }
+	public override string Message => CustomMessage ?? Message;
+	private string? CustomMessage { get; set; }
 
-	public MissingConnectionStringException(string customemessage)
+	public MissingConnectionStringException(string customMessage)
 	{
-		CustomeMessage = customemessage;
+		CustomMessage = customMessage;
 	}
 
 	public MissingConnectionStringException()
