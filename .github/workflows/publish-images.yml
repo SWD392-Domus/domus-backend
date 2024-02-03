@@ -1,15 +1,15 @@
 name: Publish docker images
 
-#on: 
-#  push:
-##    tags: [ "v*" ]
-  
-on:
+on: 
   push:
-    branches:
-      - cd
+    tags: [ "v*" ]
   
-env:
+#on:
+#  push:
+#    branches:
+#      - cd
+  
+env:  
   IMAGE_NAME: ${{ secrets.REGISTRY }}/swd392-domus/domus-api
 
 jobs:
