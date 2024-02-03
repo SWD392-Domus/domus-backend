@@ -68,5 +68,5 @@ jobs:
                     ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
                      'docker ps -q | xargs -r docker stop &&
                       docker container prune -f &&
-                      docker pull &{{ env.IMAGE_NAME}}:${{ needs.publish.outputs.version }} &&
+                      docker pull &{{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }} &&
                       docker run -d -p 443:80 ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }}'
