@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domus.DAL\Domus.DAL.csproj" />
     <ProjectReference Include="..\Domus.Service\Domus.Service.csproj" />
   </ItemGroup>
 

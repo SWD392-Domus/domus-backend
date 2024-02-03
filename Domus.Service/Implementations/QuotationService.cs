@@ -10,6 +10,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Quotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
@@ -22,6 +23,7 @@ public class QuotationService : IQuotationService
 	private readonly IProductDetailRepository _productDetailRepository;
 	private readonly IProductDetailQuotationRepository _productDetailQuotationRepository;
 	private readonly IQuotationNegotiationLogRepository _quotationNegotiationLogRepository;
+	private readonly INegotiationMessageRepository _negotiationMessageRepository;
 	private readonly IServiceRepository _serviceRepository;
 
 	public QuotationService(
@@ -31,6 +33,8 @@ public class QuotationService : IQuotationService
 			IUserRepository userRepository,
 			IProductDetailRepository productDetailRepository,
 			IProductDetailQuotationRepository productDetailQuotationRepository,
+			IServiceRepository serviceRepository,
+			INegotiationMessageRepository negotiationMessageRepository,
 			IQuotationNegotiationLogRepository quotationNegotiationLogRepository)
 	{
 		_quotationRepository = quotationRepository;
@@ -39,8 +43,37 @@ public class QuotationService : IQuotationService
 		_productDetailRepository = productDetailRepository;
 		_productDetailQuotationRepository = productDetailQuotationRepository;
 		_quotationNegotiationLogRepository = quotationNegotiationLogRepository;
+		_serviceRepository = serviceRepository;
+		_negotiationMessageRepository = negotiationMessageRepository;
 		_mapper = mapper;
 	}
+
+    public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid quotationId)
+    {
+		var customer = (await _userRepository.FindAsync(u => true))
+			.Include(u => u.QuotationCustomers)
+			.ThenInclude(qc => qc.QuotationNegotiationLog)
+			.Where(u => u.QuotationCustomers.Any(qc => qc.Id == quotationId && !qc.IsDeleted))
+			.FirstOrDefault() ?? throw new QuotationNotFoundException();
+
+		if (customer.QuotationCustomers.First().QuotationNegotiationLog == null)
+		{
+			var negotiationLog = new QuotationNegotiationLog
+			{
+				IsClosed = false,
+				StartAt = DateTime.Now,
+				CloseAt = null
+			};
+			customer.QuotationCustomers.First(qc => qc.Id == quotationId && !qc.IsDeleted).QuotationNegotiationLog = negotiationLog;
+		}
+		var negotiationMessage = _mapper.Map<NegotiationMessage>(request);
+		customer.QuotationCustomers.First(qc => qc.Id == quotationId && !qc.IsDeleted).QuotationNegotiationLog.NegotiationMessages.Add(negotiationMessage);
+
+		await _userRepository.UpdateAsync(customer);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
+    }
 
     public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request)
     {
@@ -107,6 +140,14 @@ public class QuotationService : IQuotationService
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);
+    }
+
+    public async Task<ServiceActionResult> GetAllNegotiationMessages(Guid quotatioId)
+    {
+		var queryableNegotiationMessages = (await _negotiationMessageRepository.FindAsync(m => m.QuotationNegotiationLog.QuotationId == quotatioId))
+			.ProjectTo<DtoNegotiationMessage>(_mapper.ConfigurationProvider);
+
+		return new ServiceActionResult(true) { Data = queryableNegotiationMessages };
     }
 
     public async Task<ServiceActionResult> GetAllQuotations()

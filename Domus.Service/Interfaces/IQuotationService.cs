@@ -12,4 +12,6 @@ public interface IQuotationService
     Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request);
     Task<ServiceActionResult> GetQuotationById(Guid id);
     Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id);
+    Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id);
+    Task<ServiceActionResult> GetAllNegotiationMessages(Guid quotatioId);
 }
