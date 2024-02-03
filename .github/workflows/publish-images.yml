@@ -15,7 +15,7 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    outputs:
+    outputs:  
       version: ${{ steps.version.outputs.version-without-v }}
   
     steps:
@@ -49,7 +49,7 @@ jobs:
         run: docker push ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
   deploy:
     needs: publish
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Repository
