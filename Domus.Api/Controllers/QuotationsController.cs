@@ -72,6 +72,14 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[HttpGet("{id:guid}/negotations/messages")]
+	public async Task<IActionResult> GetPaginatedNegotiationMessages([FromQuery] BasePaginatedRequest request, Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.GetPaginatedNegotiationMessages(request, id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 	[HttpGet("{id:guid}/negotations/messages/all")]
 	public async Task<IActionResult> GetAllNegotiationMessages(Guid id)
 	{
