@@ -3,8 +3,6 @@
 on:
   workflow_run:
     workflows: ["Publish docker images"]
-    branches:
-      - cd
     types:
       - completed
 
