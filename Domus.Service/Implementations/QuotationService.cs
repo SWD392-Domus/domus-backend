@@ -142,9 +142,9 @@ public class QuotationService : IQuotationService
 		return new ServiceActionResult(true);
     }
 
-    public async Task<ServiceActionResult> GetAllNegotiationMessages(Guid quotatioId)
+    public async Task<ServiceActionResult> GetAllNegotiationMessages(Guid quotationId)
     {
-		var queryableNegotiationMessages = (await _negotiationMessageRepository.FindAsync(m => m.QuotationNegotiationLog.QuotationId == quotatioId))
+		var queryableNegotiationMessages = (await _negotiationMessageRepository.FindAsync(m => m.QuotationNegotiationLog.QuotationId == quotationId))
 			.ProjectTo<DtoNegotiationMessage>(_mapper.ConfigurationProvider);
 
 		return new ServiceActionResult(true) { Data = queryableNegotiationMessages };
@@ -155,6 +155,15 @@ public class QuotationService : IQuotationService
 		var quotations = await _quotationRepository.GetAllAsync();
 
 		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoQuotation>>(quotations) };
+    }
+
+    public async Task<ServiceActionResult> GetPaginatedNegotiationMessages(BasePaginatedRequest request, Guid quotationId)
+    {
+		var queryableNegotiationMessages = (await _negotiationMessageRepository.FindAsync(m => m.QuotationNegotiationLog.QuotationId == quotationId))
+			.ProjectTo<DtoNegotiationMessage>(_mapper.ConfigurationProvider);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableNegotiationMessages, request.PageSize, request.PageIndex);
+
+		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     public async Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request)
