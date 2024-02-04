@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
 
-[Authorize(Roles = $"{UserRoleConstants.ADMIN},{UserRoleConstants.STAFF}", AuthenticationSchemes = "Bearer")]
+[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class ProductsController : BaseApiController
 {
