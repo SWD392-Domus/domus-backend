@@ -5,6 +5,8 @@ namespace Domus.Domain.Entities;
 public partial class DomusUser : IdentityUser
 {
     public string? ProfileImage { get; set; }
+
+    public bool IsDeleted { get; set; }
     
     public virtual ICollection<Article> ArticleCreatedByNavigations { get; set; } = new List<Article>();
 

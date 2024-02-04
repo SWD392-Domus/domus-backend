@@ -17,6 +17,7 @@ public class DomusUserModelMapper : IDatabaseModelMapper
             entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
             entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
             entity.Property(e => e.UserName).HasMaxLength(256);
+			entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
             entity.Property(e => e.ConcurrencyStamp).IsConcurrencyToken().HasValueGenerator<StringValueGenerator>();
         });
     }
