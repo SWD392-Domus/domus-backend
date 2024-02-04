@@ -1,11 +1,14 @@
 using Domus.Api.Controllers.Base;
+using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Quotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
 
+[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class QuotationsController : BaseApiController
 {

@@ -22,8 +22,6 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserTokenRepository _userTokenRepository;
-    
-    private const string PASSWORD_PATTERN = @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$";
 
 	public AuthService(
 		UserManager<DomusUser> userManager,
@@ -108,8 +106,8 @@ public class AuthService : IAuthService
 	    if (await _userRepository.ExistsAsync(u => u.Email!.ToLower() == request.Email.ToLower()))
 		    throw new UserAlreadyExistsException($"User '{request.Email}' already exists");
 
-	    if (!Regex.IsMatch(request.Password, PASSWORD_PATTERN))
-		    throw new PasswordTooWeakException("Provided password is too simple");
+	    if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
+		    throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
 	    
 	    var user = _mapper.Map<DomusUser>(request);
 
