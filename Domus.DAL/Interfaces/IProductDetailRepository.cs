@@ -1,7 +1,8 @@
+using Domus.Common.Interfaces;
 using Domus.Domain.Entities;
 
 namespace Domus.DAL.Interfaces;
 
-public interface IProductDetailRepository : IGenericRepository<ProductDetail>
+public interface IProductDetailRepository : IGenericRepository<ProductDetail>, IAutoRegisterable
 {
 }

@@ -1,10 +1,11 @@
+using Domus.Common.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Users;
 
 namespace Domus.Service.Interfaces;
 
-public interface IUserService
+public interface IUserService : IAutoRegisterable
 {
 	Task<ServiceActionResult> GetPaginatedUsers(BasePaginatedRequest request);
 	Task<ServiceActionResult> CreateUser(CreateUserRequest request);

@@ -1,10 +1,11 @@
+using Domus.Common.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Quotations;
 
 namespace Domus.Service.Interfaces;
 
-public interface IQuotationService
+public interface IQuotationService : IAutoRegisterable
 {
     Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request);
     Task<ServiceActionResult> DeleteQuotation(Guid id);

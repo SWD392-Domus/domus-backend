@@ -1,11 +1,11 @@
-﻿using Domus.Service.Models;
-using Domus.Service.Models.Requests.Articles;
+﻿using Domus.Common.Interfaces;
+using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Services;
 
 namespace Domus.Service.Interfaces;
 
-public interface IServiceService
+public interface IServiceService : IAutoRegisterable
 {
     Task<ServiceActionResult> GetAllServices();
     Task<ServiceActionResult> GetPaginatedServices(BasePaginatedRequest request);
