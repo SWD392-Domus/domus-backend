@@ -7,6 +7,7 @@ using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
 using Domus.Service.Models.Requests.Services;
+using Domus.Service.Models.Requests.Users;
 
 namespace Domus.Service.AutoMappings;
 
@@ -29,6 +30,7 @@ public static class AutoMapperConfiguration
 	{
 		mapper.CreateMap<RegisterRequest, DomusUser>()
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email));
+		mapper.CreateMap<CreateUserRequest, DomusUser>();
 		mapper.CreateMap<LoginRequest, DomusUser>();
 		mapper.CreateMap<DomusUser, DtoDomusUser>();
 	}

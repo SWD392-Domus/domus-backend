@@ -1,14 +1,17 @@
+using System.Text.RegularExpressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
+using Domus.Domain.Entities;
+using Domus.Service.Constants;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Users;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Domus.Service.Implementations;
 
@@ -17,17 +20,46 @@ public class UserService : IUserService
 	private readonly IUserRepository _userRepository;
 	private readonly IMapper _mapper;
 	private readonly IUnitOfWork _unitOfWork;
+	private readonly UserManager<DomusUser> _userManager;
+	private readonly RoleManager<IdentityRole> _roleManager;
 
-	public UserService(IUserRepository userRepository, IMapper mapper, IUnitOfWork unitOfWork)
+	public UserService(
+		IUserRepository userRepository,
+		IMapper mapper,
+		IUnitOfWork unitOfWork,
+		UserManager<DomusUser> userManager,
+		RoleManager<IdentityRole> roleManager
+	)
 	{
 		_userRepository = userRepository;
 		_mapper = mapper;
 		_unitOfWork = unitOfWork;
+		_userManager = userManager;
+		_roleManager = roleManager;
 	}
 
-    public Task<ServiceActionResult> CreateUser(CreateUserRequest request)
+    public async Task<ServiceActionResult> CreateUser(CreateUserRequest request)
     {
-        throw new NotImplementedException();
+		if (await _userRepository.ExistsAsync(u => u.Email == request.Email))
+			throw new UserAlreadyExistsException("The email is already in use");
+		if (await _userRepository.ExistsAsync(u => u.UserName == request.UserName))
+			throw new UserAlreadyExistsException("The username is already in use");
+		if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
+			throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
+
+	    var user = _mapper.Map<DomusUser>(request);
+
+	    var result = await _userManager.CreateAsync(user, request.Password);
+	    await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
+	    await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
+	    if (result.Succeeded)
+	    {
+		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email);
+		    return new ServiceActionResult(true) { Detail = "User created succeessfully" };
+	    }
+
+	    var error = result.Errors.First();
+	    return new ServiceActionResult(false, error.Description);
     }
 
     public async Task<ServiceActionResult> DeleteUser(string userId)
@@ -69,5 +101,13 @@ public class UserService : IUserService
     public Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId)
     {
         throw new NotImplementedException();
+    }
+
+    private async Task EnsureRoleExistsAsync(string role)
+    {
+	    if (!await _roleManager.RoleExistsAsync(role))
+	    {
+		    await _roleManager.CreateAsync(new IdentityRole(role));
+	    }
     }
 }
