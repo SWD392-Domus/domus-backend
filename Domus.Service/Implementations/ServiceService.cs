@@ -102,10 +102,8 @@ public class ServiceService : IServiceService
             var service = await _serviceRepository
                               .GetAsync(x => x.Id == serviceId && x.IsDeleted == false)
                           ?? throw new ServiceNotFoundException();
-
             return service;
         });
-
         var services = await Task.WhenAll(tasks);
         return services.AsQueryable();
     }
