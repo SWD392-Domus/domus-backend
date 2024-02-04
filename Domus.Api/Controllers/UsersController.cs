@@ -32,8 +32,8 @@ public class UsersController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpGet("{id:guid}")]
-	public async Task<IActionResult> GetUser(Guid id)
+	[HttpGet("{id}")]
+	public async Task<IActionResult> GetUser(string id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _userService.GetUser(id).ConfigureAwait(false)
@@ -48,16 +48,16 @@ public class UsersController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpPut("{id:guid}")]
-	public async Task<IActionResult> UpdateUser(UpdateUserRequest request, Guid id)
+	[HttpPut("{id}")]
+	public async Task<IActionResult> UpdateUser(UpdateUserRequest request, string id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _userService.UpdateUser(request, id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
-	[HttpDelete("{id:guid}")]
-	public async Task<IActionResult> DeleteUser(Guid id)
+	[HttpDelete("{id}")]
+	public async Task<IActionResult> DeleteUser(string id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _userService.DeleteUser(id).ConfigureAwait(false)

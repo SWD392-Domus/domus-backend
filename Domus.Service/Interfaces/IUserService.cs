@@ -8,8 +8,8 @@ public interface IUserService
 {
 	Task<ServiceActionResult> GetPaginatedUsers(BasePaginatedRequest request);
 	Task<ServiceActionResult> CreateUser(CreateUserRequest request);
-	Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, Guid userId);
-	Task<ServiceActionResult> GetUser(Guid userId);
+	Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId);
+	Task<ServiceActionResult> GetUser(string userId);
 	Task<ServiceActionResult> GetAllUsers();
-	Task<ServiceActionResult> DeleteUser(Guid userId);
+	Task<ServiceActionResult> DeleteUser(string userId);
 }

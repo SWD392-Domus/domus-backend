@@ -140,6 +140,7 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IProductService, ProductService>();
 		services.AddScoped<IProductDetailService, ProductDetailService>();
 		services.AddScoped<IQuotationService, QuotationService>();
+		services.AddScoped<IUserService, UserService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
