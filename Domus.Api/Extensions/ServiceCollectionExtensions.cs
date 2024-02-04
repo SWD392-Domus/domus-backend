@@ -117,6 +117,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAppDbContext, DomusContext>();
         services.AddScoped<DomusContext>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
+        // repository register
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
@@ -132,6 +134,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductDetailQuotationRepository, ProductDetailQuotationRepository>();
         services.AddScoped<IQuotationNegotiationLogRepository, QuotationNegotiationLogRepository>();
         services.AddScoped<INegotiationMessageRepository, NegotiationMessageRepository>();
+        services.AddScoped<IPackageRepository, PackageRepository>();
+
+        // service register
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IArticleService, ArticleService>();
         services.AddScoped<IServiceService, ServiceService>();
@@ -147,7 +152,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IVnpayService, VnpayService>();
         services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
-   
+        services.AddScoped<IPackageService, PackageService>();
+        
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
         services.AddSingleton(mapper);

@@ -1,3 +1,4 @@
+using System.Collections;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
@@ -138,5 +139,30 @@ public class ProductDetailService : IProductDetailService
 			throw new ProductDetailNotFoundException();
 
         throw new NotImplementedException();
+    }
+
+    public async Task<bool> IsAllProductDetailsExist(IEnumerable<Guid> requestProductDetailIds)
+    {
+	    foreach (var requestProductDetailId in requestProductDetailIds)
+	    {
+		    var productDetail =
+			    await _productDetailRepository.GetAsync(x => x.Id == requestProductDetailId && x.IsDeleted == false) ??
+			    throw new ProductDetailNotFoundException();
+	    }
+
+	    return true;
+    }
+
+    public async Task<IQueryable<ProductDetail>> GetProductDetails(IEnumerable<Guid> productDetailsIds)
+    {
+	    var tasks = productDetailsIds.Select(async productDetailsId =>
+	    {
+		    var productDetail = await _productDetailRepository
+			                        .GetAsync(x => x.Id == productDetailsId && x.IsDeleted == false) 
+		                        ?? throw new ProductDetailNotFoundException();
+		    return productDetail;
+	    });
+	    var productDetails = await Task.WhenAll(tasks);
+	    return productDetails.AsQueryable();
     }
 }

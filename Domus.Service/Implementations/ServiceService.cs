@@ -84,4 +84,30 @@ public class ServiceService : IServiceService
             Data = _mapper.Map<DtoService>(service)
         };
     }
+
+    public async Task<bool> IsAllServicesExist(IEnumerable<Guid> serviceIds)
+    {
+        foreach (var serviceId in serviceIds)
+        {
+            var x = await _serviceRepository.GetAsync(x => x.Id == serviceId && x.IsDeleted == false) ??
+                    throw new ServiceNotFoundException();
+        }
+        return true;
+    }
+    
+    public async Task<IQueryable<Domain.Entities.Service>> GetServices(IEnumerable<Guid> serviceIds)
+    {
+        var tasks = serviceIds.Select(async serviceId =>
+        {
+            var service = await _serviceRepository
+                              .GetAsync(x => x.Id == serviceId && x.IsDeleted == false)
+                          ?? throw new ServiceNotFoundException();
+
+            return service;
+        });
+
+        var services = await Task.WhenAll(tasks);
+        return services.AsQueryable();
+    }
+
 }
