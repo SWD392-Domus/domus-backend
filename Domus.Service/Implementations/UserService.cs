@@ -98,9 +98,24 @@ public class UserService : IUserService
 		return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(user) };
     }
 
-    public Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId)
+    public async Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId)
     {
-        throw new NotImplementedException();
+		var user = await _userRepository.GetAsync(u => u.Id == userId && !u.IsDeleted) ?? throw new UserNotFoundException();
+
+		if (!string.IsNullOrEmpty(request.Email) && await _userRepository.ExistsAsync(u => u.Email == request.Email && u.Id != userId))
+			throw new UserAlreadyExistsException("The email is already in use");
+		if (!string.IsNullOrEmpty(request.UserName) && await _userRepository.ExistsAsync(u => u.UserName == request.UserName && u.Id != userId))
+			throw new UserAlreadyExistsException("The username is already in use");
+
+		user.Email = string.IsNullOrEmpty(request.Email) ? user.Email : request.Email;
+		user.UserName = string.IsNullOrEmpty(request.UserName) ? user.UserName : request.UserName;
+		user.PhoneNumber = string.IsNullOrEmpty(request.PhoneNumber) ? user.PhoneNumber : request.PhoneNumber;
+		user.ProfileImage = string.IsNullOrEmpty(request.ProfileImage) ? user.ProfileImage : request.ProfileImage;
+
+		await _userManager.UpdateAsync(user);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true) { Detail = "User updated successfully" };
     }
 
     private async Task EnsureRoleExistsAsync(string role)
