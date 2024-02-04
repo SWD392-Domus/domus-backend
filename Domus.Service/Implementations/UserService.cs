@@ -59,9 +59,11 @@ public class UserService : IUserService
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public Task<ServiceActionResult> GetUser(string userId)
+    public async Task<ServiceActionResult> GetUser(string userId)
     {
-        throw new NotImplementedException();
+		var user = await _userRepository.GetAsync(u => u.Id == userId && !u.IsDeleted) ?? throw new UserNotFoundException();
+
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(user) };
     }
 
     public Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId)
