@@ -1,10 +1,14 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Users;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
@@ -36,14 +40,23 @@ public class UserService : IUserService
 		return new ServiceActionResult(true) { Detail = "User deleted successfully" };
     }
 
-    public Task<ServiceActionResult> GetAllUsers()
+    public async Task<ServiceActionResult> GetAllUsers()
     {
-        throw new NotImplementedException();
+		var users = (await _userRepository.GetAllAsync())
+			.Where(u => !u.IsDeleted)
+			.ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider);
+
+		return new ServiceActionResult(true) { Data = users };
     }
 
-    public Task<ServiceActionResult> GetPaginatedUsers(BasePaginatedRequest request)
+    public async Task<ServiceActionResult> GetPaginatedUsers(BasePaginatedRequest request)
     {
-        throw new NotImplementedException();
+		var queryableUsers = (await _userRepository.GetAllAsync())
+			.Where(u => !u.IsDeleted)
+			.ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableUsers, request.PageSize, request.PageIndex);
+
+		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     public Task<ServiceActionResult> GetUser(string userId)
