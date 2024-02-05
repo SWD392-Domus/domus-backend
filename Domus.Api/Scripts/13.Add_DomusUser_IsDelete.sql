@@ -1,2 +1,0 @@
-ALTER TABLE [DomusUser]
-ADD [IsDeleted] BIT DEFAULT 0
