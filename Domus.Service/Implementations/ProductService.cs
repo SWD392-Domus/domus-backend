@@ -76,11 +76,10 @@ public class ProductService : IProductService
     public async Task<ServiceActionResult> GetProduct(Guid id)
     {
 		var product = await (await _productRepository.GetAllAsync())
+			.Where(p => p.Id == id)
 			.Include(p => p.ProductCategory)
 			.Include(p => p.ProductDetails)
-			.FirstOrDefaultAsync();
-		if (product is null)
-			throw new ProductNotFoundException();
+			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
 
 		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProduct>(product) };
     }
