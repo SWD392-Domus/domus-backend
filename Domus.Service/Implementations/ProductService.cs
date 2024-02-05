@@ -60,9 +60,10 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> GetAllProducts()
     {
-		var products = (await _productRepository.GetAllAsync()).ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider);
+		var products = await (await _productRepository.GetAllAsync()).ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider)
+			.ToListAsync();
 		
-		return new ServiceActionResult(true) { Data = _mapper.Map<IList<DtoProductWithoutCategory>>(products) };
+		return new ServiceActionResult(true) { Data = products };
     }
 
     public async Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request)
@@ -76,12 +77,11 @@ public class ProductService : IProductService
     public async Task<ServiceActionResult> GetProduct(Guid id)
     {
 		var product = await (await _productRepository.GetAllAsync())
+			.ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider)
 			.Where(p => p.Id == id)
-			.Include(p => p.ProductCategory)
-			.Include(p => p.ProductDetails)
 			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProduct>(product) };
+		return new ServiceActionResult(true) { Data = product };
     }
 
     public async Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id)
