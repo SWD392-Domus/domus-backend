@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Domus.Domain.Dtos;
 
 public class DtoProductWithoutCategory
@@ -10,5 +12,6 @@ public class DtoProductWithoutCategory
 
     public string? Description { get; set; }
 
+	[JsonPropertyName("details")]
     public ICollection<DtoProductDetail> ProductDetails { get; set; } = new List<DtoProductDetail>();
 }
