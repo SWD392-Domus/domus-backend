@@ -11,7 +11,6 @@ using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
 using Microsoft.EntityFrameworkCore;
-
 namespace Domus.Service.Implementations;
 
 public class ProductDetailService : IProductDetailService
@@ -153,16 +152,25 @@ public class ProductDetailService : IProductDetailService
 	    return true;
     }
 
-    public async Task<IQueryable<ProductDetail>> GetProductDetails(IEnumerable<Guid> productDetailsIds)
+    public async Task<IQueryable<ProductDetail>> GetProductDetails(List<Guid> productDetailsIds)
     {
-	    var tasks = productDetailsIds.Select(async productDetailsId =>
+	    // var tasks = productDetailsIds.Select(async productDetailsId =>
+	    // {
+		   //  var productDetail = await _productDetailRepository
+			  //                       .GetAsync(x => x.Id == productDetailsId && x.IsDeleted == false) 
+		   //                      ?? throw new ProductDetailNotFoundException();
+		   //  return productDetail;
+	    // });
+	    // var productDetails = await Task.WhenAll(tasks);
+	    // return productDetails.AsQueryable();
+	    var productDetailList = new List<ProductDetail>();
+	    foreach (var productDetailsId in productDetailsIds)
 	    {
 		    var productDetail = await _productDetailRepository
-			                        .GetAsync(x => x.Id == productDetailsId && x.IsDeleted == false) 
+			                        .GetAsync((x => x.Id == productDetailsId && x.IsDeleted == false))
 		                        ?? throw new ProductDetailNotFoundException();
-		    return productDetail;
-	    });
-	    var productDetails = await Task.WhenAll(tasks);
-	    return productDetails.AsQueryable();
+		    productDetailList.Add(productDetail);
+	    }
+	    return productDetailList.AsQueryable();
     }
 }

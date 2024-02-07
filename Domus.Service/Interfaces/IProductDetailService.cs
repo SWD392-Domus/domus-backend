@@ -15,5 +15,5 @@ public interface IProductDetailService
     Task<ServiceActionResult> GetProductDetailById(Guid id);
     Task<ServiceActionResult> UpdateProductDetail(UpdateProductDetailRequest request, Guid id);
     Task<bool> IsAllProductDetailsExist(IEnumerable<Guid> requestProductDetailIds);
-    Task<IQueryable<ProductDetail>> GetProductDetails(IEnumerable<Guid> productDetailsIds);
+    Task<IQueryable<ProductDetail>> GetProductDetails(List<Guid> productDetailsIds);
 }

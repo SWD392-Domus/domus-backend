@@ -24,6 +24,8 @@ public static class AutoMapperConfiguration
 		CreateServiceMaps(mapper);
 
 		CreateQuotationMaps(mapper);
+
+		CreatePackageMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)

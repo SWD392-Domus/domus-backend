@@ -135,6 +135,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQuotationNegotiationLogRepository, QuotationNegotiationLogRepository>();
         services.AddScoped<INegotiationMessageRepository, NegotiationMessageRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
+        services.AddScoped<IPackageImageRepository, PackageImageRepository>();
 
         // service register
         services.AddScoped<IAuthService, AuthService>();
