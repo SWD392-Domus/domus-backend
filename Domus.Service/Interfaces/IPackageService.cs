@@ -13,5 +13,4 @@ public interface IPackageService
     Task<ServiceActionResult> CreatePackage(CreatePackageRequest request);
     Task<ServiceActionResult> UpdatePackage(CreatePackageRequest request);
     Task<ServiceActionResult> DeletePackage(Guid packageId);
-    Task<ServiceActionResult> UpdateWithProduct(Guid packageId, List<Guid> ids);
 }

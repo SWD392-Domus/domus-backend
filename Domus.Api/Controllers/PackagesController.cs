@@ -33,12 +33,6 @@ public class PackagesController : BaseApiController
         return await ExecuteServiceLogic(async() => await _packageService.CreatePackage(request).ConfigureAwait(false))
             .ConfigureAwait(false);
     }
-    [HttpPost("/test")]
-    public async Task<IActionResult> UpdatePackageWithProduct(Guid id, List<Guid> ids)
-    {
-        return await ExecuteServiceLogic(async() => await _packageService.UpdateWithProduct(id,ids).ConfigureAwait(false))
-            .ConfigureAwait(false);
-    }
 
     
 }

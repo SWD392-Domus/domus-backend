@@ -69,51 +69,22 @@ public class PackageService : IPackageService
             var serviceList = await _serviceService.GetServices(createPackageRequest.ServiceIds);
             var productDetailList = await _productDetailService.GetProductDetails(createPackageRequest.ProductDetailIds);
             var package = _mapper.Map<Package>(createPackageRequest);
-            foreach (var productDetail in productDetailList)
-            {
-                // productDetail.Packages.Add(package); 
-                productDetail.Id = new Guid();
-                await _productDetailRepository.UpdateAsync(productDetail);
-                package.ProductDetails.Add(productDetail);
-                // await _productDetailRepository.SetModified(productDetail);
-            }
-            foreach (var service in serviceList)
-            {
-                package.Services.Add(service);
-            }
+
+            package.Services = serviceList.ToList();
             
             await _packageRepository.AddAsync(package);
             await _unitOfWork.CommitAsync();
+
+
+            package.ProductDetails = productDetailList.ToList();
+            await _packageRepository.UpdateAsync(package);
+            await _unitOfWork.CommitAsync();
+            
+            
             return new ServiceActionResult(true);
     }
 
-    private async void UpdatePackageFullOption(Guid id,List<Guid> serviceIds, List<Guid> productDetailIds)
-    {
-        var serviceList = await _serviceService.GetServices(serviceIds);
-        // var productDetailList = await _productDetailService.GetProductDetails(productDetailIds);
-        var fullPackage = await _packageRepository.GetAsync(x => x.Id == id) ??
-                          throw new Exception("PACKAGE NOT FOUND");
-        // var packageImages = new List<PackageImage>
-        // {
-        //     new PackageImage {ImageUrl = "Image URL 1", Width = 100, Height = 200 },
-        //     new PackageImage { ImageUrl = "Image URL 2", Width = 150, Height = 250 }
-        // };
-        // foreach (var productDetail in productDetailList)
-        // {
-        //     fullPackage.ProductDetails.Add(productDetail);
-        // }
-        foreach (var service in serviceList)
-        {
-            fullPackage.Services.Add(service);
-        }
-        // foreach (var packageImage in packageImages)
-        // {
-        //     fullPackage.PackageImages.Add(packageImage);
-        // }
-        await _packageRepository.UpdateAsync(fullPackage);
-        await _unitOfWork.CommitAsync();
-        Console.WriteLine("SUCCESS UPDATE");
-    }
+    
 
     public Task<ServiceActionResult> UpdatePackage(CreatePackageRequest request)
     {
@@ -125,13 +96,5 @@ public class PackageService : IPackageService
         throw new NotImplementedException();
     }
 
-    public async Task<ServiceActionResult> UpdateWithProduct(Guid id,List<Guid> ids)
-    {
-        var x = await _packageRepository.GetAsync(x => x.Id == id);
-        var listProductDetail = await _productDetailService.GetProductDetails(ids);
-        x.ProductDetails = listProductDetail.ToList();
-        await _packageRepository.UpdateAsync(x);
-        await _unitOfWork.CommitAsync();
-        return new ServiceActionResult(true);
-    }
+
 }
