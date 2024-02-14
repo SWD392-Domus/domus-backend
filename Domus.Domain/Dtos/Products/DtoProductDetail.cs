@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Domus.Domain.Dtos;
+namespace Domus.Domain.Dtos.Products;
 
 public class DtoProductDetail
 {

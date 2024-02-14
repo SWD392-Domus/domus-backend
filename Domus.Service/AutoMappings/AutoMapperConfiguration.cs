@@ -1,5 +1,6 @@
 using AutoMapper;
 using Domus.Domain.Dtos;
+using Domus.Domain.Dtos.Articles;
 using Domus.Domain.Dtos.Products;
 using Domus.Domain.Dtos.Quotations;
 using Domus.Domain.Entities;
