@@ -1,5 +1,8 @@
 using AutoMapper;
 using Domus.Domain.Dtos;
+using Domus.Domain.Dtos.Articles;
+using Domus.Domain.Dtos.Products;
+using Domus.Domain.Dtos.Quotations;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Authentication;
@@ -53,6 +56,8 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<CreateProductRequest, Product>();
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
+		mapper.CreateMap<ProductDetailQuotation, DtoProductDetailQuotation>()
+			.ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName));
 		mapper.CreateMap<ProductDetail, DtoProductDetail>()
 			.ForMember(dest => dest.DisplayPrice, opt => opt.MapFrom(src => Math.Round(src.DisplayPrice, 2)))
 			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })));
@@ -74,6 +79,8 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Quotation, DtoQuotation>()
 			.ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.UserName))
 			.ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.UserName));
+		mapper.CreateMap<Quotation, DtoQuotationFullDetails>();
+		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLog>();
 		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLogWithoutMessages>();
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
 			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));

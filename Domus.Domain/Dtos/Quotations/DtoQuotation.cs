@@ -1,4 +1,4 @@
-namespace Domus.Domain.Dtos;
+namespace Domus.Domain.Dtos.Quotations;
 
 public class DtoQuotation
 {
