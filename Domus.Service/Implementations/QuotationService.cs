@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
+using Domus.Domain.Dtos.Quotations;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
 using Domus.Service.Exceptions;
@@ -179,7 +180,7 @@ public class QuotationService : IQuotationService
     {
 		var quotation = (await _quotationRepository.GetAllAsync())
 			.Where(q => q.Id == id)
-			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider)
+			.ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
 			.FirstOrDefault() ?? throw new QuotationNotFoundException();
 
 		return new ServiceActionResult(true) { Data = quotation };

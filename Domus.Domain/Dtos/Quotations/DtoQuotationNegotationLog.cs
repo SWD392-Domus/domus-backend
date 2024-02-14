@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Domus.Domain.Dtos.Quotations;
 
 public class DtoQuotationNegotiationLog
@@ -8,5 +10,6 @@ public class DtoQuotationNegotiationLog
 
     public DateTime? CloseAt { get; set; }
 
+	[JsonPropertyName("messages")]
 	public ICollection<DtoNegotiationMessage> NegotiationMessages { get; set; } = null!;
 }

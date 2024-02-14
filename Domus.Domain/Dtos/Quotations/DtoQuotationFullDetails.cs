@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Domus.Domain.Dtos.Products;
+
 namespace Domus.Domain.Dtos.Quotations;
 
 public class DtoQuotationFullDetails
@@ -12,7 +15,9 @@ public class DtoQuotationFullDetails
 
     public DateTime? ExpireAt { get; set; }
 
-	public ICollection<DtoProductDetailQuotation> Products { get; set; } = null!;
+	[JsonPropertyName("products")]
+	public ICollection<DtoProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotation>();
 
+	[JsonPropertyName("negotiationLog")]
 	public DtoQuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
 }
