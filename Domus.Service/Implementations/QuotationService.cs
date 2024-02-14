@@ -177,11 +177,12 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetQuotationById(Guid id)
     {
-		var quotation = await _quotationRepository.GetAsync(q => q.Id == id);
-		if (quotation == null)
-			throw new QuotationNotFoundException();
+		var quotation = (await _quotationRepository.GetAllAsync())
+			.Where(q => q.Id == id)
+			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider)
+			.FirstOrDefault() ?? throw new QuotationNotFoundException();
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoQuotation>(quotation) };
+		return new ServiceActionResult(true) { Data = quotation };
     }
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
