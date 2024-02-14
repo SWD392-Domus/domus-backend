@@ -152,9 +152,10 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetAllQuotations()
     {
-		var quotations = await _quotationRepository.GetAllAsync();
+		var quotations = (await _quotationRepository.GetAllAsync())
+			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoQuotation>>(quotations) };
+		return new ServiceActionResult(true) { Data = quotations };
     }
 
     public async Task<ServiceActionResult> GetPaginatedNegotiationMessages(BasePaginatedRequest request, Guid quotationId)

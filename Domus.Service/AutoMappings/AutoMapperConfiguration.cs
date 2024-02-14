@@ -69,7 +69,10 @@ public static class AutoMapperConfiguration
 	{
 		mapper.CreateMap<CreateQuotationRequest, Quotation>()
 			.ForMember(dest => dest.Services, opt => opt.Ignore());
-		mapper.CreateMap<Quotation, DtoQuotation>();
+		mapper.CreateMap<Quotation, DtoQuotation>()
+			.ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.UserName))
+			.ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.UserName));
+		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLogWithoutMessages>();
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
 			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
