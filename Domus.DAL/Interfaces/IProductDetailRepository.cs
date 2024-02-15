@@ -5,4 +5,5 @@ namespace Domus.DAL.Interfaces;
 
 public interface IProductDetailRepository : IGenericRepository<ProductDetail>, IAutoRegisterable
 {
+    Task SetModified(ProductDetail productDetail);
 }

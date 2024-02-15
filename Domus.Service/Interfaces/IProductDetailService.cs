@@ -1,4 +1,8 @@
+
+using Domus.Domain.Entities;
+
 using Domus.Common.Interfaces;
+
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
@@ -13,4 +17,6 @@ public interface IProductDetailService : IAutoRegisterable
     Task<ServiceActionResult> GetPaginatedProductDetails(BasePaginatedRequest request);
     Task<ServiceActionResult> GetProductDetailById(Guid id);
     Task<ServiceActionResult> UpdateProductDetail(UpdateProductDetailRequest request, Guid id);
+    Task<bool> IsAllProductDetailsExist(IEnumerable<Guid> requestProductDetailIds);
+    Task<IQueryable<ProductDetail>> GetProductDetails(List<Guid> productDetailsIds);
 }

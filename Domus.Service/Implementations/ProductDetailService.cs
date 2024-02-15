@@ -1,3 +1,4 @@
+using System.Collections;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
@@ -10,7 +11,6 @@ using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
 using Microsoft.EntityFrameworkCore;
-
 namespace Domus.Service.Implementations;
 
 public class ProductDetailService : IProductDetailService
@@ -138,5 +138,39 @@ public class ProductDetailService : IProductDetailService
 			throw new ProductDetailNotFoundException();
 
         throw new NotImplementedException();
+    }
+
+    public async Task<bool> IsAllProductDetailsExist(IEnumerable<Guid> requestProductDetailIds)
+    {
+	    foreach (var requestProductDetailId in requestProductDetailIds)
+	    {
+		    var productDetail =
+			    await _productDetailRepository.GetAsync(x => x.Id == requestProductDetailId && x.IsDeleted == false) ??
+			    throw new ProductDetailNotFoundException();
+	    }
+
+	    return true;
+    }
+
+    public async Task<IQueryable<ProductDetail>> GetProductDetails(List<Guid> productDetailsIds)
+    {
+	    // var tasks = productDetailsIds.Select(async productDetailsId =>
+	    // {
+		   //  var productDetail = await _productDetailRepository
+			  //                       .GetAsync(x => x.Id == productDetailsId && x.IsDeleted == false) 
+		   //                      ?? throw new ProductDetailNotFoundException();
+		   //  return productDetail;
+	    // });
+	    // var productDetails = await Task.WhenAll(tasks);
+	    // return productDetails.AsQueryable();
+	    var productDetailList = new List<ProductDetail>();
+	    foreach (var productDetailsId in productDetailsIds)
+	    {
+		    var productDetail = await _productDetailRepository
+			                        .GetAsync((x => x.Id == productDetailsId && x.IsDeleted == false))
+		                        ?? throw new ProductDetailNotFoundException();
+		    productDetailList.Add(productDetail);
+	    }
+	    return productDetailList.AsQueryable();
     }
 }

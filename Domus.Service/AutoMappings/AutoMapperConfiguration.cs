@@ -6,6 +6,7 @@ using Domus.Domain.Dtos.Quotations;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Authentication;
+using Domus.Service.Models.Requests.OfferedPackages;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
@@ -27,6 +28,8 @@ public static class AutoMapperConfiguration
 		CreateServiceMaps(mapper);
 
 		CreateQuotationMaps(mapper);
+
+		CreatePackageMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -85,5 +88,12 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
 			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
+	}
+
+	private static void CreatePackageMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<PackageRequest,Package>();
+		mapper.CreateMap<Package,DtoPackage>();
+		mapper.CreateMap<PackageImage,DtoPackageImage>();
 	}
 }

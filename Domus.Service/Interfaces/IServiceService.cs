@@ -13,4 +13,7 @@ public interface IServiceService : IAutoRegisterable
     Task<ServiceActionResult> UpdateService(UpdateServiceRequest request, Guid serviceId);
     Task<ServiceActionResult> DeleteService(Guid serviceId);
     Task<ServiceActionResult> GetService(Guid serviceId);
+    Task<bool> IsAllServicesExist(IEnumerable<Guid> serviceIds);
+    Task<IQueryable<Domain.Entities.Service>> GetServices(IEnumerable<Guid> serviceId);
 }
+
