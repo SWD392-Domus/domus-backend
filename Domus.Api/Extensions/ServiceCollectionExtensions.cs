@@ -156,6 +156,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPackageService, PackageService>();
         
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
+       
         var mapper = config.CreateMapper();
         services.AddSingleton(mapper);
         

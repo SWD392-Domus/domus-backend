@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Domus.Service.Models.Requests.OfferedPackages;
 
-public class CreatePackageRequest
+public class PackageRequest
 {
     [Required]
     public List<Guid> ServiceIds { get; set; }

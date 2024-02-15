@@ -10,7 +10,7 @@ public interface IPackageService
     Task<ServiceActionResult> GetAllPackages();
     Task<ServiceActionResult> GetPaginatedPackages(BasePaginatedRequest request);
     Task<ServiceActionResult> GetPackage(Guid packageId);
-    Task<ServiceActionResult> CreatePackage(CreatePackageRequest request);
-    Task<ServiceActionResult> UpdatePackage(CreatePackageRequest request);
+    Task<ServiceActionResult> CreatePackage(PackageRequest request);
+    Task<ServiceActionResult> UpdatePackage(PackageRequest request, Guid packageId);
     Task<ServiceActionResult> DeletePackage(Guid packageId);
 }

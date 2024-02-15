@@ -80,6 +80,8 @@ public static class AutoMapperConfiguration
 
 	private static void CreatePackageMaps(IMapperConfigurationExpression mapper)
 	{
-		mapper.CreateMap<CreatePackageRequest,Package>();
+		mapper.CreateMap<PackageRequest,Package>();
+		mapper.CreateMap<Package,DtoPackage>();
+		mapper.CreateMap<PackageImage,DtoPackageImage>();
 	}
 }
