@@ -3,7 +3,7 @@ using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Authentication;
-using Domus.Service.Models.Requests.Packages;
+using Domus.Service.Models.Requests.OfferedPackages;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
@@ -81,6 +81,5 @@ public static class AutoMapperConfiguration
 	private static void CreatePackageMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<CreatePackageRequest,Package>();
-		mapper.CreateMap<UpdateServiceRequest,Package>();
 	}
 }

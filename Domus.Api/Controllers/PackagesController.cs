@@ -1,6 +1,6 @@
 ﻿using Domus.Api.Controllers.Base;
 using Domus.Service.Interfaces;
-using Domus.Service.Models.Requests.Packages;
+using Domus.Service.Models.Requests.OfferedPackages;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;

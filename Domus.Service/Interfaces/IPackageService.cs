@@ -1,7 +1,7 @@
 ﻿using Domus.Domain.Entities;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
-using Domus.Service.Models.Requests.Packages;
+using Domus.Service.Models.Requests.OfferedPackages;
 
 namespace Domus.Service.Interfaces;
 

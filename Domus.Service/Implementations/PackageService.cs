@@ -6,7 +6,7 @@ using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
-using Domus.Service.Models.Requests.Packages;
+using Domus.Service.Models.Requests.OfferedPackages;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Service.Implementations;
