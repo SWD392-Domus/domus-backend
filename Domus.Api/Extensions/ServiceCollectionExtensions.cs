@@ -4,6 +4,7 @@ using Domus.Api.Exceptions;
 using Domus.Api.Settings;
 using Domus.Common.Constants;
 using Domus.Common.Exceptions;
+using Domus.Common.Interfaces;
 using Domus.Common.Settings;
 using Domus.DAL.Data;
 using Domus.DAL.Implementations;
@@ -116,6 +117,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IAppDbContext, DomusContext>();
         services.AddScoped<DomusContext>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // repository register
@@ -155,6 +157,26 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
         services.AddScoped<IPackageService, PackageService>();
         
+
+		services.AddIdentity<DomusUser, IdentityRole>()
+			.AddEntityFrameworkStores<DomusContext>()
+			.AddDefaultTokenProviders();
+
+		var registerableTypes = AppDomain.CurrentDomain.GetAssemblies()
+			.SelectMany(assembly => assembly.GetTypes())
+			.Where(type => typeof(IAutoRegisterable).IsAssignableFrom(type) && type.IsInterface)
+			.ToList();
+
+		foreach (var type in registerableTypes)
+		{
+			var implementationType = AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany(assembly => assembly.GetTypes())
+				.FirstOrDefault(t => type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+			if (implementationType != null)
+				services.AddScoped(type, implementationType);
+		}
+   
+
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
        
         var mapper = config.CreateMapper();

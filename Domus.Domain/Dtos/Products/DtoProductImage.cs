@@ -1,9 +1,7 @@
-namespace Domus.Domain.Dtos;
+namespace Domus.Domain.Dtos.Products;
 
 public class DtoProductImage
 {
-	public Guid Id { get; set; }
-
     public string ImageUrl { get; set; } = null!;
 
     public int? Width { get; set; }

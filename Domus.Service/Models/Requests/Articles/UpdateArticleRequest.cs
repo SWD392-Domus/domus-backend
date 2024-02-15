@@ -1,4 +1,4 @@
-using Domus.Domain.Dtos;
+using Domus.Domain.Dtos.Articles;
 
 namespace Domus.Service.Models.Requests.Articles;
 

@@ -1,10 +1,11 @@
+using Domus.Common.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Products;
 
 namespace Domus.Service.Interfaces;
 
-public interface IProductService
+public interface IProductService : IAutoRegisterable
 {
     Task<ServiceActionResult> CreateProduct(CreateProductRequest request);
     Task<ServiceActionResult> DeleteProduct(Guid id);

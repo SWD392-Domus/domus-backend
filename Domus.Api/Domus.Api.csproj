@@ -53,6 +53,10 @@
     <EmbeddedResource Include="Scripts\15.Add_PackageImage.sql" />
     <None Remove="Scripts\16.Add_DefaultValue_Package_IsDeleted.sql" />
     <EmbeddedResource Include="Scripts\16.Add_DefaultValue_Package_IsDeleted.sql" />
+    <None Remove="Scripts\17.Add_DomusUser_IsDeleted.sql" />
+    <EmbeddedResource Include="Scripts\17.Add_DomusUser_IsDeleted.sql" />
+    <None Remove="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
+    <EmbeddedResource Include="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
   </ItemGroup>
 
 </Project>
