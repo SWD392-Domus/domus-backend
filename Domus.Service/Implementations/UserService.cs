@@ -12,6 +12,7 @@ using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
@@ -22,20 +23,21 @@ public class UserService : IUserService
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly UserManager<DomusUser> _userManager;
 	private readonly RoleManager<IdentityRole> _roleManager;
+	private readonly IJwtService _jwtService;
 
 	public UserService(
 		IUserRepository userRepository,
 		IMapper mapper,
 		IUnitOfWork unitOfWork,
 		UserManager<DomusUser> userManager,
-		RoleManager<IdentityRole> roleManager
-	)
+		RoleManager<IdentityRole> roleManager, IJwtService jwtService)
 	{
 		_userRepository = userRepository;
 		_mapper = mapper;
 		_unitOfWork = unitOfWork;
 		_userManager = userManager;
 		_roleManager = roleManager;
+		_jwtService = jwtService;
 	}
 
     public async Task<ServiceActionResult> CreateUser(CreateUserRequest request)
@@ -55,7 +57,7 @@ public class UserService : IUserService
 	    if (result.Succeeded)
 	    {
 		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email);
-		    return new ServiceActionResult(true) { Detail = "User created succeessfully" };
+		    return new ServiceActionResult(true) { Detail = "User created successfully" };
 	    }
 
 	    var error = result.Errors.First();
@@ -70,6 +72,19 @@ public class UserService : IUserService
 		await _userRepository.UpdateAsync(user);
 		await _unitOfWork.CommitAsync();
 		return new ServiceActionResult(true) { Detail = "User deleted successfully" };
+    }
+
+    public async Task<ServiceActionResult> GetSelfProfile(string token)
+    {
+	    if (!_jwtService.IsValidToken(token))
+		    throw new InvalidTokenException();
+
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userManager.Users.Where(u => u.Id == userId)
+		    .ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider)
+		    .FirstOrDefaultAsync() ?? throw new UserNotFoundException();
+
+	    return new ServiceActionResult(true) { Data = user };
     }
 
     public async Task<ServiceActionResult> GetAllUsers()
