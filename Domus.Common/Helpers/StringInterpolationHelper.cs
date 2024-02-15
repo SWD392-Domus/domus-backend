@@ -51,4 +51,13 @@ public static class StringInterpolationHelper
     {
         return content.Replace(" ", "");
     }
+
+    public static string GenerateUniqueFileName(string fileName,int guidLength)
+    {
+        if (guidLength <= 0) throw new Exception("Invalid Length");
+        var originalName = fileName.Split(".")[0];
+        var extenstionName = fileName.Split(".")[1];
+        var uniqueFileName = originalName + new Guid().ToString("N").Substring(0, guidLength) + "." + extenstionName;
+        return uniqueFileName.TrimSpaceString();
+    }
 }

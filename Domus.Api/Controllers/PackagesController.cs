@@ -28,12 +28,12 @@ public class PackagesController : BaseApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePackage(CreatePackageRequest request)
+    [Consumes("multipart/form-data")]
+
+    public async Task<IActionResult> CreatePackage([FromForm]CreatePackageRequest request)
     {
         return await ExecuteServiceLogic(async() => await _packageService.CreatePackage(request).ConfigureAwait(false))
             .ConfigureAwait(false);
     }
-
-    
 }
 

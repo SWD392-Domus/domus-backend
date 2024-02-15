@@ -95,17 +95,25 @@ public class ServiceService : IServiceService
         return true;
     }
     
+    // var packageImages = urls.Select(url => new PackageImage() { ImageUrl = url }).ToList();
+
+    // var tasks = serviceIds.Select(async serviceId =>
+    // {
+    //     var service = await _serviceRepository
+    //                       .GetAsync(x => x.Id == serviceId && x.IsDeleted == false)
+    //                   ?? throw new ServiceNotFoundException();
+    //     return service;
+    // });
+    // var services = await Task.WhenAll(tasks);
+    // return services.AsQueryable();
+    // foreach (var serviceId in serviceIds)
+    // {
+    //     var service = await _serviceRepository.GetAsync(x => x.Id == serviceId && x.IsDeleted == false) ??
+    //                   throw new ServiceNotFoundException();
+    //     serviceList.Add(service);
+    // }
     public async Task<IQueryable<Domain.Entities.Service>> GetServices(IEnumerable<Guid> serviceIds)
     {
-        // var tasks = serviceIds.Select(async serviceId =>
-        // {
-        //     var service = await _serviceRepository
-        //                       .GetAsync(x => x.Id == serviceId && x.IsDeleted == false)
-        //                   ?? throw new ServiceNotFoundException();
-        //     return service;
-        // });
-        // var services = await Task.WhenAll(tasks);
-        // return services.AsQueryable();
         var serviceList = new List<Domain.Entities.Service>();
         foreach (var serviceId in serviceIds)
         {
@@ -113,8 +121,6 @@ public class ServiceService : IServiceService
                           throw new ServiceNotFoundException();
             serviceList.Add(service);
         }
-
         return serviceList.AsQueryable();
     }
-
 }

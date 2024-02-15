@@ -7,6 +7,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Packages;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Service.Implementations;
 
@@ -17,19 +18,18 @@ public class PackageService : IPackageService
     private readonly IProductDetailService _productDetailService;
     private readonly IServiceService _serviceService;
     private readonly IMapper _mapper;
-    private readonly IPackageImageRepository _packageImageRepository;
-    private readonly IProductDetailRepository _productDetailRepository;
+    private readonly IFileService _fileService;
+   
 
-    public PackageService(IPackageRepository packageRepository, IPackageImageRepository packageImageRepository, IUnitOfWork unitOfWork,
-        IProductDetailService productDetailService, IServiceService serviceService, IMapper mapper, IProductDetailRepository productDetailRepository)
+    public PackageService(IPackageRepository packageRepository, IUnitOfWork unitOfWork,
+        IProductDetailService productDetailService, IServiceService serviceService, IMapper mapper, IFileService fileService)
     {
         _packageRepository = packageRepository;
-        _packageImageRepository = packageImageRepository;
         _unitOfWork = unitOfWork;
         _productDetailService = productDetailService;
         _serviceService = serviceService;
         _mapper = mapper;
-        _productDetailRepository = productDetailRepository;
+        _fileService = fileService;
     }
     
     public async Task<ServiceActionResult> GetAllPackages()
@@ -69,18 +69,18 @@ public class PackageService : IPackageService
             var serviceList = await _serviceService.GetServices(createPackageRequest.ServiceIds);
             var productDetailList = await _productDetailService.GetProductDetails(createPackageRequest.ProductDetailIds);
             var package = _mapper.Map<Package>(createPackageRequest);
-
             package.Services = serviceList.ToList();
-            
             await _packageRepository.AddAsync(package);
             await _unitOfWork.CommitAsync();
-
-
+            if (createPackageRequest.Images?.Count > 0)
+            {
+                var urls = await _fileService.GetUrlAfterUploadedFile(createPackageRequest.Images);
+                var packageImages = urls.Select(url => new PackageImage() { ImageUrl = url }).ToList();
+                package.PackageImages = packageImages;
+            }
             package.ProductDetails = productDetailList.ToList();
             await _packageRepository.UpdateAsync(package);
             await _unitOfWork.CommitAsync();
-            
-            
             return new ServiceActionResult(true);
     }
 
