@@ -2,7 +2,7 @@ namespace Domus.Domain.Dtos.Quotations;
 
 public class DtoQuotation
 {
-	public string Id { get; set; } = null!;
+	public Guid Id { get; set; }
 
     public string CustomerId { get; set; } = null!;
 
@@ -13,6 +13,8 @@ public class DtoQuotation
 	public string StaffName { get; set; } = null!;
 
     public string Status { get; set; } = null!;
+
+	public float TotalPrice { get; set; }
 
     public DateTime? ExpireAt { get; set; }
 

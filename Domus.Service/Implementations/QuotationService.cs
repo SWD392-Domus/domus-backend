@@ -1,8 +1,8 @@
+using System.Diagnostics;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
-using Domus.Domain.Dtos;
 using Domus.Domain.Dtos.Quotations;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
@@ -153,8 +153,16 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetAllQuotations()
     {
-		var quotations = (await _quotationRepository.GetAllAsync())
-			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
+		var quotations = await (await _quotationRepository.GetAllAsync())
+			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider)
+			.ToListAsync();
+
+		foreach (var quotation in quotations)
+		{
+			var products = await (await _productDetailQuotationRepository.GetAllAsync()).Where(pdq => pdq.QuotationId == quotation.Id).ToListAsync();
+
+			quotation.TotalPrice = (float)products.Sum(pdq => pdq.Price * pdq.Quantity);
+		}
 
 		return new ServiceActionResult(true) { Data = quotations };
     }
@@ -172,6 +180,17 @@ public class QuotationService : IQuotationService
     {
 		var queryableQuotations = (await _quotationRepository.GetAllAsync()).ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableQuotations, request.PageSize, request.PageIndex);
+		var quotationList = new List<DtoQuotation>();
+		
+		foreach (var quotation in await ((IQueryable<DtoQuotation>)paginatedResult.Items!).ToListAsync())
+		{
+			var products = await (await _productDetailQuotationRepository.GetAllAsync()).Where(pdq => pdq.QuotationId == quotation.Id).ToListAsync();
+			
+			quotation.TotalPrice = (float)products.Sum(pdq => pdq.Price * pdq.Quantity);
+			quotationList.Add(quotation);
+		}
+
+		paginatedResult.Items = quotationList;
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
