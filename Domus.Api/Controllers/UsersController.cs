@@ -67,7 +67,7 @@ public class UsersController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[Authorize]
+	[AllowAnonymous]
 	[HttpGet("self-profile/{token}")]
 	public async Task<IActionResult> GetUserSelfProfile(string token)
 	{
