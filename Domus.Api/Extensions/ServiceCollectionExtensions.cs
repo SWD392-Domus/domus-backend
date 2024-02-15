@@ -151,16 +151,11 @@ public static class ServiceCollectionExtensions
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
-        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IVnpayService, VnpayService>();
         services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
         services.AddScoped<IPackageService, PackageService>();
-        
-
-		services.AddIdentity<DomusUser, IdentityRole>()
-			.AddEntityFrameworkStores<DomusContext>()
-			.AddDefaultTokenProviders();
+		
 
 		var registerableTypes = AppDomain.CurrentDomain.GetAssemblies()
 			.SelectMany(assembly => assembly.GetTypes())
