@@ -1,4 +1,5 @@
-﻿using Domus.Domain.Entities;
+﻿using Domus.Domain.Dtos.Products;
+using Domus.Domain.Entities;
 
 namespace Domus.Domain.Dtos;
 
