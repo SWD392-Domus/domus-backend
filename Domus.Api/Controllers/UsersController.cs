@@ -66,4 +66,13 @@ public class UsersController : BaseApiController
 			async () => await _userService.DeleteUser(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+
+	[Authorize]
+	[HttpGet("self-profile/{token}")]
+	public async Task<IActionResult> GetUserSelfProfile(string token)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _userService.GetSelfProfile(token).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }
