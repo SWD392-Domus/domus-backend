@@ -45,7 +45,8 @@ public class PackagesController : BaseApiController
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdatePackage(PackageRequest request, Guid id)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UpdatePackage([FromForm]PackageRequest request, Guid id)
     {
         return await ExecuteServiceLogic(async () =>
             await _packageService.UpdatePackage(request, id).ConfigureAwait(false)).ConfigureAwait(false);

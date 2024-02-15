@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Diagnostics.CodeAnalysis;
+using AutoMapper;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
@@ -77,6 +78,7 @@ public class PackageService : IPackageService
         };
     }
 
+    [SuppressMessage("ReSharper.DPA", "DPA0009: High execution time of DB command", MessageId = "time: 627ms")]
     public async Task<ServiceActionResult> GetPackage(Guid packageId)
     {
         return new ServiceActionResult()
@@ -97,10 +99,8 @@ public class PackageService : IPackageService
 
     public async Task<ServiceActionResult> CreatePackage(PackageRequest packageRequest)
     {
-            var serviceList = await _serviceService.GetServices(packageRequest.ServiceIds);
-            var productDetailList = await _productDetailService.GetProductDetails(packageRequest.ProductDetailIds);
             var package = _mapper.Map<Package>(packageRequest);
-            package.Services = serviceList.ToList();
+            package.Services =  (await _serviceService.GetServices(packageRequest.ServiceIds)).ToList();
             await _packageRepository.AddAsync(package);
             await _unitOfWork.CommitAsync();
             if (packageRequest.Images?.Count > 0)
@@ -109,7 +109,7 @@ public class PackageService : IPackageService
                 var packageImages = urls.Select(url => new PackageImage() { ImageUrl = url }).ToList();
                 package.PackageImages = packageImages;
             }
-            package.ProductDetails = productDetailList.ToList();
+            package.ProductDetails = (await _productDetailService.GetProductDetails(packageRequest.ProductDetailIds)).ToList();
             await _packageRepository.UpdateAsync(package);
             await _unitOfWork.CommitAsync();
             return new ServiceActionResult(true);
@@ -121,7 +121,17 @@ public class PackageService : IPackageService
     {
         var package = await _packageRepository.GetAsync(pk => pk.Id == packageId && pk.IsDeleted == false) ??
                       throw new PackageNotFoundException();
-        _mapper.Map(request, package);
+        package.Name = request.Name ?? package.Name;
+        package.Discount = request.Discount ?? package.Discount;
+        package.Services = (request.ServiceIds.Count > 0) ? (await _serviceService.GetServices(request.ServiceIds)).ToList() : package.Services ;
+        package.ProductDetails = (request.ProductDetailIds.Count > 0) ? 
+            (await _productDetailService.GetProductDetails(request.ProductDetailIds)).ToList() : package.ProductDetails;
+        if (request.Images?.Count > 0)
+        {
+            var urls = await _fileService.GetUrlAfterUploadedFile(request.Images);
+            var packageImages = urls.Select(url => new PackageImage() { ImageUrl = url }).ToList();
+            package.PackageImages = packageImages;
+        }
         await _packageRepository.UpdateAsync(package);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
