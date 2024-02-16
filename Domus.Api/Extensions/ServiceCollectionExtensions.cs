@@ -118,45 +118,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAppDbContext, DomusContext>();
         services.AddScoped<DomusContext>();
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
-        // repository register
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IServiceRepository, ServiceRepository>();
-        services.AddScoped<IUserTokenRepository, UserTokenRepository>();
-        services.AddScoped<IArticleRepository, ArticleRepository>();
-        services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
-        services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
-        services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
-        services.AddScoped<IProductPriceRepository, ProductPriceRepository>();
-        services.AddScoped<IProductAttributeRepository, ProductAttributeRepository>();
-        services.AddScoped<IProductAttributeValueRepository, ProductAttributeValueRepository>();
-        services.AddScoped<IQuotationRepository, QuotationRepository>();
-        services.AddScoped<IProductDetailQuotationRepository, ProductDetailQuotationRepository>();
-        services.AddScoped<IQuotationNegotiationLogRepository, QuotationNegotiationLogRepository>();
-        services.AddScoped<INegotiationMessageRepository, NegotiationMessageRepository>();
-        services.AddScoped<IPackageRepository, PackageRepository>();
-        services.AddScoped<IPackageImageRepository, PackageImageRepository>();
-
-        // service register
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IArticleService, ArticleService>();
-        services.AddScoped<IServiceService, ServiceService>();
-        services.AddScoped<IJwtService, JwtService>();
-		services.AddScoped<IEmailService, EmailService>();
-		services.AddScoped<IProductService, ProductService>();
-		services.AddScoped<IProductDetailService, ProductDetailService>();
-		services.AddScoped<IQuotationService, QuotationService>();
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
-        services.AddScoped<IFileService, FileService>();
-        services.AddScoped<IVnpayService, VnpayService>();
-        services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
-        services.AddScoped<IPackageService, PackageService>();
-		
-
+        
 		var registerableTypes = AppDomain.CurrentDomain.GetAssemblies()
 			.SelectMany(assembly => assembly.GetTypes())
 			.Where(type => typeof(IAutoRegisterable).IsAssignableFrom(type) && type.IsInterface)
@@ -171,9 +136,7 @@ public static class ServiceCollectionExtensions
 				services.AddScoped(type, implementationType);
 		}
    
-
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
-       
         var mapper = config.CreateMapper();
         services.AddSingleton(mapper);
         
