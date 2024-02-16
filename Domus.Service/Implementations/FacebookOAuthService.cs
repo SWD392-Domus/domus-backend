@@ -1,9 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
 using Domus.Common.Constants;
-using Domus.Common.Exceptions;
-using Domus.Common.Extensions;
 using Domus.Common.Helpers;
-using Domus.Common.Settings;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
@@ -13,7 +9,6 @@ using Domus.Service.Models.Email;
 using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Responses;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace Domus.Service.Implementations;
