@@ -10,11 +10,13 @@ public class AuthController : BaseApiController
 {
 	private readonly IAuthService _authService;
 	private readonly IGoogleOAuthService _googleOAuthService;
+	private readonly IFacebookOAuthService _facebookOAuthService;
 
-    public AuthController(IAuthService authService, IGoogleOAuthService googleOAuthService)
+    public AuthController(IAuthService authService, IGoogleOAuthService googleOAuthService, IFacebookOAuthService facebookOAuthService)
     {
         _authService = authService;
 		_googleOAuthService = googleOAuthService;
+		_facebookOAuthService = facebookOAuthService;
     }
 
     [HttpPost("register")]
@@ -46,6 +48,14 @@ public class AuthController : BaseApiController
 	{
 		return await ExecuteServiceLogic(
 			async () => await _googleOAuthService.LoginAsync(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpPost("facebook-oauth")]
+	public async Task<IActionResult> FacebookLogin(FacebookLoginRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _facebookOAuthService.LoginAsync(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }
