@@ -66,6 +66,7 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })));
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
 		mapper.CreateMap<ProductImage, DtoProductImage>();
+		mapper.CreateMap<ProductPrice, DtoProductPrice>();
 	}
 
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
