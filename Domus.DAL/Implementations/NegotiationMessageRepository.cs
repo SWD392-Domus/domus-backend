@@ -6,7 +6,7 @@ namespace Domus.DAL.Implementations;
 
 public class NegotiationMessageRepository : GenericRepository<NegotiationMessage>, INegotiationMessageRepository
 {
-	public NegotiationMessageRepository(DomusContext dbContext) : base(dbContext)
+	public NegotiationMessageRepository(IAppDbContext dbContext) : base(dbContext)
 	{
 	}
 }
