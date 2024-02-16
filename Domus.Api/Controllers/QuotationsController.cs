@@ -67,7 +67,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpPost("{id:guid}/negotations/messages")]
+	[HttpPost("{id:guid}/negotiations/messages")]
 	public async Task<IActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
 	{
 		return await ExecuteServiceLogic(
@@ -75,7 +75,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpGet("{id:guid}/negotations/messages")]
+	[HttpGet("{id:guid}/negotiations/messages")]
 	public async Task<IActionResult> GetPaginatedNegotiationMessages([FromQuery] BasePaginatedRequest request, Guid id)
 	{
 		return await ExecuteServiceLogic(
@@ -83,7 +83,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpGet("{id:guid}/negotations/messages/all")]
+	[HttpGet("{id:guid}/negotiations/messages/all")]
 	public async Task<IActionResult> GetAllNegotiationMessages(Guid id)
 	{
 		return await ExecuteServiceLogic(
