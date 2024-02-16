@@ -2,7 +2,16 @@
 
 public class MissingGoogleSettingsException : ArgumentNullException
 {
-    public MissingGoogleSettingsException() : base("Missing google settings")
+    private readonly string? _customMessage;
+    public override string Message => _customMessage ?? Message;
+
+    public MissingGoogleSettingsException(string customMessage)
     {
+        _customMessage = customMessage;
+    }
+    
+    public MissingGoogleSettingsException()
+    {
+        _customMessage = "Missing google settings";
     }
 }
