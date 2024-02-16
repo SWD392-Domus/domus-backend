@@ -60,7 +60,7 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> GetAllProducts()
     {
-		var products = await (await _productRepository.GetAllAsync()).ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider)
+		var products = await (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
 			.ToListAsync();
 		
 		return new ServiceActionResult(true) { Data = products };
@@ -68,7 +68,7 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request)
     {
-		var queryableProducts = (await _productRepository.GetAllAsync()).ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider);
+		var queryableProducts = (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableProducts, request.PageSize, request.PageIndex);
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
