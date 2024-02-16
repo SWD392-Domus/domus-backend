@@ -75,4 +75,13 @@ public class UsersController : BaseApiController
 			async () => await _userService.GetSelfProfile(token).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+
+	[AllowAnonymous]
+	[HttpPut("self-profile/{token}")]
+	public async Task<IActionResult> UpdateSelfProfile(UpdateSelfProfileRequest request, string token)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _userService.UpdateSelfProfile(request, token).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }

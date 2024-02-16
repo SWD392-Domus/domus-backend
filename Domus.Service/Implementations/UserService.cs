@@ -140,4 +140,29 @@ public class UserService : IUserService
 		    await _roleManager.CreateAsync(new IdentityRole(role));
 	    }
     }
+
+    public async Task<ServiceActionResult> UpdateSelfProfile(UpdateSelfProfileRequest request, string token)
+    {
+	    if (!_jwtService.IsValidToken(token))
+		    throw new InvalidTokenException();
+
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userManager.Users.Where(u => u.Id == userId)
+		    .FirstOrDefaultAsync() ?? throw new UserNotFoundException();
+
+		if (!string.IsNullOrEmpty(request.Email) && await _userRepository.ExistsAsync(u => u.Email == request.Email && u.Id != userId))
+			throw new UserAlreadyExistsException("The email is already in use");
+		if (!string.IsNullOrEmpty(request.UserName) && await _userRepository.ExistsAsync(u => u.UserName == request.UserName && u.Id != userId))
+			throw new UserAlreadyExistsException("The username is already in use");
+
+		user.Email = string.IsNullOrEmpty(request.Email) ? user.Email : request.Email;
+		user.UserName = string.IsNullOrEmpty(request.UserName) ? user.UserName : request.UserName;
+		user.PhoneNumber = string.IsNullOrEmpty(request.PhoneNumber) ? user.PhoneNumber : request.PhoneNumber;
+		user.ProfileImage = string.IsNullOrEmpty(request.ProfileImage) ? user.ProfileImage : request.ProfileImage;
+
+		await _userManager.UpdateAsync(user);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true) { Detail = "User profile updated successfully" };
+    }
 }
