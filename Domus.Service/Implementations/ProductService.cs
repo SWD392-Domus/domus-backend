@@ -47,7 +47,7 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> DeleteProduct(Guid id)
     {
-		var product = await _productRepository.GetAsync(p => p.Id == id);
+		var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
 		if (product is null)
 			throw new ProductNotFoundException();
 
@@ -60,7 +60,9 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> GetAllProducts()
     {
-		var products = await (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
+		var products = await (await _productRepository.GetAllAsync())
+			.Where(p => !p.IsDeleted)
+			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
 			.ToListAsync();
 		
 		return new ServiceActionResult(true) { Data = products };
@@ -68,7 +70,9 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request)
     {
-		var queryableProducts = (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
+		var queryableProducts = (await _productRepository.GetAllAsync())
+			.Where(p => !p.IsDeleted)
+			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableProducts, request.PageSize, request.PageIndex);
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
@@ -77,8 +81,8 @@ public class ProductService : IProductService
     public async Task<ServiceActionResult> GetProduct(Guid id)
     {
 		var product = await (await _productRepository.GetAllAsync())
+			.Where(p => !p.IsDeleted && p.Id == id)
 			.ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider)
-			.Where(p => p.Id == id)
 			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
 
 		return new ServiceActionResult(true) { Data = product };
@@ -86,7 +90,7 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id)
     {
-		var product = await _productRepository.GetAsync(p => p.Id == id);
+		var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
 		if (product is null)
 			throw new ProductNotFoundException();
 		if (!await _productCategoryRepository.ExistsAsync(c => c.Id == request.ProductCategoryId))
