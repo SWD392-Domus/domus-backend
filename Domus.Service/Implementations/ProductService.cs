@@ -115,4 +115,12 @@ public class ProductService : IProductService
 		
 		return new ServiceActionResult(true);
     }
+
+    public async Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)
+    {
+	    await _productRepository.DeleteManyAsync(p => !p.IsDeleted && ids.Contains(p.Id));
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true) { Detail = "Products deleted successfully"};
+    }
 }

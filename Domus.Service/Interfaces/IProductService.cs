@@ -13,4 +13,5 @@ public interface IProductService : IAutoRegisterable
     Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request);
     Task<ServiceActionResult> GetProduct(Guid id);
     Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id);
+    Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids);
 }
