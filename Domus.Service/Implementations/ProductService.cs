@@ -64,6 +64,11 @@ public class ProductService : IProductService
 			.Where(p => !p.IsDeleted)
 			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
 			.ToListAsync();
+
+		foreach (var product in products)
+		{
+			product.TotalQuantity = (int)product.ProductDetails.Sum(d => d.ProductPrices.Sum(p => p.Quantity));
+		}
 		
 		return new ServiceActionResult(true) { Data = products };
     }
@@ -74,6 +79,14 @@ public class ProductService : IProductService
 			.Where(p => !p.IsDeleted)
 			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableProducts, request.PageSize, request.PageIndex);
+		var products = await ((IQueryable<DtoProduct>)paginatedResult.Items!).ToListAsync();
+
+		foreach (var product in products)
+		{
+			product.TotalQuantity = (int)product.ProductDetails.Sum(d => d.ProductPrices.Sum(p => p.Quantity));
+		}
+
+		paginatedResult.Items = products;
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
