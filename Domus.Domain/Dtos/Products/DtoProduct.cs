@@ -12,6 +12,8 @@ public class DtoProduct
 
     public string? Description { get; set; }
 
+	public int TotalQuantity { get; set; }
+
 	[JsonPropertyName("category")]
     public DtoProductCategory ProductCategory { get; set; } = null!;
 

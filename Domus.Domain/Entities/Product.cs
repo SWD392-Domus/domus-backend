@@ -2,7 +2,7 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class Product : BaseEntity<Guid>
+public partial class Product : DeletableEntity<Guid>
 {
     public Guid ProductCategoryId { get; set; }
 
@@ -11,8 +11,6 @@ public partial class Product : BaseEntity<Guid>
     public string? Brand { get; set; }
 
     public string? Description { get; set; }
-
-    public bool? IsDeleted { get; set; }
 
     public string? ConcurrencyStamp { get; set; }
 

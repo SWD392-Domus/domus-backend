@@ -1,4 +1,3 @@
-using System.Collections;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
@@ -19,8 +18,6 @@ public class ProductDetailService : IProductDetailService
 	private readonly IProductRepository _productRepository;
 	private readonly IMapper _mapper;
 	private readonly IUnitOfWork _unitOfWork;
-	private readonly IProductPriceRepository _productPriceRepository;
-	private readonly IProductAttributeValueRepository _productAttributeValueRepository;
 	private readonly IProductAttributeRepository _productAttributeRepository;
 
 	public ProductDetailService(
@@ -28,16 +25,12 @@ public class ProductDetailService : IProductDetailService
 			IMapper mapper,
 			IUnitOfWork unitOfWork,
 			IProductRepository productRepository,
-			IProductPriceRepository productPriceRepository,
-			IProductAttributeValueRepository productAttributeValueRepository,
 			IProductAttributeRepository productAttributeRepository)
 	{
 		_productDetailRepository = productDetailRepository;
 		_mapper = mapper;
 		_unitOfWork = unitOfWork;
 		_productRepository = productRepository;
-		_productPriceRepository = productPriceRepository;
-		_productAttributeValueRepository = productAttributeValueRepository;
 		_productAttributeRepository = productAttributeRepository;
 	}
 

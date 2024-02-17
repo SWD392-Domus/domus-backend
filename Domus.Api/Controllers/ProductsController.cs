@@ -12,7 +12,7 @@ namespace Domus.Api.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : BaseApiController
 {
-	private IProductService _productService;
+	private readonly IProductService _productService;
 
 	public ProductsController(IProductService productService)
 	{
@@ -67,6 +67,14 @@ public class ProductsController : BaseApiController
 	{
 		return await ExecuteServiceLogic(
 			async () => await _productService.DeleteProduct(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpDelete("multiple")]
+	public async Task<IActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productService.DeleteMultipleProducts(ids).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

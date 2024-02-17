@@ -47,7 +47,7 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> DeleteProduct(Guid id)
     {
-		var product = await _productRepository.GetAsync(p => p.Id == id);
+		var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
 		if (product is null)
 			throw new ProductNotFoundException();
 
@@ -60,16 +60,33 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> GetAllProducts()
     {
-		var products = await (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
+		var products = await (await _productRepository.GetAllAsync())
+			.Where(p => !p.IsDeleted)
+			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
 			.ToListAsync();
+
+		foreach (var product in products)
+		{
+			product.TotalQuantity = (int)product.ProductDetails.Sum(d => d.ProductPrices.Sum(p => p.Quantity));
+		}
 		
 		return new ServiceActionResult(true) { Data = products };
     }
 
     public async Task<ServiceActionResult> GetPaginatedProducts(BasePaginatedRequest request)
     {
-		var queryableProducts = (await _productRepository.GetAllAsync()).ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
+		var queryableProducts = (await _productRepository.GetAllAsync())
+			.Where(p => !p.IsDeleted)
+			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableProducts, request.PageSize, request.PageIndex);
+		var products = await ((IQueryable<DtoProduct>)paginatedResult.Items!).ToListAsync();
+
+		foreach (var product in products)
+		{
+			product.TotalQuantity = (int)product.ProductDetails.Sum(d => d.ProductPrices.Sum(p => p.Quantity));
+		}
+
+		paginatedResult.Items = products;
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
@@ -77,8 +94,8 @@ public class ProductService : IProductService
     public async Task<ServiceActionResult> GetProduct(Guid id)
     {
 		var product = await (await _productRepository.GetAllAsync())
+			.Where(p => !p.IsDeleted && p.Id == id)
 			.ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider)
-			.Where(p => p.Id == id)
 			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
 
 		return new ServiceActionResult(true) { Data = product };
@@ -86,7 +103,7 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id)
     {
-		var product = await _productRepository.GetAsync(p => p.Id == id);
+		var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
 		if (product is null)
 			throw new ProductNotFoundException();
 		if (!await _productCategoryRepository.ExistsAsync(c => c.Id == request.ProductCategoryId))
@@ -97,5 +114,13 @@ public class ProductService : IProductService
 		await _unitOfWork.CommitAsync();
 		
 		return new ServiceActionResult(true);
+    }
+
+    public async Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)
+    {
+	    await _productRepository.DeleteManyAsync(p => !p.IsDeleted && ids.Contains(p.Id));
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true) { Detail = "Products deleted successfully"};
     }
 }
