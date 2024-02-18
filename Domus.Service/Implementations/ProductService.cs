@@ -128,26 +128,28 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> SearchProducts(BaseSearchRequest request)
     {
-	    var products = await (await _productRepository.GetAllAsync()).ToListAsync();
+	    var products = await (await _productRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
 	    
 	    foreach (var searchInfo in request.DisjunctionSearchInfos)
 	    {
 			products = products
-				.Where(p => ReflectionHelper.GetStringValueByName(typeof(Product), searchInfo.FieldName, p).Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase))
+				.Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoProduct), searchInfo.FieldName, p).Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase))
 				.ToList();
 	    }
 
 	    if (request.ConjunctionSearchInfos.Any())
 	    {
 			var initialSearchInfo = request.ConjunctionSearchInfos.First();
-			Expression<Func<Product, bool>> conjunctionWhere = p => ReflectionHelper.GetStringValueByName(typeof(Product), initialSearchInfo.FieldName, p).Contains(initialSearchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+			Expression<Func<DtoProduct, bool>> conjunctionWhere = p => ReflectionHelper.GetStringValueByName(typeof(DtoProduct), initialSearchInfo.FieldName, p).Contains(initialSearchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
 			
 			foreach (var (searchInfo, i) in request.ConjunctionSearchInfos.Select((value, i) => (value, i)))
 			{
 				if (i == 0)
 					continue;
 				
-				Expression<Func<Product, bool>> whereExpr =  p => ReflectionHelper.GetStringValueByName(typeof(Product), searchInfo.FieldName, p).Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+				Expression<Func<DtoProduct, bool>> whereExpr =  p => ReflectionHelper.GetStringValueByName(typeof(Product), searchInfo.FieldName, p).Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
 				conjunctionWhere = ExpressionHelper.CombineOrExpressions(conjunctionWhere, whereExpr);
 			}
 
@@ -158,7 +160,7 @@ public class ProductService : IProductService
 	    {
 			request.SortInfos = request.SortInfos.OrderBy(si => si.Priority).ToList();
 			var initialSortInfo = request.SortInfos.First();
-			Expression<Func<Product, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(Product), initialSortInfo.FieldName, p);
+			Expression<Func<DtoProduct, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProduct), initialSortInfo.FieldName, p);
 
 			products = initialSortInfo.Descending ? products.OrderByDescending(orderExpr.Compile()).ToList() : products.OrderBy(orderExpr.Compile()).ToList();
 			
@@ -167,12 +169,12 @@ public class ProductService : IProductService
 				if (i == 0)
 					continue;
 				
-				orderExpr = p => ReflectionHelper.GetValueByName(typeof(Product), initialSortInfo.FieldName, p);
+				orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProduct), initialSortInfo.FieldName, p);
 				products = sortInfo.Descending ? products.OrderByDescending(orderExpr.Compile()).ToList() : products.OrderBy(orderExpr.Compile()).ToList();
 			}
 	    }
 
-	    var paginatedResult = PaginationHelper.BuildPaginatedResult<Product, DtoProduct>(_mapper, products, request.PageSize, request.PageIndex);
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(products, request.PageSize, request.PageIndex);
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
