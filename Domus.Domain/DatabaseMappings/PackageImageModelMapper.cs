@@ -17,7 +17,7 @@ public class PackageImageModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.Package).WithMany(p => p.PackageImages)
                 .HasForeignKey(d => d.PackageId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
