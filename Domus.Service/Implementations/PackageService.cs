@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
@@ -37,39 +38,17 @@ public class PackageService : IPackageService
     
     public async Task<ServiceActionResult> GetAllPackages()
     {
-        var packageList = (await _packageRepository.FindAsync(x=> x.IsDeleted == false))
-            .Include(pk => pk.Services)
-            .Include(pk => pk.ProductDetails)
-                .ThenInclude(pd=> pd.ProductAttributeValues)
-            .Include(pk => pk.ProductDetails)
-                .ThenInclude(pd => pd.ProductImages)
-            .Include(pk => pk.PackageImages);
-        var dtoPackages = new List<DtoPackage>();
-        foreach (var pk in packageList)
-        {
-            dtoPackages.Add(_mapper.Map<DtoPackage>(pk));
-        }
+        var list = (await _packageRepository.GetAllAsync()).Where(pk => !pk.IsDeleted).ProjectTo<DtoPackage>(_mapper.ConfigurationProvider);
         return new ServiceActionResult()
         {
             IsSuccess = true,
-            Data = dtoPackages,
+            Data = list,
         };
     }
 
     public async Task<ServiceActionResult> GetPaginatedPackages(BasePaginatedRequest request)
     {
-        var packageList = (await _packageRepository.FindAsync(x=> x.IsDeleted == false))
-            .Include(pk => pk.Services)
-            .Include(pk => pk.ProductDetails)
-            .ThenInclude(pd=> pd.ProductAttributeValues)
-            .Include(pk => pk.ProductDetails)
-            .ThenInclude(pd => pd.ProductImages)
-            .Include(pk => pk.PackageImages);
-        var dtoPackages = new List<DtoPackage>();
-        foreach (var pk in packageList)
-        {
-            dtoPackages.Add(_mapper.Map<DtoPackage>(pk));
-        }
+        var dtoPackages = (await _packageRepository.GetAllAsync()).Where(pk => !pk.IsDeleted).ProjectTo<DtoPackage>(_mapper.ConfigurationProvider);
         var paginatedList = PaginationHelper.BuildPaginatedResult(dtoPackages.AsQueryable(), request.PageSize, request.PageIndex);
         return new ServiceActionResult()
         {
@@ -84,15 +63,8 @@ public class PackageService : IPackageService
         return new ServiceActionResult()
         {
             IsSuccess = true,
-            Data =_mapper.Map<DtoPackage>((await _packageRepository.FindAsync(x=> x.Id == packageId && !x.IsDeleted))
-                      .Include(pk => pk.Services)
-                      .Include(pk => pk.ProductDetails)
-                      .ThenInclude(pd=> pd.ProductAttributeValues)
-                      .Include(pk => pk.ProductDetails)
-                      .ThenInclude(pd => pd.ProductImages)
-                      .Include(pk => pk.PackageImages)
-                      .FirstOrDefault()
-                      )
+            Data = (await _packageRepository.FindAsync(x=> x.Id == packageId && !x.IsDeleted))
+                   .ProjectTo<DtoPackage>(_mapper.ConfigurationProvider).FirstOrDefault()
                  ?? throw new PackageNotFoundException()
         };
     }
@@ -119,7 +91,11 @@ public class PackageService : IPackageService
 
     public async Task<ServiceActionResult> UpdatePackage(PackageRequest request, Guid packageId)
     {
-        var package = await _packageRepository.GetAsync(pk => pk.Id == packageId && pk.IsDeleted == false) ??
+        var package = (await _packageRepository.FindAsync(pk => pk.Id == packageId && pk.IsDeleted == false))
+                      .Include(pk => pk.ProductDetails)
+                      .Include(pk => pk.PackageImages)
+                      .Include(pk=> pk.Services)
+                      .FirstOrDefault()??
                       throw new PackageNotFoundException();
         package.Name = request.Name ?? package.Name;
         package.Discount = request.Discount ?? package.Discount;
@@ -147,5 +123,13 @@ public class PackageService : IPackageService
         return new ServiceActionResult(true);
     }
 
-
+    public async Task<ServiceActionResult> GetPackageByName(string name)
+    {
+        var packages = await _packageRepository.FindAsync(pk => pk.Name.Contains(name) && !pk.IsDeleted);
+        return new ServiceActionResult()
+        {
+            IsSuccess = true,
+            Data = packages.ProjectTo<DtoPackage>(_mapper.ConfigurationProvider)
+        };
+    }
 }

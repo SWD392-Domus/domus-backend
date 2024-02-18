@@ -13,7 +13,7 @@ public class DtoProductDetail
 
 	[JsonPropertyName("images")]
     public virtual ICollection<DtoProductImage> ProductImages { get; set; } = new List<DtoProductImage>();
-
+ 
 	[JsonPropertyName("prices")]
     public virtual ICollection<DtoProductPrice> ProductPrices { get; set; } = new List<DtoProductPrice>();
 }

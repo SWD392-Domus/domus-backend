@@ -58,5 +58,12 @@ public class PackagesController : BaseApiController
         return await ExecuteServiceLogic(async () =>
             await _packageService.DeletePackage(id).ConfigureAwait(false)).ConfigureAwait(false);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetPackageByName(string name)
+    {
+        return await ExecuteServiceLogic(async () =>
+            await _packageService.GetPackageByName(name).ConfigureAwait(false)).ConfigureAwait(false);
+    }
 }
 
