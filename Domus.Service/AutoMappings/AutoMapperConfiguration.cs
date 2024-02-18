@@ -54,17 +54,71 @@ public static class AutoMapperConfiguration
 	
 	private static void CreateProductMaps(IMapperConfigurationExpression mapper)
 	{
+		mapper.CreateMap<CreateProductRequest, Product>();
+		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
+		mapper.CreateMap<CreateProductDetailInProductRequest, ProductDetail>();
+		mapper.CreateMap<CreateProductPriceRequest, ProductPrice>();
+		
+		mapper.CreateMap<CreateProductAttributeRequest, ProductAttributeValue>()
+			.ForMember(dest => dest.Value,
+				opt => opt.MapFrom(src => src.Value))
+			.ForMember(dest => dest.ValueType,
+				opt => opt.MapFrom(src => src.ValueType))
+			.ForPath(dest => dest.ProductAttribute.AttributeName,
+				opt => opt.MapFrom(src => src.Name));
+		
+		mapper.CreateMap<UpdateProductRequest, Product>()
+			.ForMember(dest => dest.ProductName,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.ProductName)))
+			.ForMember(dest => dest.Brand,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.Brand)))
+			.ForMember(dest => dest.Description,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.Description)))
+			.ForMember(dest => dest.ProductDetails, opt => opt.Ignore());
+
+		mapper.CreateMap<UpdateProductDetailRequest, ProductDetail>()
+			.ForMember(dest => dest.DisplayPrice,
+				opt => opt.Condition((req, _) => req.DisplayPrice != default));
+		
+		mapper.CreateMap<UpdateProductAttributeValueRequest, ProductAttributeValue>()
+			.ForMember(dest => dest.Value,
+				opt => opt.MapFrom(src => src.Value))
+			.ForMember(dest => dest.ValueType,
+				opt => opt.MapFrom(src => src.ValueType))
+			.ForPath(dest => dest.ProductAttribute.AttributeName,
+				opt => opt.MapFrom(src => src.Name))
+			.ForPath(dest => dest.ProductAttribute.Id,
+				opt => opt.MapFrom(src => src.AttributeId));
+		
+		mapper.CreateMap<UpdateProductImageRequest, ProductImage>()
+			.ForMember(dest => dest.ImageUrl,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.ImageUrl)))
+			.ForMember(dest => dest.Width,
+				opt => opt.Condition((req, _) => req.Width != default))
+			.ForMember(dest => dest.Height,
+				opt => opt.Condition((req, _) => req.Height != default));
+		
+		mapper.CreateMap<UpdateProductPriceRequest, ProductPrice>()
+			.ForMember(dest => dest.MonetaryUnit,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.MonetaryUnit)))
+			.ForMember(dest => dest.QuantityType,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.QuantityType)));
+		
 		mapper.CreateMap<Product, DtoProduct>();
 		mapper.CreateMap<Product, DtoProductWithoutCategory>();
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
-		mapper.CreateMap<CreateProductRequest, Product>();
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
+		
 		mapper.CreateMap<ProductDetailQuotation, DtoProductDetailQuotation>()
-			.ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName));
+			.ForMember(dest => dest.ProductName,
+				opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName));
+		
 		mapper.CreateMap<ProductDetail, DtoProductDetail>()
-			.ForMember(dest => dest.DisplayPrice, opt => opt.MapFrom(src => Math.Round(src.DisplayPrice, 2)))
-			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })));
-		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
+			.ForMember(dest => dest.DisplayPrice,
+				opt => opt.MapFrom(src => Math.Round(src.DisplayPrice, 2)))
+			.ForMember(dest => dest.ProductAttributeValues,
+				opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })));
+		
 		mapper.CreateMap<ProductImage, DtoProductImage>();
 		mapper.CreateMap<ProductPrice, DtoProductPrice>();
 	}

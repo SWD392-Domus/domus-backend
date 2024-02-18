@@ -98,4 +98,9 @@ public static class PaginationHelper
     {
         return BuildPaginatedResult<T, T>(null, source, pageSize, pageIndex);
     }
+    
+    public static PaginatedResult BuildPaginatedResult<T>(ICollection<T> source, int pageSize, int pageIndex)
+    {
+        return BuildPaginatedResult<T, T>(null, source, pageSize, pageIndex);
+    }
 }

@@ -1,21 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 using Domus.Service.Attributes;
 
-namespace Domus.Service.Models.Requests;
+namespace Domus.Service.Models.Requests.ProductDetails;
 
 public class CreateProductPriceRequest
 {
-	[RequiredGuid]
-	public Guid ProductId { get; set; }
-
-	[RequiredGuid]
-	public Guid ProductDetailId { get; set; }
+	[Required]
+	public double Price { get; set; }
 
 	[Required]
-	public decimal Price { get; set; }
+	public string MonetaryUnit { get; set; } = null!;
+
+	public double Quantity { get; set; }
 
 	[Required]
-	public DateTime StartDate { get; set; }
-
-	public DateTime? EndDate { get; set; }
+	public string QuantityType { get; set; } = null!;
 }

@@ -58,28 +58,26 @@ public class GoogleOAuthService : IGoogleOAuthService
 			throw new Exception();
 
 		var authObject = JsonConvert.DeserializeObject<GoogleAuthResponse>(await response.Content.ReadAsStringAsync());
-		if  (authObject == null || authObject.IdToken == null)
+		if  (authObject?.IdToken == null)
 			throw new Exception();
 
 		var handler = new JwtSecurityTokenHandler();
 		var securityToken = handler.ReadJwtToken(authObject.IdToken);
-		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.EMAIL, out string email);
-		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.EMAIL_VERIFIED, out string emailVerified);
-		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.GIVEN_NAME, out string name);
-		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.PICTURE, out string picture);
+		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.EMAIL, out var email);
+		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.EMAIL_VERIFIED, out var emailVerified);
+		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.GIVEN_NAME, out var name);
+		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.PICTURE, out var picture);
 
-		var user = await _userManager.FindByEmailAsync(email);
-		if (user == null)
-			user = await CreateNewUserAsync(email, emailVerified, picture);
+		var user = await _userManager.FindByEmailAsync(email) ?? await CreateNewUserAsync(email, emailVerified, picture);
 
-		var tokenRespose = new TokenResponse
+		var tokenResponse = new TokenResponse
 		{
 			AccessToken = _jwtService.GenerateAccessToken(user, _userManager.GetRolesAsync(user).Result.ToList()),
 			RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
 			ExpiresAt = DateTimeOffset.Now.AddHours(1)
 		};
 
-        return new ServiceActionResult(true) { Data = tokenRespose };
+        return new ServiceActionResult(true) { Data = tokenResponse };
     }
 
 	private async Task<DomusUser> CreateNewUserAsync(string email, string emailVerified, string picture)
