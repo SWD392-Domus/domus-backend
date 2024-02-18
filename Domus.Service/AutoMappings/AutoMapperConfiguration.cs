@@ -65,6 +65,12 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.DisplayPrice, opt => opt.MapFrom(src => Math.Round(src.DisplayPrice, 2)))
 			.ForMember(dest => dest.ProductAttributeValues, opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })));
 		mapper.CreateMap<CreateProductDetailRequest, ProductDetail>();
+		mapper.CreateMap<CreateProductDetailInProductRequest, ProductDetail>();
+		mapper.CreateMap<CreateProductPriceRequest, ProductPrice>();
+		mapper.CreateMap<CreateProductAttributeRequest, ProductAttributeValue>()
+			.ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Value))
+			.ForMember(dest => dest.ValueType, opt => opt.MapFrom(src => src.ValueType))
+			.ForPath(dest => dest.ProductAttribute.AttributeName, opt => opt.MapFrom(src => src.Name));
 		mapper.CreateMap<ProductImage, DtoProductImage>();
 		mapper.CreateMap<ProductPrice, DtoProductPrice>();
 	}
