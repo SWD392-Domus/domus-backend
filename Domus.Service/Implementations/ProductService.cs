@@ -211,4 +211,38 @@ public class ProductService : IProductService
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
+
+    public async Task<ServiceActionResult> SearchProductsUsingGet(SearchProductsUsingGetRequest request)
+    {
+		var products = await (await _productRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+	    
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+			products = products
+				.Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoProduct), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+	    }
+	    
+	    foreach (var product in products)
+	    {
+		    product.TotalQuantity = (int)product.ProductDetails.Sum(d => d.ProductPrices.Sum(p => p.Quantity));
+	    }
+
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+			Expression<Func<DtoProduct, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProduct), request.SortField, p);
+			products = request.Descending
+				? products.OrderByDescending(orderExpr.Compile()).ToList()
+				: products.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(products, request.PageSize, request.PageIndex);
+	    var finalProducts = (IEnumerable<DtoProduct>)paginatedResult.Items!;
+
+	    paginatedResult.Items = finalProducts;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
+    }
 }
