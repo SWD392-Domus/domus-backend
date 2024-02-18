@@ -22,7 +22,7 @@ public class ProductAttributeValueModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductAttributeValues)
                 .HasForeignKey(d => d.ProductDetailId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

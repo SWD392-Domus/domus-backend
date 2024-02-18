@@ -6,13 +6,12 @@ namespace Domus.DAL.Implementations;
 
 public class ProductDetailRepository : GenericRepository<ProductDetail>, IProductDetailRepository
 {
-	private readonly DomusContext _dbContext;
+	private readonly IAppDbContext _dbContext;
 
-	public ProductDetailRepository(DomusContext context) : base(context)
+	public ProductDetailRepository(IAppDbContext context) : base(context)
 	{
 		_dbContext = context;
 	}
-
 
 	public Task SetModified(ProductDetail productDetail)
 	{

@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Linq.Expressions;
-using System.Reflection;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Exceptions;
@@ -28,7 +26,7 @@ public class ProductService : IProductService
 			IProductRepository productRepository,
 			IUnitOfWork unitOfWork,
 			IMapper mapper,
-			IProductCategoryRepository productCategoryRepository)
+			IProductCategoryRepository productCategoryRepository, IProductDetailRepository productDetailRepository)
 	{
 		_productRepository = productRepository;
 		_unitOfWork = unitOfWork;
@@ -106,13 +104,36 @@ public class ProductService : IProductService
 
     public async Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id)
     {
-		var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
-		if (product is null)
-			throw new ProductNotFoundException();
+		var product = await (await _productRepository.FindAsync(p => !p.IsDeleted && p.Id == id))
+			.Include(p => p.ProductDetails)
+			.ThenInclude(pd => pd.ProductPrices)
+			.Include(p => p.ProductDetails)
+			.ThenInclude(pd => pd.ProductImages)
+			.Include(p => p.ProductDetails)
+			.ThenInclude(pd => pd.ProductAttributeValues)
+			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
 		if (!await _productCategoryRepository.ExistsAsync(c => c.Id == request.ProductCategoryId))
 			throw new ProductCategoryNotFoundException();
 
-		_mapper.Map(product, request);
+		_mapper.Map(request, product);
+
+		foreach (var productDetail in request.ProductDetails)
+		{
+			if (productDetail.Id == default)
+			{
+				var newProductDetail = _mapper.Map<ProductDetail>(productDetail);
+				product.ProductDetails.Add(newProductDetail);
+			}
+			else
+			{
+				if (!product.ProductDetails.Any(pd => !pd.IsDeleted && pd.Id == productDetail.Id)) continue;
+				
+				var detail = product.ProductDetails.First(pd => !pd.IsDeleted && pd.Id == productDetail.Id);
+				product.ProductDetails.Remove(detail);
+				product.ProductDetails.Add(_mapper.Map<ProductDetail>(productDetail));
+			}
+		}
+
 		await _productRepository.UpdateAsync(product);
 		await _unitOfWork.CommitAsync();
 		
