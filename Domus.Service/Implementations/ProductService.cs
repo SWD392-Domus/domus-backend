@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
 using AutoMapper;
@@ -162,7 +163,8 @@ public class ProductService : IProductService
 			var initialSortInfo = request.SortInfos.First();
 			Expression<Func<DtoProduct, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProduct), initialSortInfo.FieldName, p);
 
-			products = initialSortInfo.Descending ? products.OrderByDescending(orderExpr.Compile()).ToList() : products.OrderBy(orderExpr.Compile()).ToList();
+			
+			var orderedProducts = initialSortInfo.Descending ? products.OrderByDescending(orderExpr.Compile()) : products.OrderBy(orderExpr.Compile());
 			
 			foreach (var (sortInfo, i) in request.SortInfos.Select((value, i) => (value, i)))
 			{
@@ -170,11 +172,21 @@ public class ProductService : IProductService
 					continue;
 				
 				orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProduct), initialSortInfo.FieldName, p);
-				products = sortInfo.Descending ? products.OrderByDescending(orderExpr.Compile()).ToList() : products.OrderBy(orderExpr.Compile()).ToList();
+				orderedProducts = sortInfo.Descending ? orderedProducts.ThenByDescending(orderExpr.Compile()) : orderedProducts.ThenBy(orderExpr.Compile());
 			}
+
+			products = orderedProducts.ToList();
 	    }
 
 	    var paginatedResult = PaginationHelper.BuildPaginatedResult(products, request.PageSize, request.PageIndex);
+	    var finalProducts = (IEnumerable<DtoProduct>)paginatedResult.Items!;
+
+	    foreach (var product in finalProducts)
+	    {
+		    product.TotalQuantity = (int)product.ProductDetails.Sum(d => d.ProductPrices.Sum(p => p.Quantity));
+	    }
+
+	    paginatedResult.Items = finalProducts;
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
