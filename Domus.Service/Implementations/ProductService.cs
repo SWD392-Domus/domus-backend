@@ -212,7 +212,7 @@ public class ProductService : IProductService
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public async Task<ServiceActionResult> SearchProductsUsingGet(SearchProductsUsingGetRequest request)
+    public async Task<ServiceActionResult> SearchProductsUsingGet(SearchUsingGetRequest request)
     {
 		var products = await (await _productRepository.FindAsync(p => !p.IsDeleted))
 		    .ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)

@@ -2,6 +2,7 @@ using Domus.Api.Controllers.Base;
 using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,6 +41,14 @@ public class QuotationsController : BaseApiController
 	{
 		return await ExecuteServiceLogic(
 			async () => await _quotationService.GetQuotationById(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpGet("search")]
+	public async Task<IActionResult> SearchQuotations([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.SearchQuotations(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 

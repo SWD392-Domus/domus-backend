@@ -2,7 +2,7 @@
 
 namespace Domus.Service.Models.Requests.Products;
 
-public class SearchProductsUsingGetRequest : BasePaginatedRequest
+public class SearchUsingGetRequest : BasePaginatedRequest
 {
     public string? SearchField { get; set; }
     public string? SearchValue { get; set; }

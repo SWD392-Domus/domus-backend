@@ -15,5 +15,5 @@ public interface IProductService : IAutoRegisterable
     Task<ServiceActionResult> UpdateProduct(UpdateProductRequest request, Guid id);
     Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids);
     Task<ServiceActionResult> SearchProducts(BaseSearchRequest request);
-    Task<ServiceActionResult> SearchProductsUsingGet(SearchProductsUsingGetRequest request);
+    Task<ServiceActionResult> SearchProductsUsingGet(SearchUsingGetRequest request);
 }

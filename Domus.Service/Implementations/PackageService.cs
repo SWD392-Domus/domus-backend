@@ -187,7 +187,7 @@ public class PackageService : IPackageService
         return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public async Task<ServiceActionResult> SearchPackagesUsingGet(SearchProductsUsingGetRequest request)
+    public async Task<ServiceActionResult> SearchPackagesUsingGet(SearchUsingGetRequest request)
     {
         var packages = await (await _packageRepository.FindAsync(p => !p.IsDeleted))
             .ProjectTo<DtoPackage>(_mapper.ConfigurationProvider)
