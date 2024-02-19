@@ -5,13 +5,15 @@ namespace Domus.Domain.Dtos.Quotations;
 
 public class DtoQuotationFullDetails
 {
-	public string Id { get; set; } = null!;
+	public Guid Id { get; set; }
 
 	public DtoDomusUser Customer { get; set; } = null!;
 
 	public DtoDomusUser Staff { get; set; } = null!;
 
     public string Status { get; set; } = null!;
+
+	public float TotalPrice { get; set; }
 
     public DateTime? ExpireAt { get; set; }
 
