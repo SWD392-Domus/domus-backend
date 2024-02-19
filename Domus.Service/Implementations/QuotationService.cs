@@ -147,9 +147,7 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
     {
-		var quotation = await _quotationRepository.GetAsync(q => q.Id == id);
-		if (quotation == null)
-			throw new QuotationNotFoundException();
+		var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == id) ?? throw new QuotationNotFoundException();
 		
 		quotation.IsDeleted = true;
 		await _quotationRepository.UpdateAsync(quotation);
@@ -168,7 +166,7 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetAllQuotations()
     {
-		var quotations = await (await _quotationRepository.GetAllAsync())
+		var quotations = await (await _quotationRepository.FindAsync(q => !q.IsDeleted))
 			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider)
 			.ToListAsync();
 
@@ -193,7 +191,7 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request)
     {
-		var queryableQuotations = (await _quotationRepository.GetAllAsync()).ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
+		var queryableQuotations = (await _quotationRepository.FindAsync(q => !q.IsDeleted)).ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableQuotations, request.PageSize, request.PageIndex);
 		var quotationList = new List<DtoQuotation>();
 		
@@ -212,8 +210,7 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetQuotationById(Guid id)
     {
-		var quotation = (await _quotationRepository.GetAllAsync())
-			.Where(q => q.Id == id)
+		var quotation = (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == id))
 			.ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
 			.FirstOrDefault() ?? throw new QuotationNotFoundException();
 
@@ -255,9 +252,7 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
     {
-		var quotation = await _quotationRepository.GetAsync(q => q.Id == id);
-		if (quotation == null)
-			throw new QuotationNotFoundException();
+		var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == id) ?? throw new QuotationNotFoundException();
 
 		_mapper.Map(request, quotation);
 		quotation.LastUpdatedAt = DateTime.Now;
