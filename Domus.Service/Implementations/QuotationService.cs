@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
@@ -10,6 +10,7 @@ using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
 using Microsoft.EntityFrameworkCore;
 
@@ -209,6 +210,32 @@ public class QuotationService : IQuotationService
 			.FirstOrDefault() ?? throw new QuotationNotFoundException();
 
 		return new ServiceActionResult(true) { Data = quotation };
+    }
+
+    public async Task<ServiceActionResult> SearchQuotations(SearchUsingGetRequest request)
+    {
+		var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+	    
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+			quotations = quotations 
+				.Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoQuotationFullDetails), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+	    }
+
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+			Expression<Func<DtoQuotationFullDetails, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoQuotationFullDetails), request.SortField, p);
+			quotations = request.Descending
+				? quotations.OrderByDescending(orderExpr.Compile()).ToList()
+				: quotations.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(quotations, request.PageSize, request.PageIndex);
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)

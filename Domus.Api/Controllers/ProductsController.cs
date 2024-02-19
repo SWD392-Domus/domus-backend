@@ -57,7 +57,7 @@ public class ProductsController : BaseApiController
 	
 	[AllowAnonymous]
 	[HttpGet("search")]
-	public async Task<IActionResult> SearchProductsUsingGetRequest([FromQuery] SearchProductsUsingGetRequest request)
+	public async Task<IActionResult> SearchProductsUsingGetRequest([FromQuery] SearchUsingGetRequest request)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _productService.SearchProductsUsingGet(request).ConfigureAwait(false)
