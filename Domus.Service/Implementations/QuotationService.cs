@@ -234,6 +234,17 @@ public class QuotationService : IQuotationService
 	    }
 
 	    var paginatedResult = PaginationHelper.BuildPaginatedResult(quotations, request.PageSize, request.PageIndex);
+		var quotationList = new List<DtoQuotationFullDetails>();
+
+		foreach (var quotation in (IEnumerable<DtoQuotationFullDetails>)paginatedResult.Items!)
+		{
+			var products = await (await _productDetailQuotationRepository.GetAllAsync()).Where(pdq => pdq.QuotationId == quotation.Id).ToListAsync();
+			
+			quotation.TotalPrice = (float)products.Sum(pdq => pdq.Price * pdq.Quantity);
+			quotationList.Add(quotation);
+		}
+
+		paginatedResult.Items = quotationList;
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
