@@ -13,6 +13,7 @@ using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.OfferedPackages;
 using Domus.Service.Models.Requests.Products;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Domus.Service.Implementations;
 
@@ -39,7 +40,15 @@ public class PackageService : IPackageService
     
     public async Task<ServiceActionResult> GetAllPackages()
     {
-        var list = (await _packageRepository.GetAllAsync()).Where(pk => !pk.IsDeleted).ProjectTo<DtoPackage>(_mapper.ConfigurationProvider);
+        var list = (await _packageRepository.GetAllAsync()).Where(pk => !pk.IsDeleted).ProjectTo<DtoPackageWithProductName>(_mapper.ConfigurationProvider);
+        
+        foreach (var dtoPackage in list)
+        {
+            var sumService = dtoPackage.Services.Sum(dtoPackageService => dtoPackageService.Price);
+            var sumProductDetail = dtoPackage.ProductDetails.Sum(dtoPackageProductDetail => dtoPackageProductDetail.DisplayPrice);
+            dtoPackage.EstimatedPrice = (sumService + sumProductDetail) * (100-dtoPackage.Discount)/100;
+        }
+        
         return new ServiceActionResult()
         {
             IsSuccess = true,
@@ -213,5 +222,13 @@ public class PackageService : IPackageService
         paginatedResult.Items = finalProducts;
 
         return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+    
+    public async Task<ServiceActionResult> DeletePackages(List<Guid> packageIds)
+    {
+        await _packageRepository.UpdateManyAsync(pk => !pk.IsDeleted && packageIds.Contains(pk.Id));
+        await _unitOfWork.CommitAsync();
+        return new ServiceActionResult(true);
     }
 }

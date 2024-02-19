@@ -17,4 +17,5 @@ public interface IPackageService : IAutoRegisterable
     Task<ServiceActionResult> GetPackageByName(string name);
     Task<ServiceActionResult> SearchPackages(BaseSearchRequest request);
     Task<ServiceActionResult> SearchPackagesUsingGet(SearchUsingGetRequest request);
+    Task<ServiceActionResult> DeletePackages(List<Guid> packageIds);
 }
