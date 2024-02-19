@@ -2,6 +2,7 @@
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.OfferedPackages;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
@@ -66,10 +67,17 @@ public class PackagesController : BaseApiController
     //         await _packageService.GetPackageByName(name).ConfigureAwait(false)).ConfigureAwait(false);
     // }
     [HttpPost("search")]
-    public async Task<IActionResult> SearchProducts(BaseSearchRequest request)
+    public async Task<IActionResult> SearchProducts([FromForm] BaseSearchRequest request)
     {
         return await ExecuteServiceLogic(
             async () => await _packageService.SearchPackages(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchProductsUsingGetRequest([FromQuery] SearchProductsUsingGetRequest request)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _packageService.SearchPackagesUsingGet(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 }

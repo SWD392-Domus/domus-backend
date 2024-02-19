@@ -2,6 +2,7 @@
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.OfferedPackages;
+using Domus.Service.Models.Requests.Products;
 
 namespace Domus.Service.Interfaces;
 
@@ -15,4 +16,5 @@ public interface IPackageService : IAutoRegisterable
     Task<ServiceActionResult> DeletePackage(Guid packageId);
     Task<ServiceActionResult> GetPackageByName(string name);
     Task<ServiceActionResult> SearchPackages(BaseSearchRequest request);
+    Task<ServiceActionResult> SearchPackagesUsingGet(SearchProductsUsingGetRequest request);
 }

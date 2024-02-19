@@ -11,6 +11,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.OfferedPackages;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
@@ -186,4 +187,31 @@ public class PackageService : IPackageService
         return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
+    public async Task<ServiceActionResult> SearchPackagesUsingGet(SearchProductsUsingGetRequest request)
+    {
+        var packages = await (await _packageRepository.FindAsync(p => !p.IsDeleted))
+            .ProjectTo<DtoPackage>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+	    
+        if (!string.IsNullOrEmpty(request.SearchField))
+        {
+            packages = packages
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoPackage), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        if (!string.IsNullOrEmpty(request.SortField))
+        {
+            Expression<Func<DtoPackage, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoPackage), request.SortField, p);
+            packages = request.Descending
+                ? packages.OrderByDescending(orderExpr.Compile()).ToList()
+                : packages.OrderBy(orderExpr.Compile()).ToList();
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult(packages, request.PageSize, request.PageIndex);
+        var finalProducts = (IEnumerable<DtoPackage>)paginatedResult.Items!;
+
+        paginatedResult.Items = finalProducts;
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
+    }
 }
