@@ -67,18 +67,25 @@ public class PackagesController : BaseApiController
     //         await _packageService.GetPackageByName(name).ConfigureAwait(false)).ConfigureAwait(false);
     // }
     [HttpPost("search")]
-    public async Task<IActionResult> SearchProducts([FromForm] BaseSearchRequest request)
+    public async Task<IActionResult> SearchPackages([FromForm] BaseSearchRequest request)
     {
         return await ExecuteServiceLogic(
             async () => await _packageService.SearchPackages(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
     [HttpGet("search")]
-    public async Task<IActionResult> SearchProductsUsingGetRequest([FromQuery] SearchUsingGetRequest request)
+    public async Task<IActionResult> SearchPackagesUsingGetRequest([FromQuery] SearchUsingGetRequest request)
     {
         return await ExecuteServiceLogic(
             async () => await _packageService.SearchPackagesUsingGet(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
+    }
+
+    [HttpDelete("many")]
+    public async Task<IActionResult> DeleteManyPackages(List<Guid> packageIds)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _packageService.DeletePackages(packageIds).ConfigureAwait(false)).ConfigureAwait(false);
     }
 }
 

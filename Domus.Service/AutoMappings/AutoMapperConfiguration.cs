@@ -108,6 +108,8 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Product, DtoProductWithoutCategory>();
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
+		mapper.CreateMap<ProductDetail, DtoProductDetailPackage>()
+			.ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.ProductName));
 		
 		mapper.CreateMap<ProductDetailQuotation, DtoProductDetailQuotation>()
 			.ForMember(dest => dest.ProductName,
@@ -121,6 +123,7 @@ public static class AutoMapperConfiguration
 		
 		mapper.CreateMap<ProductImage, DtoProductImage>();
 		mapper.CreateMap<ProductPrice, DtoProductPrice>();
+		mapper.CreateMap<ProductAttributeValue, DtoProductAttributeValue>();
 	}
 
 	private static void CreateServiceMaps(IMapperConfigurationExpression mapper)
@@ -150,5 +153,6 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<PackageRequest,Package>();
 		mapper.CreateMap<Package,DtoPackage>();
 		mapper.CreateMap<PackageImage,DtoPackageImage>();
+		mapper.CreateMap<Package,DtoPackageWithProductName>();
 	}
 }
