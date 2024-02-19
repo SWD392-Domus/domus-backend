@@ -137,6 +137,14 @@ public class QuotationService : IQuotationService
 		return new ServiceActionResult(true);
     }
 
+    public async Task<ServiceActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids)
+    {
+	    await _quotationRepository.DeleteManyAsync(p => !p.IsDeleted && ids.Contains(p.Id));
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true) { Detail = "Quotations deleted successfully"};
+    }
+
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
     {
 		var quotation = await _quotationRepository.GetAsync(q => q.Id == id);

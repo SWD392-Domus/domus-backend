@@ -76,6 +76,14 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[HttpDelete("multiple")]
+	public async Task<IActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.DeleteMultipleQuotations(ids).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 	[HttpPost("{id:guid}/negotiations/messages")]
 	public async Task<IActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
 	{
