@@ -56,14 +56,19 @@ public class AuthService : IAuthService
 		}
 
 		var roles = await _userManager.GetRolesAsync(user);
-		var tokenResponse = new TokenResponse
+		var response = new AuthResponse
 		{
-			AccessToken = _jwtService.GenerateAccessToken(user, roles),
-			RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
-			ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			Username = user.UserName ?? user.Email ?? string.Empty,
+			Roles = roles,
+			Token = new TokenResponse
+			{
+				AccessToken = _jwtService.GenerateAccessToken(user, roles),
+				RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
+				ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			}
 		};
 
-		return new ServiceActionResult(true) { Data = tokenResponse };
+		return new ServiceActionResult(true) { Data = response };
     }
 
     public async Task<ServiceActionResult> RefreshTokenAsync(RefreshTokenRequest request)
