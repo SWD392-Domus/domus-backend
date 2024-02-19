@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
@@ -10,7 +11,6 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.OfferedPackages;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
@@ -132,4 +132,58 @@ public class PackageService : IPackageService
             Data = packages.ProjectTo<DtoPackage>(_mapper.ConfigurationProvider)
         };
     }
+    public async Task<ServiceActionResult> SearchPackages(BaseSearchRequest request)
+    {
+        var packages = (await _packageRepository.FindAsync(pk => !pk.IsDeleted)).ToList();
+        
+        foreach (var searchInfo in request.DisjunctionSearchInfos)
+        {
+            packages = packages
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(Package), searchInfo.FieldName, p)
+                    .Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (request.ConjunctionSearchInfos.Any())
+        {
+            var initialSearchInfo = request.ConjunctionSearchInfos.First();
+            Expression<Func<Package, bool>> conjunctionWhere = p => ReflectionHelper.GetStringValueByName(typeof(Package), initialSearchInfo.FieldName, p)
+                .Contains(initialSearchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+            
+            foreach (var (searchInfo, i) in request.ConjunctionSearchInfos.Select((value, i) => (value, i)))
+            {
+                if (i == 0)
+                    continue;
+                
+                Expression<Func<Package, bool>> whereExpr = p => ReflectionHelper.GetStringValueByName(typeof(Package), searchInfo.FieldName, p)
+                    .Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+                conjunctionWhere = ExpressionHelper.CombineOrExpressions(conjunctionWhere, whereExpr);
+            }
+
+            packages = packages.Where(conjunctionWhere.Compile()).ToList();
+        }
+
+        if (request.SortInfos.Any())
+        {
+            request.SortInfos = request.SortInfos.OrderBy(si => si.Priority).ToList();
+            var initialSortInfo = request.SortInfos.First();
+            Expression<Func<Package, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(Package), initialSortInfo.FieldName, p);
+
+            packages = initialSortInfo.Descending ? packages.OrderByDescending(orderExpr.Compile()).ToList() : packages.OrderBy(orderExpr.Compile()).ToList();
+            
+            foreach (var (sortInfo, i) in request.SortInfos.Select((value, i) => (value, i)))
+            {
+                if (i == 0)
+                    continue;
+                
+                orderExpr = p => ReflectionHelper.GetValueByName(typeof(Package), sortInfo.FieldName, p);
+                packages = sortInfo.Descending ? packages.OrderByDescending(orderExpr.Compile()).ToList() : packages.OrderBy(orderExpr.Compile()).ToList();
+            }
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult<Package, DtoPackage>(_mapper, packages, request.PageSize, request.PageIndex);
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
 }

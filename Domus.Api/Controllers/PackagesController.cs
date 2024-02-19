@@ -59,11 +59,18 @@ public class PackagesController : BaseApiController
             await _packageService.DeletePackage(id).ConfigureAwait(false)).ConfigureAwait(false);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetPackageByName(string name)
+    // [HttpGet]
+    // public async Task<IActionResult> GetPackageByName(string name)
+    // {
+    //     return await ExecuteServiceLogic(async () =>
+    //         await _packageService.GetPackageByName(name).ConfigureAwait(false)).ConfigureAwait(false);
+    // }
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchProducts(BaseSearchRequest request)
     {
-        return await ExecuteServiceLogic(async () =>
-            await _packageService.GetPackageByName(name).ConfigureAwait(false)).ConfigureAwait(false);
+        return await ExecuteServiceLogic(
+            async () => await _packageService.SearchPackages(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
 }
 

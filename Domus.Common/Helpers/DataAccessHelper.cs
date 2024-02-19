@@ -17,7 +17,7 @@ public static class DataAccessHelper
 	}
 
 	public static void InitConfiguration(IConfiguration configuration)
-	{
+	{	
 		_configuration = configuration;
 	}
 
