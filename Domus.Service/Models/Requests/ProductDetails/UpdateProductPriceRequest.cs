@@ -2,7 +2,7 @@
 
 public class UpdateProductPriceRequest
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     
     public double Price { get; set; }
 

@@ -4,7 +4,7 @@ namespace Domus.Service.Models.Requests.ProductDetails;
 
 public class UpdateProductAttributeValueRequest
 {
-    public Guid AttributeId { get; set; }
+    public Guid? AttributeId { get; set; }
 
     [Required]
     public string Name { get; set; } = null!;

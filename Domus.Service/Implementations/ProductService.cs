@@ -128,9 +128,51 @@ public class ProductService : IProductService
 			{
 				if (!product.ProductDetails.Any(pd => !pd.IsDeleted && pd.Id == productDetail.Id)) continue;
 				
-				var detail = product.ProductDetails.First(pd => !pd.IsDeleted && pd.Id == productDetail.Id);
+				var detail = product.ProductDetails.FirstOrDefault(pd => !pd.IsDeleted && pd.Id == productDetail.Id);
+
+				if (detail == null) continue;
+				
 				product.ProductDetails.Remove(detail);
-				product.ProductDetails.Add(_mapper.Map<ProductDetail>(productDetail));
+				foreach (var attributeValue in productDetail.ProductAttributeValues)
+				{
+					if (attributeValue.AttributeId == default)
+					{
+						detail.ProductAttributeValues.Add(_mapper.Map<ProductAttributeValue>(attributeValue));
+					}
+					else
+					{
+						var attr = detail.ProductAttributeValues.FirstOrDefault(pav =>
+							pav.ProductAttributeId == attributeValue.AttributeId);
+						
+						if (attr == null) continue;
+						
+						detail.ProductAttributeValues.Remove(attr);
+						var updatedAttr = _mapper.Map<ProductAttributeValue>(attributeValue);
+						detail.ProductAttributeValues.Add(updatedAttr);
+					}
+				}
+				
+				foreach (var productPrice in productDetail.ProductPrices)
+				{
+					if (productPrice.Id == default)
+					{
+						detail.ProductPrices.Add(_mapper.Map<ProductPrice>(productPrice));
+					}
+					else
+					{
+						var price = detail.ProductPrices.FirstOrDefault(p =>
+							p.Id == productPrice.Id);
+						
+						if (price == null) continue;
+						
+						detail.ProductPrices.Remove(price);
+						var updatedPrice = _mapper.Map<ProductPrice>(productPrice);
+						detail.ProductPrices.Add(updatedPrice);
+					}
+				}
+				
+				// _mapper.Map(productDetail, detail);
+				product.ProductDetails.Add(detail);
 			}
 		}
 
