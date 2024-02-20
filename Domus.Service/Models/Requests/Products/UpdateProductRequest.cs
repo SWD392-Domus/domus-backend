@@ -4,7 +4,7 @@ namespace Domus.Service.Models.Requests.Products;
 
 public class UpdateProductRequest 
 {
-    public Guid ProductCategoryId { get; set; }
+    public Guid? ProductCategoryId { get; set; }
 
     public string? ProductName { get; set; }
 
