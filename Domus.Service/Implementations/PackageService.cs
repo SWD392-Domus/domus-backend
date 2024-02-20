@@ -70,12 +70,16 @@ public class PackageService : IPackageService
     [SuppressMessage("ReSharper.DPA", "DPA0009: High execution time of DB command", MessageId = "time: 627ms")]
     public async Task<ServiceActionResult> GetPackage(Guid packageId)
     {
+        var package = (await _packageRepository.FindAsync(x => x.Id == packageId && !x.IsDeleted))
+                      .ProjectTo<DtoPackageWithProductName>(_mapper.ConfigurationProvider).FirstOrDefault()
+                      ?? throw new PackageNotFoundException();
+        var sumService = package.Services.Sum(sv => sv.Price);
+        var sumProductDetail = package.ProductDetails.Sum(pd => pd.DisplayPrice);
+        package.EstimatedPrice = (sumService + sumProductDetail) * (100 - package.Discount) / 100;
         return new ServiceActionResult()
         {
             IsSuccess = true,
-            Data = (await _packageRepository.FindAsync(x=> x.Id == packageId && !x.IsDeleted))
-                   .ProjectTo<DtoPackage>(_mapper.ConfigurationProvider).FirstOrDefault()
-                 ?? throw new PackageNotFoundException()
+            Data = package
         };
     }
 
