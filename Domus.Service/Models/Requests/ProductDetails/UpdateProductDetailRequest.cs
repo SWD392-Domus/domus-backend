@@ -11,9 +11,6 @@ public class UpdateProductDetailRequest
 	[JsonPropertyName("attributes")]
 	public virtual ICollection<UpdateProductAttributeValueRequest> ProductAttributeValues { get; set; } = new List<UpdateProductAttributeValueRequest>();
 
-	[JsonPropertyName("images")]
-	public virtual ICollection<UpdateProductImageRequest> ProductImages { get; set; } = new List<UpdateProductImageRequest>();
-
 	[JsonPropertyName("prices")]
 	public virtual ICollection<UpdateProductPriceRequest> ProductPrices { get; set; } = new List<UpdateProductPriceRequest>();
 }

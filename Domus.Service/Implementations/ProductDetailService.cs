@@ -9,6 +9,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 namespace Domus.Service.Implementations;
 
@@ -19,12 +20,14 @@ public class ProductDetailService : IProductDetailService
 	private readonly IMapper _mapper;
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IProductAttributeRepository _productAttributeRepository;
+	private readonly IFileService _fileService;
 
 	public ProductDetailService(
 			IProductDetailRepository productDetailRepository,
 			IMapper mapper,
 			IUnitOfWork unitOfWork,
 			IProductRepository productRepository,
+			IFileService fileService,
 			IProductAttributeRepository productAttributeRepository)
 	{
 		_productDetailRepository = productDetailRepository;
@@ -32,6 +35,7 @@ public class ProductDetailService : IProductDetailService
 		_unitOfWork = unitOfWork;
 		_productRepository = productRepository;
 		_productAttributeRepository = productAttributeRepository;
+		_fileService = fileService;
 	}
 
     public async Task<ServiceActionResult> CreateProductDetail(CreateProductDetailRequest request)
@@ -118,11 +122,11 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> GetProductDetailById(Guid id)
     {
-		var productDetail = await _productDetailRepository.GetAsync(pd => pd.Id == id);
-		if (productDetail == null)
-			throw new ProductDetailNotFoundException();
+		var productDetail = await (await _productDetailRepository.FindAsync(pd => !pd.IsDeleted && pd.Id == id))
+			.ProjectTo<DtoProductDetail>(_mapper.ConfigurationProvider)
+			.FirstOrDefaultAsync() ?? throw new ProductDetailNotFoundException();
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProductDetail>(productDetail) };
+		return new ServiceActionResult(true) { Data = productDetail };
     }
 
     public async Task<ServiceActionResult> UpdateProductDetail(UpdateProductDetailRequest request, Guid id)
@@ -165,5 +169,22 @@ public class ProductDetailService : IProductDetailService
 		    productDetailList.Add(productDetail);
 	    }
 	    return productDetailList.AsQueryable();
+    }
+
+    public async Task<ServiceActionResult> AddImages(IEnumerable<IFormFile> images, Guid id)
+    {
+		var productDetail = await (await _productDetailRepository.FindAsync(pd => !pd.IsDeleted && pd.Id == id))
+			.Include(pd => pd.ProductImages)
+			.FirstOrDefaultAsync() ?? throw new ProductDetailNotFoundException();
+		var uploadedImages = await _fileService.GetUrlAfterUploadedFile(images.ToList());
+		foreach (var productImage in uploadedImages.Select(x => new ProductImage { ImageUrl = x }))
+		{
+			productDetail.ProductImages.Add(productImage);
+		}
+
+		await _productDetailRepository.UpdateAsync(productDetail);
+		await _unitOfWork.CommitAsync();
+		
+		return new ServiceActionResult(true, "Images added successfully");
     }
 }

@@ -68,6 +68,8 @@ public static class AutoMapperConfiguration
 				opt => opt.MapFrom(src => src.Name));
 		
 		mapper.CreateMap<UpdateProductRequest, Product>()
+			.ForMember(dest => dest.ProductCategoryId,
+				opt => opt.Condition((req, _) => req.ProductCategoryId != default))
 			.ForMember(dest => dest.ProductName,
 				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.ProductName)))
 			.ForMember(dest => dest.Brand,

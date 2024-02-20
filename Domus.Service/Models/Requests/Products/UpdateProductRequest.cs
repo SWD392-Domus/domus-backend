@@ -1,11 +1,9 @@
-using Domus.Service.Attributes;
 using Domus.Service.Models.Requests.ProductDetails;
 
 namespace Domus.Service.Models.Requests.Products;
 
 public class UpdateProductRequest 
 {
-	[RequiredGuid]
     public Guid ProductCategoryId { get; set; }
 
     public string? ProductName { get; set; }

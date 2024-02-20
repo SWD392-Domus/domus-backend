@@ -112,7 +112,7 @@ public class ProductService : IProductService
 			.Include(p => p.ProductDetails)
 			.ThenInclude(pd => pd.ProductAttributeValues)
 			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
-		if (!await _productCategoryRepository.ExistsAsync(c => c.Id == request.ProductCategoryId))
+		if (request.ProductCategoryId != default && !await _productCategoryRepository.ExistsAsync(c => c.Id == request.ProductCategoryId))
 			throw new ProductCategoryNotFoundException();
 
 		_mapper.Map(request, product);

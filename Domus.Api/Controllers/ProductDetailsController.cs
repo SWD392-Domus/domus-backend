@@ -53,6 +53,15 @@ public class ProductDetailsController : BaseApiController
 			async () => await _productDetailService.CreateProductDetail(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpPost("{id:guid}/images")]
+	public async Task<IActionResult> AddImagesToProductDetail(IEnumerable<IFormFile> images, Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.AddImages(images, id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 
 	[HttpPut("{id:guid}")]
 	public async Task<IActionResult> UpdateProductDetail(UpdateProductDetailRequest request, Guid id)
