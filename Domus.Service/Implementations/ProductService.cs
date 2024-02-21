@@ -171,7 +171,6 @@ public class ProductService : IProductService
 					}
 				}
 				
-				// _mapper.Map(productDetail, detail);
 				product.ProductDetails.Add(detail);
 			}
 		}
@@ -179,7 +178,7 @@ public class ProductService : IProductService
 		await _productRepository.UpdateAsync(product);
 		await _unitOfWork.CommitAsync();
 		
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProduct>(product) };
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProductWithoutCategory>(product) };
     }
 
     public async Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)
