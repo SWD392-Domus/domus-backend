@@ -38,8 +38,7 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email));
 		mapper.CreateMap<LoginRequest, DomusUser>();
 		mapper.CreateMap<CreateUserRequest, DomusUser>();
-		mapper.CreateMap<DomusUser, DtoDomusUser>()
-			.ForMember(dest => dest.Name, opt => opt.MapFrom((src) => src.UserName));
+		mapper.CreateMap<DomusUser, DtoDomusUser>();
 	}
 
 	private static void CreateArticleMaps(IMapperConfigurationExpression mapper)
@@ -106,7 +105,9 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.QuantityType,
 				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.QuantityType)));
 		
-		mapper.CreateMap<Product, DtoProduct>();
+		mapper.CreateMap<Product, DtoProduct>()
+			.ForMember(dest => dest.ProductDetails,
+				opt => opt.MapFrom(src => src.ProductDetails.Where(pd => !pd.IsDeleted)));
 		mapper.CreateMap<Product, DtoProductWithoutCategory>();
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
