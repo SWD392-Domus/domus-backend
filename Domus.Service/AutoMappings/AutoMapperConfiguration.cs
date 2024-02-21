@@ -108,7 +108,11 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Product, DtoProduct>()
 			.ForMember(dest => dest.ProductDetails,
 				opt => opt.MapFrom(src => src.ProductDetails.Where(pd => !pd.IsDeleted)));
-		mapper.CreateMap<Product, DtoProductWithoutCategory>();
+
+		mapper.CreateMap<Product, DtoProductWithoutCategory>()
+			.ForMember(dest => dest.ProductDetails,
+				opt => opt.MapFrom(src => src.ProductDetails.Where(pd => !pd.IsDeleted)));
+
 		mapper.CreateMap<Product, DtoProductWithoutCategoryAndDetails>();
 		mapper.CreateMap<ProductCategory, DtoProductCategory>();
 		mapper.CreateMap<ProductDetail, DtoProductDetailPackage>()
