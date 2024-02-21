@@ -57,6 +57,8 @@
     <EmbeddedResource Include="Scripts\17.Add_DomusUser_IsDeleted.sql" />
     <None Remove="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
     <EmbeddedResource Include="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
+    <None Remove="Scripts\19.Add_More_User_Information.sql" />
+    <EmbeddedResource Include="Scripts\19.Add_More_User_Information.sql" />
   </ItemGroup>
 
 </Project>
