@@ -89,9 +89,7 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> DeleteProductDetail(Guid id)
     {
-		var productDetail = await _productDetailRepository.GetAsync(pd => pd.Id == id);
-		if (productDetail == null)
-			throw new ProductDetailNotFoundException();
+		var productDetail = await _productDetailRepository.GetAsync(pd => !pd.IsDeleted && pd.Id == id) ?? throw new ProductDetailNotFoundException();
 
 		productDetail.IsDeleted = true;
 		await _productDetailRepository.UpdateAsync(productDetail);
