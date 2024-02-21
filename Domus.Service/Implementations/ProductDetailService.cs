@@ -175,6 +175,7 @@ public class ProductDetailService : IProductDetailService
 			.Include(pd => pd.ProductImages)
 			.FirstOrDefaultAsync() ?? throw new ProductDetailNotFoundException();
 		var uploadedImages = await _fileService.GetUrlAfterUploadedFile(images.ToList());
+
 		foreach (var productImage in uploadedImages.Select(x => new ProductImage { ImageUrl = x }))
 		{
 			productDetail.ProductImages.Add(productImage);
@@ -183,6 +184,6 @@ public class ProductDetailService : IProductDetailService
 		await _productDetailRepository.UpdateAsync(productDetail);
 		await _unitOfWork.CommitAsync();
 		
-		return new ServiceActionResult(true, "Images added successfully");
+		return new ServiceActionResult(true, "Images added successfully") { Data = uploadedImages };
     }
 }
