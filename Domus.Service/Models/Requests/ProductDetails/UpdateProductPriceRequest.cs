@@ -1,4 +1,6 @@
-﻿namespace Domus.Service.Models.Requests.ProductDetails;
+﻿using System.Text.Json.Serialization;
+
+namespace Domus.Service.Models.Requests.ProductDetails;
 
 public class UpdateProductPriceRequest
 {
@@ -10,5 +12,6 @@ public class UpdateProductPriceRequest
 
     public double Quantity { get; set; }
 
+	[JsonIgnore]
     public string? QuantityType { get; set; }
 }

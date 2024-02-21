@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Domus.Service.Attributes;
+using System.Text.Json.Serialization;
 
 namespace Domus.Service.Models.Requests.ProductDetails;
 
@@ -13,6 +13,7 @@ public class CreateProductPriceRequest
 
 	public double Quantity { get; set; }
 
-	[Required]
-	public string QuantityType { get; set; } = null!;
+	// [Required]
+	[JsonIgnore]
+	public string QuantityType { get; set; } = string.Empty;
 }

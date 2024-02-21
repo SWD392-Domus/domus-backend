@@ -12,7 +12,8 @@ public class CreateProductDetailInProductRequest
 
     public float Quantity { get; set; }
 
-    public string QuantityType { get; set; } = null!;
+	[JsonIgnore]
+    public string QuantityType { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
     public ICollection<CreateProductAttributeRequest> ProductAttributeValues { get; set; } = new List<CreateProductAttributeRequest>();

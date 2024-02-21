@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Domus.Service.Attributes;
 
 namespace Domus.Service.Models.Requests.ProductDetails;
@@ -17,6 +18,7 @@ public class CreateProductDetailRequest
 
 	public float Quantity { get; set; }
 
+	[JsonIgnore]
 	public string QuantityType { get; set; } = null!;
 
 	public ICollection<CreateProductAttributeRequest> Attributes { get; set; } = new List<CreateProductAttributeRequest>();

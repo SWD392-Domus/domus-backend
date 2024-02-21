@@ -43,7 +43,7 @@ public class ProductService : IProductService
 		await _productRepository.AddAsync(product);
 		await _unitOfWork.CommitAsync();
 
-		return new ServiceActionResult(true);
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProduct>(product) };
     }
 
     public async Task<ServiceActionResult> DeleteProduct(Guid id)
@@ -179,7 +179,7 @@ public class ProductService : IProductService
 		await _productRepository.UpdateAsync(product);
 		await _unitOfWork.CommitAsync();
 		
-		return new ServiceActionResult(true);
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProduct>(product) };
     }
 
     public async Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)
