@@ -96,7 +96,7 @@ public class ProductService : IProductService
     {
 		var product = await (await _productRepository.GetAllAsync())
 			.Where(p => !p.IsDeleted && p.Id == id)
-			.ProjectTo<DtoProductWithoutCategory>(_mapper.ConfigurationProvider)
+			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
 			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
 
 		return new ServiceActionResult(true) { Data = product };
