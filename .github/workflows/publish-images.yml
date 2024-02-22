@@ -3,8 +3,7 @@ name: Publish docker images and Deploy to Azure
 on: 
   push:
     tags: [ "v*" ]
-  
-#on:
+    branches: ["dev"]
 #  push:
 #    branches:
 #      - cd
