@@ -69,15 +69,20 @@ public class GoogleOAuthService : IGoogleOAuthService
 		securityToken.Claims.TryGetValue(GoogleTokenClaimConstants.PICTURE, out var picture);
 
 		var user = await _userManager.FindByEmailAsync(email) ?? await CreateNewUserAsync(email, emailVerified, name, picture);
-
-		var tokenResponse = new TokenResponse
+		var roles = _userManager.GetRolesAsync(user).Result.ToList();
+		var authResponse = new AuthResponse
 		{
-			AccessToken = _jwtService.GenerateAccessToken(user, _userManager.GetRolesAsync(user).Result.ToList()),
-			RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
-			ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			Username = user.UserName ?? user.Email ?? string.Empty,
+			Roles = roles,
+			Token = new TokenResponse
+			{
+				AccessToken = _jwtService.GenerateAccessToken(user, roles),
+				RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
+				ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			}
 		};
 
-        return new ServiceActionResult(true) { Data = tokenResponse };
+        return new ServiceActionResult(true) { Data = authResponse };
     }
 
 	private async Task<DomusUser> CreateNewUserAsync(string email, string emailVerified, string fullName, string picture)
