@@ -61,12 +61,15 @@ jobs:
           touch $HOME/.ssh/azure_vm_key
           echo "${{ secrets.AZURE_SSH_KEY }}" > $HOME/.ssh/azure_vm_key
           chmod 600 $HOME/.ssh/azure_vm_key
+        
       - name: Deploy to Azure VM
         run: |
           ssh -i ~/.ssh/azure_vm_key \
                     -o StrictHostKeyChecking=no \
                     ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
-                     'docker ps -q | xargs -r docker stop &&
+                     '
+                      docker ps -q | xargs -r docker stop &&
                       docker container prune -f &&
+                      echo ${{ secrets.DOCKER_PAT_KEY }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin &&
                       docker pull ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }} &&
                       docker run -d -p 443:80 ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }}'
