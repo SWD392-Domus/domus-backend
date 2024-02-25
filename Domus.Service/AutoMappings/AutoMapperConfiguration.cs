@@ -35,9 +35,27 @@ public static class AutoMapperConfiguration
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<RegisterRequest, DomusUser>()
-			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email));
+			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email))
+			.ForMember(dest => dest.FullName, opt => opt.MapFrom((_) => "N/A"));
 		mapper.CreateMap<LoginRequest, DomusUser>();
 		mapper.CreateMap<CreateUserRequest, DomusUser>();
+		
+		mapper.CreateMap<UpdateUserRequest, DomusUser>()
+			.ForMember(dest => dest.Email,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.Email)))
+			.ForMember(dest => dest.UserName,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.UserName)))
+			.ForMember(dest => dest.FullName,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.FullName)))
+			.ForMember(dest => dest.Gender,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.Gender)))
+			.ForMember(dest => dest.Address,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.Address)))
+			.ForMember(dest => dest.PhoneNumber,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))
+			.ForMember(dest => dest.ProfileImage,
+				opt => opt.Ignore());
+		
 		mapper.CreateMap<DomusUser, DtoDomusUser>();
 	}
 

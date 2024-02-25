@@ -11,6 +11,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Users;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,13 +25,14 @@ public class UserService : IUserService
 	private readonly UserManager<DomusUser> _userManager;
 	private readonly RoleManager<IdentityRole> _roleManager;
 	private readonly IJwtService _jwtService;
+	private readonly IFileService _fileService;
 
 	public UserService(
 		IUserRepository userRepository,
 		IMapper mapper,
 		IUnitOfWork unitOfWork,
 		UserManager<DomusUser> userManager,
-		RoleManager<IdentityRole> roleManager, IJwtService jwtService)
+		RoleManager<IdentityRole> roleManager, IJwtService jwtService, IFileService fileService)
 	{
 		_userRepository = userRepository;
 		_mapper = mapper;
@@ -38,6 +40,7 @@ public class UserService : IUserService
 		_userManager = userManager;
 		_roleManager = roleManager;
 		_jwtService = jwtService;
+		_fileService = fileService;
 	}
 
     public async Task<ServiceActionResult> CreateUser(CreateUserRequest request)
@@ -122,10 +125,13 @@ public class UserService : IUserService
 		if (!string.IsNullOrEmpty(request.UserName) && await _userRepository.ExistsAsync(u => u.UserName == request.UserName && u.Id != userId))
 			throw new UserAlreadyExistsException("The username is already in use");
 
-		user.Email = string.IsNullOrEmpty(request.Email) ? user.Email : request.Email;
-		user.UserName = string.IsNullOrEmpty(request.UserName) ? user.UserName : request.UserName;
-		user.PhoneNumber = string.IsNullOrEmpty(request.PhoneNumber) ? user.PhoneNumber : request.PhoneNumber;
-		user.ProfileImage = string.IsNullOrEmpty(request.ProfileImage) ? user.ProfileImage : request.ProfileImage;
+		_mapper.Map(request, user);
+		
+		if (request.ProfileImage != null)
+		{
+			var profileImageUrl = await _fileService.GetUrlAfterUploadedFile(new List<IFormFile> { request.ProfileImage }!);
+			user.ProfileImage = profileImageUrl.First();
+		}
 
 		await _userManager.UpdateAsync(user);
 		await _unitOfWork.CommitAsync();
@@ -155,13 +161,13 @@ public class UserService : IUserService
 		if (!string.IsNullOrEmpty(request.UserName) && await _userRepository.ExistsAsync(u => u.UserName == request.UserName && u.Id != userId))
 			throw new UserAlreadyExistsException("The username is already in use");
 
-		user.Email = string.IsNullOrEmpty(request.Email) ? user.Email : request.Email;
-		user.UserName = string.IsNullOrEmpty(request.UserName) ? user.UserName : request.UserName;
-		user.PhoneNumber = string.IsNullOrEmpty(request.PhoneNumber) ? user.PhoneNumber : request.PhoneNumber;
-		user.ProfileImage = string.IsNullOrEmpty(request.ProfileImage) ? user.ProfileImage : request.ProfileImage;
-		user.Gender = string.IsNullOrEmpty(request.Gender) ? user.Gender : request.Gender;
-		user.Address = string.IsNullOrEmpty(request.Address) ? user.Gender : request.Address;
-		user.FullName = string.IsNullOrEmpty(request.FullName) ? user.FullName : request.FullName;
+		_mapper.Map(request, user);
+		
+		if (request.ProfileImage != null)
+		{
+			var profileImageUrl = await _fileService.GetUrlAfterUploadedFile(new List<IFormFile> { request.ProfileImage }!);
+			user.ProfileImage = profileImageUrl.First();
+		}
 		
 		await _userManager.UpdateAsync(user);
 		await _unitOfWork.CommitAsync();

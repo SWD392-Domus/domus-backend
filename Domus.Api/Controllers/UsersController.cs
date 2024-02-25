@@ -52,7 +52,7 @@ public class UsersController : BaseApiController
 	}
 
 	[HttpPut("{id}")]
-	public async Task<IActionResult> UpdateUser(UpdateUserRequest request, string id)
+	public async Task<IActionResult> UpdateUser([FromForm] UpdateUserRequest request, string id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _userService.UpdateUser(request, id).ConfigureAwait(false)
@@ -78,7 +78,7 @@ public class UsersController : BaseApiController
 
 	[AllowAnonymous]
 	[HttpPut("self-profile/{token}")]
-	public async Task<IActionResult> UpdateSelfProfile(UpdateUserRequest request, string token)
+	public async Task<IActionResult> UpdateSelfProfile([FromForm] UpdateUserRequest request, string token)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _userService.UpdateSelfProfile(request, token).ConfigureAwait(false)

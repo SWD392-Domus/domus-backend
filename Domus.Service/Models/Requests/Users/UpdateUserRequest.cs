@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Domus.Service.Models.Requests.Users;
 
 public class UpdateUserRequest
@@ -14,5 +16,5 @@ public class UpdateUserRequest
 
 	public string? PhoneNumber { get; set; }
 
-	public string? ProfileImage { get; set; }
+	public IFormFile? ProfileImage { get; set; }
 }
