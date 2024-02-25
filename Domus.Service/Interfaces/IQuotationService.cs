@@ -8,7 +8,7 @@ namespace Domus.Service.Interfaces;
 
 public interface IQuotationService : IAutoRegisterable
 {
-    Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request);
+    Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request, string token);
     Task<ServiceActionResult> DeleteQuotation(Guid id);
     Task<ServiceActionResult> GetAllQuotations();
     Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request);

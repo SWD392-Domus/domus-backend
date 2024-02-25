@@ -12,6 +12,7 @@ using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
@@ -27,6 +28,8 @@ public class QuotationService : IQuotationService
 	private readonly IQuotationNegotiationLogRepository _quotationNegotiationLogRepository;
 	private readonly INegotiationMessageRepository _negotiationMessageRepository;
 	private readonly IServiceRepository _serviceRepository;
+	private readonly IJwtService _jwtService;
+	private readonly UserManager<DomusUser> _userManager;
 
 	public QuotationService(
 			IQuotationRepository quotationRepository,
@@ -37,7 +40,9 @@ public class QuotationService : IQuotationService
 			IProductDetailQuotationRepository productDetailQuotationRepository,
 			IServiceRepository serviceRepository,
 			INegotiationMessageRepository negotiationMessageRepository,
-			IQuotationNegotiationLogRepository quotationNegotiationLogRepository)
+			IQuotationNegotiationLogRepository quotationNegotiationLogRepository,
+			IJwtService jwtService, 
+			UserManager<DomusUser> userManager)
 	{
 		_quotationRepository = quotationRepository;
 		_unitOfWork = unitOfWork;
@@ -45,6 +50,8 @@ public class QuotationService : IQuotationService
 		_productDetailRepository = productDetailRepository;
 		_productDetailQuotationRepository = productDetailQuotationRepository;
 		_quotationNegotiationLogRepository = quotationNegotiationLogRepository;
+		_jwtService = jwtService;
+		_userManager = userManager;
 		_serviceRepository = serviceRepository;
 		_negotiationMessageRepository = negotiationMessageRepository;
 		_mapper = mapper;
@@ -83,36 +90,39 @@ public class QuotationService : IQuotationService
 		return new ServiceActionResult(true);
      }
 
-    public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request)
+    public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request, string token)
     {
-		var customer = await _userRepository.GetAsync(u => u.Id == request.CustomerId);
-		if (customer == null)
-			throw new UserNotFoundException("Customer not found");
-		if (!await _userRepository.ExistsAsync(u => u.Id == request.StaffId))
-			throw new UserNotFoundException("Staff not found");
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
+	    var creator = await _userRepository.GetAsync(u => u.Id == userId) ?? throw new UserNotFoundException("Creator not found");
+		var creatorRoles = await _userManager.GetRolesAsync(creator);
+		var createdByStaff = creatorRoles.Contains(UserRoleConstants.STAFF);
 
 		var quotation = new Quotation
 		{
-			CustomerId = request.CustomerId,
-			StaffId = request.StaffId,
-			CreatedBy = request.CustomerId,
+			CustomerId = createdByStaff ? "82542982-e958-4817-9a69-2fb8382df1f6" : userId,
+			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
+			CreatedBy = userId,
 			CreatedAt = DateTime.Now,
-			ExpireAt = DateTime.Now.AddDays(30),
+			ExpireAt = request.ExpireAt == null ? request.ExpireAt : DateTime.Now.AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
 		};
 
-		foreach (var productDetailId in request.ProductDetails)
+		foreach (var productDetail in request.ProductDetails)
 		{
-			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetailId);
+			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetail.ProductDetailId);
 			if (productDetailEntity == null)
 				throw new ProductDetailNotFoundException();
 
 			var productDetailQuotation = new ProductDetailQuotation
 			{
-				ProductDetailId = productDetailId,
+				ProductDetailId = productDetail.ProductDetailId,
 				QuotationId = quotation.Id,
-				Quantity = 1,
+				Quantity = productDetail.Quantity,
 				Price = productDetailEntity.DisplayPrice,
 				MonetaryUnit = "USD",
 				QuantityType = "Unit",
@@ -130,8 +140,9 @@ public class QuotationService : IQuotationService
 			quotation.Services.Add(serviceEntity);
 		}
 
-		customer.QuotationCreatedByNavigations.Add(quotation);
-		await _userRepository.UpdateAsync(customer);
+		// customer.QuotationCreatedByNavigations.Add(quotation);
+		// await _userRepository.UpdateAsync(customer);
+		await _quotationRepository.AddAsync(quotation);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true);

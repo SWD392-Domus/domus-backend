@@ -56,7 +56,7 @@ public class QuotationsController : BaseApiController
 	public async Task<IActionResult> CreateQuotation(CreateQuotationRequest request)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _quotationService.CreateQuotation(request).ConfigureAwait(false)
+			async () => await _quotationService.CreateQuotation(request, GetJwtToken()).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
@@ -106,5 +106,11 @@ public class QuotationsController : BaseApiController
 		return await ExecuteServiceLogic(
 			async () => await _quotationService.GetAllNegotiationMessages(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
+	}
+
+	private string GetJwtToken()
+	{
+		var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
+		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
 	}
 }
