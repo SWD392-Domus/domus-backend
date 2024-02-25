@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Domus.Service.Models.Requests.ProductDetails;
 
 namespace Domus.Service.Models.Requests.Products;
@@ -12,5 +13,6 @@ public class UpdateProductRequest
 
     public string? Description { get; set; }
 
+    [JsonPropertyName("details")]
     public ICollection<UpdateProductDetailRequest> ProductDetails { get; set; } = new List<UpdateProductDetailRequest>();
 }
