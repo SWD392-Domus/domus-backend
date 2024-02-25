@@ -8,5 +8,5 @@ public class DtoProductAttributeValue
 
 	public string Value { get; set; } = null!;
 
-	public string ValueType { get; set; } = null!;
+	public string? ValueType { get; set; }
 }
