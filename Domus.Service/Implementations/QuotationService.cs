@@ -301,14 +301,9 @@ public class QuotationService : IQuotationService
 				continue;
 			};
 			
-			// if (!quotation.ProductDetailQuotations.Select(pdq => pdq.Id).Contains(requestProductDetail.ProductDetailId))
-			// 	quotation.ProductDetailQuotations.Add(productDetail);
-			// else
-			// {
-				quotation.ProductDetailQuotations.Remove(productDetail);
-				productDetail.Quantity = requestProductDetail.Quantity;
-				quotation.ProductDetailQuotations.Add(productDetail);
-			// }
+			quotation.ProductDetailQuotations.Remove(productDetail);
+			productDetail.Quantity = requestProductDetail.Quantity;
+			quotation.ProductDetailQuotations.Add(productDetail);
 		}
 		
 		var excludedProductDetails = new List<ProductDetailQuotation>(quotation.ProductDetailQuotations.Where(s => !request.ProductDetailQuotations.Select(pdq => pdq.ProductDetailId).Contains(s.ProductDetailId)));
