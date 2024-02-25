@@ -1,7 +1,9 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Domain.Dtos.Products;
 using Domus.Domain.Entities;
 using Domus.Service.Exceptions;
@@ -9,6 +11,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 namespace Domus.Service.Implementations;
@@ -185,5 +188,87 @@ public class ProductDetailService : IProductDetailService
 		await _unitOfWork.CommitAsync();
 		
 		return new ServiceActionResult(true, "Images added successfully") { Data = uploadedImages };
+    }
+
+    public async Task<ServiceActionResult> SearchProductDetails(BaseSearchRequest request)
+    {
+	    var productDetails = (await _productDetailRepository.FindAsync(pk => !pk.IsDeleted)).ToList();
+        
+        foreach (var searchInfo in request.DisjunctionSearchInfos)
+        {
+	        productDetails = productDetails
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(Package), searchInfo.FieldName, p)
+                    .Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (request.ConjunctionSearchInfos.Any())
+        {
+            var initialSearchInfo = request.ConjunctionSearchInfos.First();
+            Expression<Func<ProductDetail, bool>> conjunctionWhere = p => ReflectionHelper.GetStringValueByName(typeof(ProductDetail), initialSearchInfo.FieldName, p)
+                .Contains(initialSearchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+            
+            foreach (var (searchInfo, i) in request.ConjunctionSearchInfos.Select((value, i) => (value, i)))
+            {
+                if (i == 0)
+                    continue;
+                
+                Expression<Func<ProductDetail, bool>> whereExpr = p => ReflectionHelper.GetStringValueByName(typeof(ProductDetail), searchInfo.FieldName, p)
+                    .Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+                conjunctionWhere = ExpressionHelper.CombineOrExpressions(conjunctionWhere, whereExpr);
+            }
+
+            productDetails = productDetails.Where(conjunctionWhere.Compile()).ToList();
+        }
+
+        if (request.SortInfos.Any())
+        {
+            request.SortInfos = request.SortInfos.OrderBy(si => si.Priority).ToList();
+            var initialSortInfo = request.SortInfos.First();
+            Expression<Func<ProductDetail, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(ProductDetail), initialSortInfo.FieldName, p);
+
+            productDetails = initialSortInfo.Descending ? productDetails.OrderByDescending(orderExpr.Compile()).ToList() : productDetails.OrderBy(orderExpr.Compile()).ToList();
+            
+            foreach (var (sortInfo, i) in request.SortInfos.Select((value, i) => (value, i)))
+            {
+                if (i == 0)
+                    continue;
+                
+                orderExpr = p => ReflectionHelper.GetValueByName(typeof(Package), sortInfo.FieldName, p);
+                productDetails = sortInfo.Descending ? productDetails.OrderByDescending(orderExpr.Compile()).ToList() : productDetails.OrderBy(orderExpr.Compile()).ToList();
+            }
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult<ProductDetail, DtoProductDetail>(_mapper, productDetails, request.PageSize, request.PageIndex);
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+    public async Task<ServiceActionResult> SearchProductDetailsUsingGet(SearchUsingGetRequest request)
+    {
+	    var productDetails = await (await _productDetailRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoPackage>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+	    
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    productDetails = productDetails
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoProductDetail), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoPackage, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProductDetail), request.SortField, p);
+		    productDetails = request.Descending
+			    ? productDetails.OrderByDescending(orderExpr.Compile()).ToList()
+			    : productDetails.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(productDetails, request.PageSize, request.PageIndex);
+	    var finalProducts = (IEnumerable<DtoPackage>)paginatedResult.Items!;
+
+	    paginatedResult.Items = finalProducts;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 }
