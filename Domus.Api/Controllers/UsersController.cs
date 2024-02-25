@@ -78,7 +78,7 @@ public class UsersController : BaseApiController
 
 	[AllowAnonymous]
 	[HttpPut("self-profile/{token}")]
-	public async Task<IActionResult> UpdateSelfProfile(UpdateSelfProfileRequest request, string token)
+	public async Task<IActionResult> UpdateSelfProfile(UpdateUserRequest request, string token)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _userService.UpdateSelfProfile(request, token).ConfigureAwait(false)

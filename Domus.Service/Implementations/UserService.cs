@@ -141,7 +141,7 @@ public class UserService : IUserService
 	    }
     }
 
-    public async Task<ServiceActionResult> UpdateSelfProfile(UpdateSelfProfileRequest request, string token)
+    public async Task<ServiceActionResult> UpdateSelfProfile(UpdateUserRequest request, string token)
     {
 	    if (!_jwtService.IsValidToken(token))
 		    throw new InvalidTokenException();
@@ -159,7 +159,10 @@ public class UserService : IUserService
 		user.UserName = string.IsNullOrEmpty(request.UserName) ? user.UserName : request.UserName;
 		user.PhoneNumber = string.IsNullOrEmpty(request.PhoneNumber) ? user.PhoneNumber : request.PhoneNumber;
 		user.ProfileImage = string.IsNullOrEmpty(request.ProfileImage) ? user.ProfileImage : request.ProfileImage;
-
+		user.Gender = string.IsNullOrEmpty(request.Gender) ? user.Gender : request.Gender;
+		user.Address = string.IsNullOrEmpty(request.Address) ? user.Gender : request.Address;
+		user.FullName = string.IsNullOrEmpty(request.FullName) ? user.FullName : request.FullName;
+		
 		await _userManager.UpdateAsync(user);
 		await _unitOfWork.CommitAsync();
 
