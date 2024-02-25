@@ -80,7 +80,7 @@ public class ProductDetailsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 	[HttpPost("search")]
-	public async Task<IActionResult> SearchProductDetails([FromForm] BaseSearchRequest request)
+	public async Task<IActionResult> SearchProductDetails(BaseSearchRequest request)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _productDetailService.SearchProductDetails(request).ConfigureAwait(false)
