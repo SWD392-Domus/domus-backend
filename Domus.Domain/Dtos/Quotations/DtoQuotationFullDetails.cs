@@ -20,6 +20,8 @@ public class DtoQuotationFullDetails
 	[JsonPropertyName("products")]
 	public ICollection<DtoProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotation>();
 
+	public ICollection<DtoService> Services { get; set; }
+
 	[JsonPropertyName("negotiationLog")]
 	public DtoQuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
 }

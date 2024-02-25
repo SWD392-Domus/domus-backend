@@ -224,7 +224,7 @@ public class QuotationService : IQuotationService
 			.FirstOrDefault() ?? throw new QuotationNotFoundException();
 		
 		var products = await (await _productDetailQuotationRepository.GetAllAsync()).Where(pdq => pdq.QuotationId == quotation.Id).ToListAsync();
-		quotation.TotalPrice = (float)products.Sum(pdq => pdq.Price * pdq.Quantity);
+		quotation.TotalPrice = (float)products.Sum(pdq => pdq.Price * pdq.Quantity) + (float)quotation.Services.Sum(s => s.Price);
 
 		return new ServiceActionResult(true) { Data = quotation };
     }
