@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Domus.Domain.Dtos.Products;
+using Domus.Domain.Entities;
 
 namespace Domus.Domain.Dtos.Quotations;
 

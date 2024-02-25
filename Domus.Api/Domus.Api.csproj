@@ -57,6 +57,11 @@
     <EmbeddedResource Include="Scripts\17.Add_DomusUser_IsDeleted.sql" />
     <None Remove="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
     <EmbeddedResource Include="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
+    <None Remove="Scripts\19.Add_Package_ProductDetail_Quantity.sql" />
+    <EmbeddedResource Include="Scripts\19.Add_Package_ProductDetail_Quantity.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="Scripts\20.Add_PrimaryKey_PackageProductDetail.sql" />
   </ItemGroup>
 
 </Project>
