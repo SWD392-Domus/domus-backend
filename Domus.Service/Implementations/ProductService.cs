@@ -112,7 +112,7 @@ public class ProductService : IProductService
 			.Include(p => p.ProductDetails)
 			.ThenInclude(pd => pd.ProductAttributeValues)
 			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
-		if (request.ProductCategoryId != default && !await _productCategoryRepository.ExistsAsync(c => c.Id == request.ProductCategoryId))
+		if (request.ProductCategoryId != default && !await _productCategoryRepository.ExistsAsync(c => !c.IsDeleted && c.Id == request.ProductCategoryId))
 			throw new ProductCategoryNotFoundException();
 
 		_mapper.Map(request, product);
@@ -145,11 +145,23 @@ public class ProductService : IProductService
 							pav.ProductAttributeId == attributeValue.AttributeId);
 						
 						if (attr == null) continue;
-						
-						detail.ProductAttributeValues.Remove(attr);
+
+						var attributeValueList = new List<ProductAttributeValue>(detail.ProductAttributeValues.Where(pav =>
+							pav.ProductAttributeId == attributeValue.AttributeId));
+						foreach (var productAttributeValue in attributeValueList)
+						{
+							detail.ProductAttributeValues.Remove(productAttributeValue);
+						}
 						var updatedAttr = _mapper.Map<ProductAttributeValue>(attributeValue);
 						detail.ProductAttributeValues.Add(updatedAttr);
 					}
+				}
+
+				var detailAttributeValueList = new List<ProductAttributeValue>(detail.ProductAttributeValues);
+				foreach (var attributeValue in detailAttributeValueList)
+				{
+					if (attributeValue.Id != default && !productDetail.ProductAttributeValues.Select(pd => pd.AttributeId).Contains(attributeValue.Id))
+						detail.ProductAttributeValues.Remove(attributeValue);
 				}
 				
 				foreach (var productPrice in productDetail.ProductPrices)
@@ -170,15 +182,32 @@ public class ProductService : IProductService
 						detail.ProductPrices.Add(updatedPrice);
 					}
 				}
+
+				var productPriceList = new List<ProductPrice>(detail.ProductPrices);
+				foreach (var productPrice in productPriceList)
+				{
+					if (productPrice.Id != default && productPriceList.Select(p => p.Id).Contains(productPrice.Id))
+						detail.ProductPrices.Remove(productPrice);
+				}
 				
 				product.ProductDetails.Add(detail);
 			}
 		}
 
+		foreach (var productDetail in product.ProductDetails)
+		{
+			if (!request.ProductDetails.Select(pd => pd.Id).Contains(productDetail.Id))
+				productDetail.IsDeleted = true;
+		}
+
 		await _productRepository.UpdateAsync(product);
 		await _unitOfWork.CommitAsync();
 		
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoProductWithoutCategory>(product) };
+		var updatedProduct = await (await _productRepository.FindAsync(p => !p.IsDeleted && p.Id == id))
+			.ProjectTo<DtoProduct>(_mapper.ConfigurationProvider)
+			.FirstOrDefaultAsync() ?? throw new ProductNotFoundException();
+		
+		return new ServiceActionResult(true) { Data = updatedProduct };
     }
 
     public async Task<ServiceActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)

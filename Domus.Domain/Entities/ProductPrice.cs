@@ -12,7 +12,7 @@ public partial class ProductPrice : BaseEntity<Guid>
 
     public double Quantity { get; set; }
 
-    public string QuantityType { get; set; } = null!;
+    public string QuantityType { get; set; } = "N/A";
 
     public virtual ProductDetail ProductDetail { get; set; } = null!;
 }
