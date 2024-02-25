@@ -12,7 +12,7 @@ public partial class DomusUser : IdentityUser
 
 	public string? Address { get; set; }
 
-	public string Gender { get; set; } = null!;
+	public string Gender { get; set; } = "N/A";
     
     public virtual ICollection<Article> ArticleCreatedByNavigations { get; set; } = new List<Article>();
 
