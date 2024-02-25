@@ -84,4 +84,13 @@ public class UsersController : BaseApiController
 			async () => await _userService.UpdateSelfProfile(request, token).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[AllowAnonymous]
+	[HttpPut("self-profile/{token}/password")]
+	public async Task<IActionResult> UpdatePassword(UpdateUserPasswordRequest request, string token)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _userService.UpdatePassword(request, token).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }

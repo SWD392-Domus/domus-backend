@@ -174,4 +174,30 @@ public class UserService : IUserService
 
 		return new ServiceActionResult(true) { Detail = "User profile updated successfully" };
     }
+
+    public async Task<ServiceActionResult> UpdatePassword(UpdateUserPasswordRequest request, string token)
+    {
+	    if (!_jwtService.IsValidToken(token))
+		    throw new InvalidTokenException();
+	    if (!Regex.IsMatch(request.NewPassword, PasswordConstants.PasswordPattern))
+		    throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
+	    if (request.NewPassword == request.CurrentPassword)
+		    throw new InvalidPasswordException("New password can not be the same as the current one");
+
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userManager.Users.Where(u => u.Id == userId)
+		    .FirstOrDefaultAsync() ?? throw new UserNotFoundException();
+	    
+	    if (!await _userManager.CheckPasswordAsync(user, request.CurrentPassword))
+		    throw new InvalidPasswordException("Invalid password");
+	    
+	    var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+	    
+	    return new ServiceActionResult(result.Succeeded)
+	    {
+			Detail = result.Succeeded
+				? "Password updated successfully"
+				: result.Errors.First().Description
+	    };
+    }
 }
