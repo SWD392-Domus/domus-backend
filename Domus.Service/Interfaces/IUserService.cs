@@ -14,5 +14,5 @@ public interface IUserService : IAutoRegisterable
 	Task<ServiceActionResult> GetAllUsers();
 	Task<ServiceActionResult> DeleteUser(string userId);
 	Task<ServiceActionResult> GetSelfProfile(string token);
-    Task<ServiceActionResult> UpdateSelfProfile(UpdateSelfProfileRequest request, string token);
+    Task<ServiceActionResult> UpdateSelfProfile(UpdateUserRequest request, string token);
 }
