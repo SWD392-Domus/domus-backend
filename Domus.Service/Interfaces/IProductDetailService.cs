@@ -6,6 +6,7 @@ using Domus.Common.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Http;
 
 namespace Domus.Service.Interfaces;
@@ -21,4 +22,6 @@ public interface IProductDetailService : IAutoRegisterable
     Task<bool> IsAllProductDetailsExist(IEnumerable<Guid> requestProductDetailIds);
     Task<IQueryable<ProductDetail>> GetProductDetails(List<Guid> productDetailsIds);
     Task<ServiceActionResult> AddImages(IEnumerable<IFormFile> images, Guid id);
+    Task<ServiceActionResult> SearchProductDetails(BaseSearchRequest request);
+    Task<ServiceActionResult> SearchProductDetailsUsingGet(SearchUsingGetRequest request);
 }
