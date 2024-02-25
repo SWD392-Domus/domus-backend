@@ -140,8 +140,6 @@ public class QuotationService : IQuotationService
 			quotation.Services.Add(serviceEntity);
 		}
 
-		// customer.QuotationCreatedByNavigations.Add(quotation);
-		// await _userRepository.UpdateAsync(customer);
 		await _quotationRepository.AddAsync(quotation);
 		await _unitOfWork.CommitAsync();
 
@@ -224,6 +222,9 @@ public class QuotationService : IQuotationService
 		var quotation = (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == id))
 			.ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
 			.FirstOrDefault() ?? throw new QuotationNotFoundException();
+		
+		var products = await (await _productDetailQuotationRepository.GetAllAsync()).Where(pdq => pdq.QuotationId == quotation.Id).ToListAsync();
+		quotation.TotalPrice = (float)products.Sum(pdq => pdq.Price * pdq.Quantity);
 
 		return new ServiceActionResult(true) { Data = quotation };
     }
