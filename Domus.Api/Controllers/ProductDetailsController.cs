@@ -3,6 +3,7 @@ using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.ProductDetails;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -76,6 +77,20 @@ public class ProductDetailsController : BaseApiController
 	{
 		return await ExecuteServiceLogic(
 			async () => await _productDetailService.DeleteProductDetail(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	[HttpPost("search")]
+	public async Task<IActionResult> SearchProductDetails(BaseSearchRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.SearchProductDetails(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	[HttpGet("search")]
+	public async Task<IActionResult>  SearchProductDetailsGetRequest([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.SearchProductDetailsUsingGet(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }
