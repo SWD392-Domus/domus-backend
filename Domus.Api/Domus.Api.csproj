@@ -60,5 +60,4 @@
     <None Remove="Scripts\19.Add_More_User_Information.sql" />
     <EmbeddedResource Include="Scripts\19.Add_More_User_Information.sql" />
   </ItemGroup>
-
 </Project>

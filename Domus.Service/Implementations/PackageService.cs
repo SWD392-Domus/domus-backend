@@ -13,6 +13,7 @@ using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.OfferedPackages;
 using Domus.Service.Models.Requests.Products;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Domus.Service.Implementations;
@@ -23,17 +24,19 @@ public class PackageService : IPackageService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IProductDetailService _productDetailService;
     private readonly IServiceService _serviceService;
+    private readonly IPackageProductDetailService _packageProductDetailService;
     private readonly IMapper _mapper;
     private readonly IFileService _fileService;
    
 
     public PackageService(IPackageRepository packageRepository, IUnitOfWork unitOfWork,
-        IProductDetailService productDetailService, IServiceService serviceService, IMapper mapper, IFileService fileService)
+        IProductDetailService productDetailService, IServiceService serviceService,IPackageProductDetailService packageProductDetailService ,IMapper mapper, IFileService fileService)
     {
         _packageRepository = packageRepository;
         _unitOfWork = unitOfWork;
         _productDetailService = productDetailService;
         _serviceService = serviceService;
+        _packageProductDetailService = packageProductDetailService;
         _mapper = mapper;
         _fileService = fileService;
     }
@@ -95,7 +98,17 @@ public class PackageService : IPackageService
                 var packageImages = urls.Select(url => new PackageImage() { ImageUrl = url }).ToList();
                 package.PackageImages = packageImages;
             }
-            package.ProductDetails = (await _productDetailService.GetProductDetails(packageRequest.ProductDetailIds)).ToList();
+
+            var productDetailsQuantity = packageRequest.ProductDetailIds
+                .GroupBy(id => id)
+                .Select(group => new PackageProductDetail
+                {
+                    PackageId = package.Id,
+                    ProductDetailId = group.Key,
+                    Quantity = group.Count()
+                })
+                .ToList();
+            package.PackageProductDetails = productDetailsQuantity;
             await _packageRepository.UpdateAsync(package);
             await _unitOfWork.CommitAsync();
             return new ServiceActionResult(true);
@@ -106,7 +119,7 @@ public class PackageService : IPackageService
     public async Task<ServiceActionResult> UpdatePackage(PackageRequest request, Guid packageId)
     {
         var package = (await _packageRepository.FindAsync(pk => pk.Id == packageId && pk.IsDeleted == false))
-                      .Include(pk => pk.ProductDetails)
+                      .Include(pk => pk.PackageProductDetails)
                       .Include(pk => pk.PackageImages)
                       .Include(pk=> pk.Services)
                       .FirstOrDefault()??
@@ -114,8 +127,16 @@ public class PackageService : IPackageService
         package.Name = request.Name ?? package.Name;
         package.Discount = request.Discount ?? package.Discount;
         package.Services = (request.ServiceIds.Count > 0) ? (await _serviceService.GetServices(request.ServiceIds)).ToList() : package.Services ;
-        package.ProductDetails = (request.ProductDetailIds.Count > 0) ? 
-            (await _productDetailService.GetProductDetails(request.ProductDetailIds)).ToList() : package.ProductDetails;
+        package.PackageProductDetails = (request.ProductDetailIds.Count > 0) ? 
+            request.ProductDetailIds
+                .GroupBy(id => id)
+                .Select(group => new PackageProductDetail
+                {
+                    PackageId = package.Id,
+                    ProductDetailId = group.Key,
+                    Quantity = group.Count()
+                })
+                .ToList() : package.PackageProductDetails;
         if (request.Images?.Count > 0)
         {
             var urls = await _fileService.GetUrlAfterUploadedFile(request.Images);

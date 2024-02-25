@@ -18,5 +18,5 @@ public partial class ProductDetail : DeletableEntity<Guid>
 
     public virtual ICollection<ProductPrice> ProductPrices { get; set; } = new List<ProductPrice>();
 
-    public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
+    public virtual ICollection<PackageProductDetail> PackageProductDetail { get; set; } = new List<PackageProductDetail>();
 }
