@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domus.Service", "Domus.Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domus.Common", "Domus.Common\Domus.Common.csproj", "{5F12F84C-6EFE-4818-937E-D54EB41AEBF2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domus.UnitTest", "Domus.UnitTest\Domus.UnitTest.csproj", "{5F688BBC-6538-40C1-A2AE-BBE531284450}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{5F12F84C-6EFE-4818-937E-D54EB41AEBF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F12F84C-6EFE-4818-937E-D54EB41AEBF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F12F84C-6EFE-4818-937E-D54EB41AEBF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F688BBC-6538-40C1-A2AE-BBE531284450}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F688BBC-6538-40C1-A2AE-BBE531284450}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F688BBC-6538-40C1-A2AE-BBE531284450}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F688BBC-6538-40C1-A2AE-BBE531284450}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

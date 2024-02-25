@@ -12,19 +12,17 @@ public class ProductDetailQuotationModelMapper : IDatabaseModelMapper
         {
             entity.ToTable("ProductDetail_Quotation");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.MonetaryUnit).HasMaxLength(256);
             entity.Property(e => e.QuantityType).HasMaxLength(256);
 
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductDetailQuotations)
                 .HasForeignKey(d => d.ProductDetailId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__693CA210");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Quotation).WithMany(p => p.ProductDetailQuotations)
                 .HasForeignKey(d => d.QuotationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Quota__68487DD7");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

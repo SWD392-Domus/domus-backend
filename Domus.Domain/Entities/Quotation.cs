@@ -8,9 +8,7 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public string StaffId { get; set; } = null!;
 
-    public Guid QuotationStatusId { get; set; }
-
-    public Guid QuotationNegotiationLogId { get; set; }
+    public string Status { get; set; } = null!;
 
     public DateTime? ExpireAt { get; set; }
 
@@ -23,8 +21,6 @@ public partial class Quotation : TrackableEntity<Guid, string>
     public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
 
     public virtual QuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
-
-    public virtual ICollection<QuotationNegotiationLog> QuotationNegotiationLogs { get; set; } = new List<QuotationNegotiationLog>();
 
     public virtual DomusUser Staff { get; set; } = null!;
 

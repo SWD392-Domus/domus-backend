@@ -14,5 +14,6 @@ public class UserAlreadyExistsException : ArgumentException, IBusinessException
     
     public UserAlreadyExistsException()
     {
+		_customMessage = "User already exists";
     }
 }

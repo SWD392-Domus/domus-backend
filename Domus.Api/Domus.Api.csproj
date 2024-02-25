@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domus.DAL\Domus.DAL.csproj" />
     <ProjectReference Include="..\Domus.Service\Domus.Service.csproj" />
   </ItemGroup>
 
@@ -24,6 +23,42 @@
   <ItemGroup>
     <None Remove="Scripts\1.Database_Initialization.sql" />
     <EmbeddedResource Include="Scripts\1.Database_Initialization.sql" />
+    <None Remove="Scripts\2.Add_Quotation_Constraint.sql" />
+    <EmbeddedResource Include="Scripts\2.Add_Quotation_Constraint.sql" />
+    <None Remove="Scripts\3.Add_Package.sql" />
+    <EmbeddedResource Include="Scripts\3.Add_Package.sql" />
+    <None Remove="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
+    <EmbeddedResource Include="Scripts\4.Add_NegotiationMessage_Contraint.sql" />
+    <None Remove="Scripts\5.Add_UserProfileImage.sql" />
+    <EmbeddedResource Include="Scripts\5.Add_UserProfileImage.sql" />
+    <None Remove="Scripts\6.Update_Quotation_Status.sql" />
+    <EmbeddedResource Include="Scripts\6.Update_Quotation_Status.sql" />
+    <None Remove="Scripts\7.Add_Package_Discount.sql" />
+    <EmbeddedResource Include="Scripts\7.Add_Package_Discount.sql" />
+    <None Remove="Scripts\8.Add_ProductDetail_DisplayPrice.sql" />
+    <EmbeddedResource Include="Scripts\8.Add_ProductDetail_DisplayPrice.sql" />
+    <None Remove="Scripts\9.Add_ProductDetail_IsDeleted.sql" />
+    <EmbeddedResource Include="Scripts\9.Add_ProductDetail_IsDeleted.sql" />
+    <None Remove="Scripts\10.Add_IsDeleteAtt.sql" />
+    <EmbeddedResource Include="Scripts\10.Add_IsDeleteAtt.sql" />
+    <None Remove="Scripts\11.Remove_NegotiationLogId_In_Quotation.sql" />
+    <EmbeddedResource Include="Scripts\11.Remove_NegotiationLogId_In_Quotation.sql" />
+    <None Remove="Scripts\12.Fix_Typo.sql" />
+    <EmbeddedResource Include="Scripts\12.Fix_Typo.sql" />
+    <None Remove="Scripts\13.Add_Package_isDeleted.sql" />
+    <EmbeddedResource Include="Scripts\13.Add_Package_isDeleted.sql" />
+    <None Remove="Scripts\14.Fix_Typo.sql" />
+    <EmbeddedResource Include="Scripts\14.Fix_Typo.sql" />
+    <None Remove="Scripts\15.Add_PackageImage.sql" />
+    <EmbeddedResource Include="Scripts\15.Add_PackageImage.sql" />
+    <None Remove="Scripts\16.Add_DefaultValue_Package_IsDeleted.sql" />
+    <EmbeddedResource Include="Scripts\16.Add_DefaultValue_Package_IsDeleted.sql" />
+    <None Remove="Scripts\17.Add_DomusUser_IsDeleted.sql" />
+    <EmbeddedResource Include="Scripts\17.Add_DomusUser_IsDeleted.sql" />
+    <None Remove="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
+    <EmbeddedResource Include="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
+    <None Remove="Scripts\19.Add_More_User_Information.sql" />
+    <EmbeddedResource Include="Scripts\19.Add_More_User_Information.sql" />
   </ItemGroup>
 
 </Project>

@@ -8,5 +8,9 @@ public partial class NegotiationMessage : BaseEntity<Guid>
 
     public bool IsCustomerMessage { get; set; }
 
+	public Guid QuotationNegotiationLogId { get; set; }
+
+	public virtual QuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
+	
     public string? Content { get; set; }
 }

@@ -1,22 +1,31 @@
-name: Publish docker images
+name: Publish docker images and Deploy to Azure
 
 on: 
   push:
-    branches: [ "release" ]
-  pull_request:
-    branches: [ "release" ]
+    tags: [ "v*" ]
+#  push:
+#    branches:
+#      - cd
+  
+env:  
+  IMAGE_NAME: ${{ secrets.REGISTRY }}/swd392-domus/domus-api
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:  
+      version: ${{ steps.version.outputs.version-without-v }}
   
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup dotnet
-        uses: actions/dotnet-setup@v4
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.0.x
+
+      - name: Decrypt Production appsettings
+        run: gpg --quiet --batch --yes --decrypt --passphrase ${{ secrets.GPG_PASS_PHRASE }} --output Domus.Api/appsettings.Production.json Domus.Api/appsettings.Production.json.gpg
 
       - name: Restore dependencies 
         run: dotnet restore
@@ -24,8 +33,41 @@ jobs:
       - name: Build projects
         run: dotnet build -c Release
 
+      - name: Get version
+        id: version
+        uses: battila7/get-version-action@v2
+        
       - name: Build docker images
-        run: docker build -f file_location -t image_name .
+        run: docker build -f Domus.Api/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }} .
+
+      - name: Authenticate
+        run: echo ${{ secrets.AUTH_TOKEN }} | docker login ${{ secrets.REGISTRY }} -u swd392-domus --password-stdin
 
       - name: Publish images
-        run: docker push image_name
+        run: docker push ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version-without-v }}
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Configure SSH Key
+        run: |
+          mkdir -p $HOME/.ssh
+          touch $HOME/.ssh/azure_vm_key
+          echo "${{ secrets.AZURE_SSH_KEY }}" > $HOME/.ssh/azure_vm_key
+          chmod 600 $HOME/.ssh/azure_vm_key
+        
+      - name: Deploy to Azure VM
+        run: |
+          ssh -i ~/.ssh/azure_vm_key \
+                    -o StrictHostKeyChecking=no \
+                    ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
+                     '
+                      docker ps -q | xargs -r docker stop &&
+                      docker container prune -f &&
+                      echo ${{ secrets.DOCKER_PAT_KEY }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin &&
+                      docker pull ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }} &&
+                      docker run -d -p 443:80 ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }}'

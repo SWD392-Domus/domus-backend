@@ -12,12 +12,15 @@ public class ProductDetailModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(ProductDetail));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+			entity.Property(e => e.DisplayPrice).HasColumnType("float");
+			entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
             entity.HasOne(d => d.Product).WithMany(p => p.ProductDetails)
-                .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__60A75C0F");
+                .HasForeignKey(d => d.ProductId)    
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasMany(pd => pd.ProductImages).WithOne(pi => pi.ProductDetail)
+                .HasForeignKey(pi => pi.ProductDetailId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

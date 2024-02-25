@@ -7,7 +7,7 @@ using Domus.Service.Constants;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
-using Domus.Service.Models.Requests;
+using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Responses;
 using Microsoft.AspNetCore.Identity;
 
@@ -22,8 +22,6 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserTokenRepository _userTokenRepository;
-    
-    private const string PASSWORD_PATTERN = @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$";
 
 	public AuthService(
 		UserManager<DomusUser> userManager,
@@ -48,7 +46,7 @@ public class AuthService : IAuthService
 		var user = await _userRepository.GetAsync(u => u.UserName!.ToLower() == request.Email.ToLower());
 		if (user == null)
 		{
-			throw new UserDoesNotExistException($"User '{request.Email}' does not exist");
+			throw new UserNotFoundException($"User '{request.Email}' does not exist");
 		}
         
 		var validPassword = await _userManager.CheckPasswordAsync(user, request.Password);
@@ -58,25 +56,30 @@ public class AuthService : IAuthService
 		}
 
 		var roles = await _userManager.GetRolesAsync(user);
-		var tokenResponse = new TokenResponse
+		var response = new AuthResponse
 		{
-			AccessToken = _jwtService.GenerateAccessToken(user, roles),
-			RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
-			ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			Username = user.UserName ?? user.Email ?? string.Empty,
+			Roles = roles,
+			Token = new TokenResponse
+			{
+				AccessToken = _jwtService.GenerateAccessToken(user, roles),
+				RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
+				ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			}
 		};
 
-		return new ServiceActionResult(true) { Data = tokenResponse };
+		return new ServiceActionResult(true) { Data = response };
     }
 
     public async Task<ServiceActionResult> RefreshTokenAsync(RefreshTokenRequest request)
     {
 	    var refreshToken = await _userTokenRepository.GetAsync(t => t.Value == request.RefreshToken);
 	    if (refreshToken is null)
-		    throw new RefreshTokenDoesNotExistException("Refresh token does not exist");
+		    throw new RefreshTokenNotFoundException("Refresh token does not exist");
 
 	    var user = await _userRepository.GetAsync(u => u.Id == refreshToken.UserId);
 	    if (user is null)
-		    throw new UserDoesNotExistException($"User '{refreshToken.UserId}' does not exist");
+		    throw new UserNotFoundException($"User '{refreshToken.UserId}' does not exist");
 	    
 	    var roles = await _userManager.GetRolesAsync(user);
 		var tokenResponse = new TokenResponse
@@ -94,7 +97,7 @@ public class AuthService : IAuthService
 	    var user = await _userRepository.GetAsync(u => u.Email == request.Email);
 	    if (user == null)
 	    {
-		    throw new UserDoesNotExistException($"User '{request.Email}' does not exist.");
+		    throw new UserNotFoundException($"User '{request.Email}' does not exist.");
 	    }
 
 	    await EnsureRoleExistsAsync(request.RoleName);
@@ -108,8 +111,8 @@ public class AuthService : IAuthService
 	    if (await _userRepository.ExistsAsync(u => u.Email!.ToLower() == request.Email.ToLower()))
 		    throw new UserAlreadyExistsException($"User '{request.Email}' already exists");
 
-	    if (!Regex.IsMatch(request.Password, PASSWORD_PATTERN))
-		    throw new PasswordTooWeakException("Provided password is too simple");
+	    if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
+		    throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
 	    
 	    var user = _mapper.Map<DomusUser>(request);
 
@@ -119,7 +122,7 @@ public class AuthService : IAuthService
 	    if (result.Succeeded)
 	    {
 		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email);
-		    return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(returnedUser ) };
+		    return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(returnedUser) };
 	    }
 
 	    var error = result.Errors.First();

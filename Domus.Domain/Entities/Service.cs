@@ -2,7 +2,7 @@
 
 namespace Domus.Domain.Entities;
 
-public partial class Service : BaseEntity<Guid>
+public partial class Service : DeletableEntity<Guid>
 {
     public string Name { get; set; } = null!;
 
@@ -11,4 +11,6 @@ public partial class Service : BaseEntity<Guid>
     public string MonetaryUnit { get; set; } = null!;
 
     public virtual ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
+
+    public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
 }

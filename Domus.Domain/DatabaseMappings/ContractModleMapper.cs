@@ -12,7 +12,7 @@ public class ContractModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(Contract));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedAt).HasColumnType("date");
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.EndDate).HasColumnType("date");
@@ -25,17 +25,14 @@ public class ContractModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ContractCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Contract__Create__70DDC3D8");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.LastUpdatedByNavigation).WithMany(p => p.ContractLastUpdatedByNavigations)
-                .HasForeignKey(d => d.LastUpdatedBy)
-                .HasConstraintName("FK__Contract__LastUp__71D1E811");
+                .HasForeignKey(d => d.LastUpdatedBy);
 
             entity.HasOne(d => d.Quotation).WithMany(p => p.Contracts)
                 .HasForeignKey(d => d.QuotationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Contract__Quotat__6FE99F9F");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

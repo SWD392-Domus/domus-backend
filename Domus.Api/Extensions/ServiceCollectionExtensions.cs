@@ -1,18 +1,17 @@
 using System.Text;
 using AutoMapper;
-using Domus.Api.Constants;
 using Domus.Api.Exceptions;
 using Domus.Api.Settings;
 using Domus.Common.Constants;
 using Domus.Common.Exceptions;
+using Domus.Common.Interfaces;
 using Domus.Common.Settings;
 using Domus.DAL.Data;
-using Domus.DAL.Implementations;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
 using Domus.Service.AutoMappings;
-using Domus.Service.Implementations;
-using Domus.Service.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -69,7 +68,22 @@ public static class ServiceCollectionExtensions
                 ClockSkew = TimeSpan.Zero
             };
         });
-        
+        return services;
+    }
+
+    public static IServiceCollection AddGgAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        var googleSettings = configuration.GetSection(nameof(GoogleSettings)).Get<GoogleSettings>() ?? throw new MissingGoogleSettingsException();
+        services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+            }).AddCookie()
+            .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+            {
+                options.ClientId = googleSettings.ClientId;
+                options.ClientSecret = googleSettings.ClientSecret;
+            });
         return services;
     }
 
@@ -100,15 +114,25 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IAppDbContext, DomusContext>();
         services.AddScoped<DomusContext>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserTokenRepository, UserTokenRepository>();
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IJwtService, JwtService>();
+
         services.AddIdentity<DomusUser, IdentityRole>()
             .AddEntityFrameworkStores<DomusContext>()
             .AddDefaultTokenProviders();
         
+		var registerableTypes = AppDomain.CurrentDomain.GetAssemblies()
+			.SelectMany(assembly => assembly.GetTypes())
+			.Where(type => typeof(IAutoRegisterable).IsAssignableFrom(type) && type.IsInterface)
+			.ToList();
+
+		foreach (var type in registerableTypes)
+		{
+			var implementationType = AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany(assembly => assembly.GetTypes())
+				.FirstOrDefault(t => type.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+			if (implementationType != null)
+				services.AddScoped(type, implementationType);
+		}
+   
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
         services.AddSingleton(mapper);

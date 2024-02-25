@@ -1,4 +1,5 @@
 using Domus.Api.Extensions;
+using Domus.Common.Constants;
 using Domus.Common.Helpers;
 using NLog;
 
@@ -16,20 +17,21 @@ builder.Services.AddCustomSwagger(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddDefaultCorsPolicy(builder.Configuration);
 builder.Services.RegisterServices();
-
+builder.Services.AddGgAuthentication(builder.Configuration);
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseCors(CorsConstants.APP_CORS_POLICY);
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 DataAccessHelper.EnsureMigrations(AppDomain.CurrentDomain.FriendlyName);

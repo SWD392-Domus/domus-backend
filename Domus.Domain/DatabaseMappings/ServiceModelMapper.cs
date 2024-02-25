@@ -11,10 +11,10 @@ public class ServiceModelMapper : IDatabaseModelMapper
         modelBuilder.Entity<Service>(entity =>
         {
             entity.ToTable(nameof(Service));
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.MonetaryUnit).HasMaxLength(256);
             entity.Property(e => e.Name).HasMaxLength(256);
+            entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
         });
     }
 }

@@ -12,12 +12,11 @@ public class ProductImageModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(ProductImage));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductImages)
                 .HasForeignKey(d => d.ProductDetailId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductIm__Produ__628FA481");
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

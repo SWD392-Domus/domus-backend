@@ -1,0 +1,2 @@
+ALTER TABLE [ProductDetail]
+ADD [DisplayPrice] FLOAT DEFAULT 0 NOT NULL

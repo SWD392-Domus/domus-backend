@@ -12,13 +12,12 @@ public class ProductDetailQuotationRevisionModelMapper : IDatabaseModelMapper
         {
             entity.ToTable("ProductDetail_QuotationRevision");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Version).HasDefaultValueSql("((0))");
 
             entity.HasOne(d => d.ProductDetailQuotation).WithMany(p => p.ProductDetailQuotationRevisions)
                 .HasForeignKey(d => d.ProductDetailQuotationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ProductDe__Produ__6A30C649");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

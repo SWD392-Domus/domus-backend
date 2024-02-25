@@ -25,7 +25,9 @@ public partial class DomusContext : IdentityDbContext<DomusUser>, IAppDbContext
 		if (optionsBuilder.IsConfigured)
 			return;
 
-		optionsBuilder.UseSqlServer(DataAccessHelper.GetDefaultConnectionString());
+		optionsBuilder.UseSqlServer(DataAccessHelper.GetDefaultConnectionString())
+			.EnableSensitiveDataLogging()
+			.LogTo(Console.WriteLine);
 	}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

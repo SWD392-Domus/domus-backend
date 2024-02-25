@@ -12,7 +12,7 @@ public class ArticleModelMapper : IDatabaseModelMapper
         {
             entity.ToTable(nameof(Article));
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.CreatedAt).HasColumnType("date");
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
@@ -22,17 +22,14 @@ public class ArticleModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.ArticleCategory).WithMany(p => p.Articles)
                 .HasForeignKey(d => d.ArticleCategoryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Article__Article__6D0D32F4");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ArticleCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Article__Created__6B24EA82");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.LastUpdatedByNavigation).WithMany(p => p.ArticleLastUpdatedByNavigations)
-                .HasForeignKey(d => d.LastUpdatedBy)
-                .HasConstraintName("FK__Article__LastUpd__6C190EBB");
+                .HasForeignKey(d => d.LastUpdatedBy);
         });
     }
 }
