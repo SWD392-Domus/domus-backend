@@ -264,6 +264,11 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
     {
+	    if (!await _userRepository.ExistsAsync(u => u.Id == request.CustomerId))
+		    throw new UserNotFoundException("Customer not found");
+	    if (!await _userRepository.ExistsAsync(u => u.Id == request.StaffId))
+		    throw new UserNotFoundException("Staff not found");
+	    
 		var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == id))
 			.Include(q => q.Services)
 			.Include(q => q.ProductDetailQuotations)
@@ -288,13 +293,14 @@ public class QuotationService : IQuotationService
 			var productDetail = await _productDetailQuotationRepository.GetAsync(s => s.ProductDetailId == requestProductDetail.ProductDetailId && s.QuotationId == quotation.Id);
 			if (productDetail == null)
 			{
+				// var newProductDetail = _mapper.Map<ProductDetailQuotation>(requestProductDetail);
 				var newProductDetail = new ProductDetailQuotation
 				{
 					ProductDetailId = requestProductDetail.ProductDetailId,
 					QuotationId = quotation.Id,
 					Quantity = requestProductDetail.Quantity,
-					MonetaryUnit = "USD",
-					QuantityType = "Unit"
+					MonetaryUnit = requestProductDetail.MonetaryUnit ?? "USD",
+					QuantityType = requestProductDetail.QuantityType ?? "Unit"
 				};
 				
 				quotation.ProductDetailQuotations.Add(newProductDetail);

@@ -197,6 +197,12 @@ public static class AutoMapperConfiguration
 				opt => opt.Ignore())
 			.ForMember(dest => dest.Services,
 				opt => opt.Ignore());
+
+		mapper.CreateMap<ProductDetailInUpdatingQuotationRequest, ProductDetailQuotation>()
+			.ForMember(dest => dest.MonetaryUnit,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.MonetaryUnit)))
+			.ForMember(dest => dest.QuantityType,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.QuantityType)));
 		
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
 	}
