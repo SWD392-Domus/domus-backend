@@ -172,14 +172,32 @@ public static class AutoMapperConfiguration
 	{
 		mapper.CreateMap<CreateQuotationRequest, Quotation>()
 			.ForMember(dest => dest.Services, opt => opt.Ignore());
+		
 		mapper.CreateMap<Quotation, DtoQuotation>()
 			.ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.UserName))
 			.ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.UserName));
+		
 		mapper.CreateMap<Quotation, DtoQuotationFullDetails>();
 		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLog>();
 		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLogWithoutMessages>();
+		
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
 			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));
+
+		mapper.CreateMap<UpdateQuotationRequest, Quotation>()
+			.ForMember(dest => dest.CustomerId,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.CustomerId)))
+			.ForMember(dest => dest.StaffId,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.StaffId)))
+			.ForMember(dest => dest.Status,
+				opt => opt.Condition(src => !string.IsNullOrEmpty(src.Status)))
+			.ForMember(dest => dest.ExpireAt,
+				opt => opt.Condition(src => src.ExpireAt != default))
+			.ForMember(dest => dest.ProductDetailQuotations,
+				opt => opt.Ignore())
+			.ForMember(dest => dest.Services,
+				opt => opt.Ignore());
+		
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
 	}
 

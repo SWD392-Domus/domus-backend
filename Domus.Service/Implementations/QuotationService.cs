@@ -264,11 +264,58 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
     {
-		var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == id) ?? throw new QuotationNotFoundException();
+		var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == id))
+			.Include(q => q.Services)
+			.Include(q => q.ProductDetailQuotations)
+			. FirstOrDefaultAsync() ?? throw new QuotationNotFoundException();
 
 		_mapper.Map(request, quotation);
-		quotation.LastUpdatedAt = DateTime.Now;
+		
+		foreach (var requestServiceId in request.Services)
+		{
+			var service = await _serviceRepository.GetAsync(s => s.Id == requestServiceId);
+			if (service == null) continue;
+			if (!quotation.Services.Where(s => !s.IsDeleted).Select(s => s.Id).Contains(requestServiceId))
+				quotation.Services.Add(service);
+		}
 
+		var excludedServices = new List<Domain.Entities.Service>(quotation.Services.Where(s => !s.IsDeleted && !request.Services.Contains(s.Id)));
+		foreach (var excludedService in excludedServices)
+			quotation.Services.Remove(excludedService);
+		
+		foreach (var requestProductDetail in request.ProductDetailQuotations)
+		{
+			var productDetail = await _productDetailQuotationRepository.GetAsync(s => s.ProductDetailId == requestProductDetail.ProductDetailId && s.QuotationId == quotation.Id);
+			if (productDetail == null)
+			{
+				var newProductDetail = new ProductDetailQuotation
+				{
+					ProductDetailId = requestProductDetail.ProductDetailId,
+					QuotationId = quotation.Id,
+					Quantity = requestProductDetail.Quantity,
+					MonetaryUnit = "USD",
+					QuantityType = "Unit"
+				};
+				
+				quotation.ProductDetailQuotations.Add(newProductDetail);
+				continue;
+			};
+			
+			// if (!quotation.ProductDetailQuotations.Select(pdq => pdq.Id).Contains(requestProductDetail.ProductDetailId))
+			// 	quotation.ProductDetailQuotations.Add(productDetail);
+			// else
+			// {
+				quotation.ProductDetailQuotations.Remove(productDetail);
+				productDetail.Quantity = requestProductDetail.Quantity;
+				quotation.ProductDetailQuotations.Add(productDetail);
+			// }
+		}
+		
+		var excludedProductDetails = new List<ProductDetailQuotation>(quotation.ProductDetailQuotations.Where(s => !request.ProductDetailQuotations.Select(pdq => pdq.ProductDetailId).Contains(s.ProductDetailId)));
+		foreach (var excludedProductDetail in excludedProductDetails)
+			quotation.ProductDetailQuotations.Remove(excludedProductDetail);
+
+		quotation.LastUpdatedAt = DateTime.Now;
 		await _quotationRepository.UpdateAsync(quotation);
 		await _unitOfWork.CommitAsync();
 

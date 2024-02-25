@@ -2,6 +2,8 @@ namespace Domus.Domain.Dtos.Products;
 
 public class DtoProductDetailQuotation
 {
+	public Guid ProductDetailId { get; set; }
+	
 	public string ProductName { get; set; } = null!;
 
     public double Price { get; set; }

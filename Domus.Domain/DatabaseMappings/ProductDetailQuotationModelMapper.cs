@@ -18,11 +18,11 @@ public class ProductDetailQuotationModelMapper : IDatabaseModelMapper
 
             entity.HasOne(d => d.ProductDetail).WithMany(p => p.ProductDetailQuotations)
                 .HasForeignKey(d => d.ProductDetailId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Quotation).WithMany(p => p.ProductDetailQuotations)
                 .HasForeignKey(d => d.QuotationId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
