@@ -124,7 +124,7 @@ public class ProductDetailService : IProductDetailService
     public async Task<ServiceActionResult> GetProductDetailById(Guid id)
     {
 		var productDetail = await (await _productDetailRepository.FindAsync(pd => !pd.IsDeleted && pd.Id == id))
-			.ProjectTo<DtoProductDetail>(_mapper.ConfigurationProvider)
+			.ProjectTo<DtoSingleProductDetail>(_mapper.ConfigurationProvider)
 			.FirstOrDefaultAsync() ?? throw new ProductDetailNotFoundException();
 
 		return new ServiceActionResult(true) { Data = productDetail };
