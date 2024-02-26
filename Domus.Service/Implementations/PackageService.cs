@@ -48,7 +48,8 @@ public class PackageService : IPackageService
         foreach (var dtoPackage in list)
         {
             var sumService = dtoPackage.Services.Sum(dtoPackageService => dtoPackageService.Price);
-            var sumProductDetail = dtoPackage.ProductDetails.Sum(dtoPackageProductDetail => dtoPackageProductDetail.DisplayPrice);
+            // var sumProductDetail = dtoPackage.ProductDetails.Sum(dtoPackageProductDetail => dtoPackageProductDetail.DisplayPrice);
+            var sumProductDetail = dtoPackage.PackageProductDetails.Sum(x => x.DisplayPrice);
             dtoPackage.EstimatedPrice = (sumService + sumProductDetail) * (100-dtoPackage.Discount)/100;
         }
         
@@ -77,7 +78,7 @@ public class PackageService : IPackageService
                       .ProjectTo<DtoPackageWithProductName>(_mapper.ConfigurationProvider).FirstOrDefault()
                       ?? throw new PackageNotFoundException();
         var sumService = package.Services.Sum(sv => sv.Price);
-        var sumProductDetail = package.ProductDetails.Sum(pd => pd.DisplayPrice);
+        var sumProductDetail = package.PackageProductDetails.Sum(pd => pd.DisplayPrice);
         package.EstimatedPrice = (sumService + sumProductDetail) * (100 - package.Discount) / 100;
         return new ServiceActionResult()
         {

@@ -12,8 +12,7 @@ public interface IFileService : IAutoRegisterable
 {
     Task<ServiceActionResult> UploadFile(FileModels fileModels);
     Task<Stream> GetFile(string fileName);
-
-
+    
     Task<ICollection<string>> GetUrlAfterUploadedFile(List<IFormFile> files);
 }
 
