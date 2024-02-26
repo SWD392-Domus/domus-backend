@@ -85,7 +85,8 @@ public class PackagesController : BaseApiController
     public async Task<IActionResult> DeleteManyPackages(List<Guid> packageIds)
     {
         return await ExecuteServiceLogic(
-            async () => await _packageService.DeletePackages(packageIds).ConfigureAwait(false)).ConfigureAwait(false);
+            async () => await _packageService.DeletePackages(packageIds).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
 }
 

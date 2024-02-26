@@ -252,7 +252,15 @@ public class PackageService : IPackageService
     
     public async Task<ServiceActionResult> DeletePackages(List<Guid> packageIds)
     {
-        await _packageRepository.UpdateManyAsync(pk => !pk.IsDeleted && packageIds.Contains(pk.Id));
+        var packagesToDelete = await _packageRepository.FindAsync(p => !p.IsDeleted && packageIds.Contains(p.Id));
+        
+        foreach (var package in packagesToDelete)
+        {
+            package.IsDeleted = true;
+            await _packageRepository.UpdateAsync(package);
+        }
+        
+        // await _packageRepository.UpdateManyAsync(pk => !pk.IsDeleted && packageIds.Contains(pk.Id));
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }
