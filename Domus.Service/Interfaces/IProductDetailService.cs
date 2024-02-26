@@ -24,4 +24,5 @@ public interface IProductDetailService : IAutoRegisterable
     Task<ServiceActionResult> AddImages(IEnumerable<IFormFile> images, Guid id);
     Task<ServiceActionResult> SearchProductDetails(BaseSearchRequest request);
     Task<ServiceActionResult> SearchProductDetailsUsingGet(SearchUsingGetRequest request);
+    Task<ServiceActionResult> CreateProductPrice(CreateProductPriceRequest request, Guid productId);
 }

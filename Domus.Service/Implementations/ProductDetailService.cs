@@ -271,4 +271,19 @@ public class ProductDetailService : IProductDetailService
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
+
+    public async Task<ServiceActionResult> CreateProductPrice(CreateProductPriceRequest request, Guid productDetailId)
+    {
+	    var productDetail = await (await _productDetailRepository.FindAsync(p => !p.IsDeleted && p.Id == productDetailId))
+		    .Include(pd => pd.ProductPrices)
+		    .FirstOrDefaultAsync() ?? throw new ProductDetailNotFoundException();
+
+	    var newProductPrice = _mapper.Map<ProductPrice>(request);
+	    productDetail.ProductPrices.Add(newProductPrice);
+	    
+	    await _productDetailRepository.UpdateAsync(productDetail);
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true);
+    }
 }

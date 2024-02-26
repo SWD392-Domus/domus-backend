@@ -79,6 +79,7 @@ public class ProductDetailsController : BaseApiController
 			async () => await _productDetailService.DeleteProductDetail(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
 	[HttpPost("search")]
 	public async Task<IActionResult> SearchProductDetails(BaseSearchRequest request)
 	{
@@ -86,11 +87,20 @@ public class ProductDetailsController : BaseApiController
 			async () => await _productDetailService.SearchProductDetails(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
 	[HttpGet("search")]
-	public async Task<IActionResult>  SearchProductDetailsGetRequest([FromQuery] SearchUsingGetRequest request)
+	public async Task<IActionResult> SearchProductDetailsGetRequest([FromQuery] SearchUsingGetRequest request)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _productDetailService.SearchProductDetailsUsingGet(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpPost("{productId:guid}/prices")]
+	public async Task<IActionResult> CreateProductPrice(CreateProductPriceRequest request, Guid productId)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.CreateProductPrice(request, productId).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }
