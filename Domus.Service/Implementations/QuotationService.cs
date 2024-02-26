@@ -114,13 +114,13 @@ public class QuotationService : IQuotationService
 
 		foreach (var productDetail in request.ProductDetails)
 		{
-			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetail.ProductDetailId);
+			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetail.Id);
 			if (productDetailEntity == null)
 				throw new ProductDetailNotFoundException();
 
 			var productDetailQuotation = new ProductDetailQuotation
 			{
-				ProductDetailId = productDetail.ProductDetailId,
+				ProductDetailId = productDetail.Id,
 				QuotationId = quotation.Id,
 				Quantity = productDetail.Quantity,
 				Price = productDetailEntity.DisplayPrice,
