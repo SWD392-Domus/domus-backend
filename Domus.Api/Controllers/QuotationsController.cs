@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
 
-[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
+[Authorize(AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class QuotationsController : BaseApiController
 {
@@ -68,6 +68,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpDelete("{id:guid}")]
 	public async Task<IActionResult> DeleteQuotation(Guid id)
 	{
@@ -76,6 +77,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpDelete("multiple")]
 	public async Task<IActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids)
 	{
