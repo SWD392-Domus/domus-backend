@@ -1,4 +1,6 @@
-﻿using Domus.Domain.Dtos.Products;
+﻿using System.Text.Json.Serialization;
+using Domus.Domain.Dtos.Products;
+using Domus.Domain.Entities;
 
 namespace Domus.Domain.Dtos;
 
@@ -13,8 +15,8 @@ public class DtoPackageWithProductName
     public double EstimatedPrice { get; set; } 
 
     public ICollection<DtoService> Services { get; set; } = new List<DtoService>();
-
-    public ICollection<DtoProductDetailPackage> ProductDetails { get; set; } = new List<DtoProductDetailPackage>();
+    [JsonPropertyName("productDetails")]
+    public ICollection<DtoPackageProductDetail> PackageProductDetails { get; set; } = new List<DtoPackageProductDetail>();
     
     public ICollection<DtoPackageImage> PackageImages { get; set; } = new List<DtoPackageImage>();
 }

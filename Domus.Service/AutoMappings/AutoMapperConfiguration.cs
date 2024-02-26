@@ -213,5 +213,13 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Package,DtoPackage>();
 		mapper.CreateMap<PackageImage,DtoPackageImage>();
 		mapper.CreateMap<Package,DtoPackageWithProductName>();
+		mapper.CreateMap<Package,DtoPackageProductDetail>();
+		mapper.CreateMap<PackageProductDetail, DtoPackageProductDetail>()
+			.ForMember(d => d.Id, opt => opt.MapFrom(src => src.ProductDetailId))
+			.ForMember(d => d.ProductName, opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName))
+			.ForMember(d => d.DisplayPrice, opt => opt.MapFrom(src => src.ProductDetail.DisplayPrice))
+			.ForMember(d => d.ProductAttributeValues, opt => opt.MapFrom(src => src.ProductDetail.ProductAttributeValues))
+			.ForMember(d => d.ProductImages, opt => opt.MapFrom(src => src.ProductDetail.ProductImages))
+			;
 	}
 }
