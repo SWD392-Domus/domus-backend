@@ -59,5 +59,11 @@
     <EmbeddedResource Include="Scripts\18.Remove_Unused_Fields_From_Product.sql" />
     <None Remove="Scripts\19.Add_More_User_Information.sql" />
     <EmbeddedResource Include="Scripts\19.Add_More_User_Information.sql" />
+    <None Remove="Scripts\20.Add_Package_ProductDetail_Quantity.sql" />
+    <EmbeddedResource Include="Scripts\20.Add_Package_ProductDetail_Quantity.sql" />
+    <None Remove="Scripts\21.Add_PackageId_To_Quotation.sql" />
+    <EmbeddedResource Include="Scripts\21.Add_PackageId_To_Quotation.sql">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
