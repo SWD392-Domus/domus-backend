@@ -30,6 +30,7 @@ public class QuotationService : IQuotationService
 	private readonly IServiceRepository _serviceRepository;
 	private readonly IJwtService _jwtService;
 	private readonly UserManager<DomusUser> _userManager;
+	private readonly IPackageRepository _packageRepository;
 
 	public QuotationService(
 			IQuotationRepository quotationRepository,
@@ -42,7 +43,7 @@ public class QuotationService : IQuotationService
 			INegotiationMessageRepository negotiationMessageRepository,
 			IQuotationNegotiationLogRepository quotationNegotiationLogRepository,
 			IJwtService jwtService, 
-			UserManager<DomusUser> userManager)
+			UserManager<DomusUser> userManager, IPackageRepository packageRepository)
 	{
 		_quotationRepository = quotationRepository;
 		_unitOfWork = unitOfWork;
@@ -52,6 +53,7 @@ public class QuotationService : IQuotationService
 		_quotationNegotiationLogRepository = quotationNegotiationLogRepository;
 		_jwtService = jwtService;
 		_userManager = userManager;
+		_packageRepository = packageRepository;
 		_serviceRepository = serviceRepository;
 		_negotiationMessageRepository = negotiationMessageRepository;
 		_mapper = mapper;
@@ -96,6 +98,9 @@ public class QuotationService : IQuotationService
 	    if (!isValidToken)
 		    throw new InvalidTokenException();
 	    
+	    if (!await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+		    throw new PackageNotFoundException();
+	    
 	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
 	    var creator = await _userRepository.GetAsync(u => u.Id == userId) ?? throw new UserNotFoundException("Creator not found");
 		var creatorRoles = await _userManager.GetRolesAsync(creator);
@@ -110,6 +115,7 @@ public class QuotationService : IQuotationService
 			ExpireAt = request.ExpireAt == null ? request.ExpireAt : DateTime.Now.AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
+			PackageId = request.PackageId
 		};
 
 		foreach (var productDetail in request.ProductDetails)
