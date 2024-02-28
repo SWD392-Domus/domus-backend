@@ -296,12 +296,18 @@ public class QuotationService : IQuotationService
 		
 		foreach (var requestProductDetail in request.ProductDetailQuotations)
 		{
+			if (!await _productDetailRepository.ExistsAsync(x => x.Id == requestProductDetail.ProductDetailId))
+			{
+				throw new ProductDetailNotFoundException();
+			}
 			var productDetail = await _productDetailQuotationRepository.GetAsync(s => s.ProductDetailId == requestProductDetail.ProductDetailId && s.QuotationId == quotation.Id);
+			
 			if (productDetail == null)
 			{
 				// var newProductDetail = _mapper.Map<ProductDetailQuotation>(requestProductDetail);
+				
 				var newProductDetail = new ProductDetailQuotation
-				{
+				{	
 					ProductDetailId = requestProductDetail.ProductDetailId,
 					QuotationId = quotation.Id,
 					Quantity = requestProductDetail.Quantity,
