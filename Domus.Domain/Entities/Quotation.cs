@@ -8,7 +8,7 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public string StaffId { get; set; } = null!;
 
-    public Guid PackageId { get; set; }
+    public Guid? PackageId { get; set; } 
 
     public string Status { get; set; } = null!;
 
