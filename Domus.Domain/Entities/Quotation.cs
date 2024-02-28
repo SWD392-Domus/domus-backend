@@ -8,6 +8,8 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public string StaffId { get; set; } = null!;
 
+    public Guid PackageId { get; set; }
+
     public string Status { get; set; } = null!;
 
     public DateTime? ExpireAt { get; set; }
@@ -25,4 +27,6 @@ public partial class Quotation : TrackableEntity<Guid, string>
     public virtual DomusUser Staff { get; set; } = null!;
 
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
+
+    public virtual Package? Package { get; set; }
 }

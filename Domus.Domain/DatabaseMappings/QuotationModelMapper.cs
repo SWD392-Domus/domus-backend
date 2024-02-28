@@ -25,6 +25,10 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.Property(e => e.Status).HasMaxLength(256);
 			entity.Property(e => e.ConcurrencyStamp).IsConcurrencyToken().HasValueGenerator(typeof(StringValueGenerator));
 
+            entity.HasOne(e => e.Package).WithMany(p => p.Quotations)
+                .HasForeignKey(q => q.PackageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.QuotationCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull);
