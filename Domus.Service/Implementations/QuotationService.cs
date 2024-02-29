@@ -182,6 +182,7 @@ public class QuotationService : IQuotationService
     public async Task<ServiceActionResult> GetAllQuotations()
     {
 		var quotations = await (await _quotationRepository.FindAsync(q => !q.IsDeleted))
+			.OrderByDescending(q => q.CreatedAt)
 			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider)
 			.ToListAsync();
 
@@ -206,7 +207,9 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> GetPaginatedQuotations(BasePaginatedRequest request)
     {
-		var queryableQuotations = (await _quotationRepository.FindAsync(q => !q.IsDeleted)).ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
+		var queryableQuotations = (await _quotationRepository.FindAsync(q => !q.IsDeleted))
+			.OrderByDescending(q => q.CreatedAt)
+			.ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(queryableQuotations, request.PageSize, request.PageIndex);
 		var quotationList = new List<DtoQuotation>();
 		
@@ -238,6 +241,7 @@ public class QuotationService : IQuotationService
     public async Task<ServiceActionResult> SearchQuotations(SearchUsingGetRequest request)
     {
 		var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted))
+			.OrderByDescending(p => p.CreatedAt)
 		    .ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
 		    .ToListAsync();
 
