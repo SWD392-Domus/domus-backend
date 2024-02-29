@@ -318,6 +318,7 @@ public class QuotationService : IQuotationService
 			
 			quotation.ProductDetailQuotations.Remove(productDetail);
 			productDetail.Quantity = requestProductDetail.Quantity;
+			productDetail.Price = requestProductDetail.Price;
 			quotation.ProductDetailQuotations.Add(productDetail);
 		}
 		
