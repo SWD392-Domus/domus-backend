@@ -62,8 +62,8 @@
     <None Remove="Scripts\20.Add_Package_ProductDetail_Quantity.sql" />
     <EmbeddedResource Include="Scripts\20.Add_Package_ProductDetail_Quantity.sql" />
     <None Remove="Scripts\21.Add_PackageId_To_Quotation.sql" />
-    <EmbeddedResource Include="Scripts\21.Add_PackageId_To_Quotation.sql">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+	<EmbeddedResource Include="Scripts\21.Add_PackageId_To_Quotation.sql" />
+    <None Remove="Scripts\22.Add_Price_To_Service_Quotation.sql" />
+    <EmbeddedResource Include="Scripts\22.Add_Price_To_Service_Quotation.sql" />
   </ItemGroup>
 </Project>
