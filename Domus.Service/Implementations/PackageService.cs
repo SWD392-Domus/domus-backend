@@ -225,25 +225,31 @@ public class PackageService : IPackageService
     public async Task<ServiceActionResult> SearchPackagesUsingGet(SearchUsingGetRequest request)
     {
         var packages = await (await _packageRepository.FindAsync(p => !p.IsDeleted))
-            .ProjectTo<DtoPackage>(_mapper.ConfigurationProvider)
+            .ProjectTo<DtoPackageWithProductName>(_mapper.ConfigurationProvider)
             .ToListAsync();
-	    
+        foreach (var dtoPackage in packages)
+        {
+            var sumService = dtoPackage.Services.Sum(dtoPackageService => dtoPackageService.Price);
+            var sumProductDetail = dtoPackage.PackageProductDetails.Sum(x => x.DisplayPrice);
+            dtoPackage.EstimatedPrice = (sumService + sumProductDetail) * (100-dtoPackage.Discount)/100;
+        }
+        
         if (!string.IsNullOrEmpty(request.SearchField))
         {
             packages = packages
-                .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoPackage), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoPackageWithProductName), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
         if (!string.IsNullOrEmpty(request.SortField))
         {
-            Expression<Func<DtoPackage, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoPackage), request.SortField, p);
+            Expression<Func<DtoPackageWithProductName, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoPackageWithProductName), request.SortField, p);
             packages = request.Descending
                 ? packages.OrderByDescending(orderExpr.Compile()).ToList()
                 : packages.OrderBy(orderExpr.Compile()).ToList();
         }
 
         var paginatedResult = PaginationHelper.BuildPaginatedResult(packages, request.PageSize, request.PageIndex);
-        var finalProducts = (IEnumerable<DtoPackage>)paginatedResult.Items!;
+        var finalProducts = (IEnumerable<DtoPackageWithProductName>)paginatedResult.Items!;
 
         paginatedResult.Items = finalProducts;
 
