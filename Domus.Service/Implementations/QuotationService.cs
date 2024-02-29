@@ -311,7 +311,6 @@ public class QuotationService : IQuotationService
 					MonetaryUnit = requestProductDetail.MonetaryUnit ?? "USD",
 					QuantityType = requestProductDetail.QuantityType ?? "Unit"
 				};
-				
 				quotation.ProductDetailQuotations.Add(newProductDetail);
 				continue;
 			};
