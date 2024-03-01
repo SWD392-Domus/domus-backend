@@ -103,7 +103,7 @@ public class QuotationService : IQuotationService
 	    if (!isValidToken)
 		    throw new InvalidTokenException();
 	    
-	    if (!await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+	    if (request.PackageId != default && !await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
 		    throw new PackageNotFoundException();
 	    
 	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
@@ -117,7 +117,7 @@ public class QuotationService : IQuotationService
 			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
 			CreatedBy = userId,
 			CreatedAt = DateTime.Now,
-			ExpireAt = request.ExpireAt == null ? request.ExpireAt : DateTime.Now.AddDays(30),
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
 			PackageId = request.PackageId
@@ -133,7 +133,7 @@ public class QuotationService : IQuotationService
 			{
 				ProductDetailId = productDetail.Id,
 				QuotationId = quotation.Id,
-				Quantity = productDetail.Quantity,
+				Quantity = Math.Max(productDetail.Quantity, 1),
 				Price = productDetailEntity.DisplayPrice,
 				MonetaryUnit = "USD",
 				QuantityType = "Unit",
@@ -143,6 +143,7 @@ public class QuotationService : IQuotationService
 			{
 				ProductDetailQuotation = productDetailQuotation,
 				Price = productDetailQuotation.Price,
+				Quantity = Math.Max(productDetailQuotation.Quantity, 1),
 				Version = 0
 			};
 
@@ -150,15 +151,21 @@ public class QuotationService : IQuotationService
 			quotation.ProductDetailQuotations.Add(productDetailQuotation);
 		}
 
-		// Todo: change to ServiceQuotation
-		// foreach (var serviceId in request.Services)
-		// {
-		// 	var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == serviceId);
-		// 	if (serviceEntity == null)
-		// 		throw new ServiceNotFoundException();
-		//
-		// 	quotation.Services.Add(serviceEntity);
-		// }
+		foreach (var service in request.Services)
+		{
+			var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == service.ServiceId);
+			if (serviceEntity == null)
+				throw new ServiceNotFoundException();
+
+			var serviceQuotation = new ServiceQuotation
+			{
+				ServiceId = service.ServiceId,
+				QuotationId = quotation.Id,
+				Price = service.Price
+			};
+
+			quotation.ServiceQuotations.Add(serviceQuotation);
+		}
 
 		await _quotationRepository.AddAsync(quotation);
 		await _unitOfWork.CommitAsync();

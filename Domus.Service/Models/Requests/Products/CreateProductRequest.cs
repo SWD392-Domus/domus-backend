@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Domus.Service.Attributes;
 using Domus.Service.Models.Requests.ProductDetails;
-using Newtonsoft.Json.Linq;
 
 namespace Domus.Service.Models.Requests.Products;
 

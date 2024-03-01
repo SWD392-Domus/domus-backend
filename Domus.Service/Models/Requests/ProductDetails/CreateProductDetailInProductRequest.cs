@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Domus.Service.Models.Requests.ProductDetails;
 
@@ -6,6 +7,7 @@ public class CreateProductDetailInProductRequest
 {
     public string? Description { get; set; }
 
+	[Range(0, float.MaxValue)]
     public float DisplayPrice { get; set; }
 
     public string MonetaryUnit { get; set; } = null!;

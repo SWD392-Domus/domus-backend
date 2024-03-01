@@ -14,12 +14,12 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.ToTable(nameof(Quotation));
 
 			entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.CreatedAt).HasColumnType("date");
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.CustomerId).HasMaxLength(450);
-            entity.Property(e => e.ExpireAt).HasColumnType("date");
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
             entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
-            entity.Property(e => e.LastUpdatedAt).HasColumnType("date");
+            entity.Property(e => e.LastUpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.LastUpdatedBy).HasMaxLength(450);
             entity.Property(e => e.StaffId).HasMaxLength(450);
             entity.Property(e => e.Status).HasMaxLength(256);

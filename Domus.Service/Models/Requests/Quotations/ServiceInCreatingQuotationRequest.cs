@@ -3,9 +3,9 @@ using Domus.Service.Attributes;
 
 namespace Domus.Service.Models.Requests.Quotations;
 
-public class ServiceInUpdatingQuotationRequest 
+public class ServiceInCreatingQuotationRequest
 {
-    [RequiredGuid]
+	[RequiredGuid]
 	public Guid ServiceId { get; set; }
 
 	[Range(0, double.MaxValue)]
