@@ -22,6 +22,8 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
 
+    public virtual ICollection<Domus.Entities.QuotationService> QuotationServices { get; set; } = new List<Domus.Entities.QuotationService>();
+
     public virtual QuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
 
     public virtual DomusUser Staff { get; set; } = null!;

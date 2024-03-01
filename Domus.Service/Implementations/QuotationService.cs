@@ -31,6 +31,7 @@ public class QuotationService : IQuotationService
 	private readonly IJwtService _jwtService;
 	private readonly UserManager<DomusUser> _userManager;
 	private readonly IPackageRepository _packageRepository;
+	private readonly IQuotationServiceRepository _quotationServiceRepository;
 
 	public QuotationService(
 			IQuotationRepository quotationRepository,
@@ -43,7 +44,9 @@ public class QuotationService : IQuotationService
 			INegotiationMessageRepository negotiationMessageRepository,
 			IQuotationNegotiationLogRepository quotationNegotiationLogRepository,
 			IJwtService jwtService, 
-			UserManager<DomusUser> userManager, IPackageRepository packageRepository)
+			UserManager<DomusUser> userManager,
+			IPackageRepository packageRepository,
+			IQuotationServiceRepository quotationServiceRepository)
 	{
 		_quotationRepository = quotationRepository;
 		_unitOfWork = unitOfWork;
@@ -56,6 +59,7 @@ public class QuotationService : IQuotationService
 		_packageRepository = packageRepository;
 		_serviceRepository = serviceRepository;
 		_negotiationMessageRepository = negotiationMessageRepository;
+		_quotationServiceRepository = quotationServiceRepository;
 		_mapper = mapper;
 	}
 
@@ -286,15 +290,30 @@ public class QuotationService : IQuotationService
 
 		_mapper.Map(request, quotation);
 		
-		foreach (var requestServiceId in request.Services)
+		foreach (var requestService in request.Services)
 		{
-			var service = await _serviceRepository.GetAsync(s => s.Id == requestServiceId);
-			if (service == null) continue;
-			if (!quotation.Services.Where(s => !s.IsDeleted).Select(s => s.Id).Contains(requestServiceId))
-				quotation.Services.Add(service);
+			if (!await _serviceRepository.ExistsAsync(s => s.Id == requestService.ServiceId))
+				throw new ServiceNotFoundException();
+			var quotationService = await _quotationServiceRepository.GetAsync(s => s.ServiceId == requestService.ServiceId && s.QuotationId == quotation.Id);
+			if (quotationService == null)
+			{
+				var newQuotationService = new Domus.Entities.QuotationService
+				{
+					QuotationId = quotation.Id,
+					ServiceId = requestService.ServiceId,
+					Price = requestService.Price
+				};
+
+				quotation.QuotationServices.Add(newQuotationService);
+				continue;
+			}
+
+			quotation.QuotationServices.Remove(quotationService);
+			quotationService.Price = requestService.Price;
+			quotation.QuotationServices.Add(quotationService);
 		}
 
-		var excludedServices = new List<Domain.Entities.Service>(quotation.Services.Where(s => !s.IsDeleted && !request.Services.Contains(s.Id)));
+		var excludedServices = new List<Domain.Entities.Service>(quotation.Services.Where(s => !s.IsDeleted && !request.Services.Select(rs => rs.ServiceId).Contains(s.Id)));
 		foreach (var excludedService in excludedServices)
 			quotation.Services.Remove(excludedService);
 		
