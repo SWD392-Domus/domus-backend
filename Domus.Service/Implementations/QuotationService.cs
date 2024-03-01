@@ -329,7 +329,9 @@ public class QuotationService : IQuotationService
 		{
 			if (!await _productDetailRepository.ExistsAsync(x => x.Id == requestProductDetail.ProductDetailId))
 				throw new ProductDetailNotFoundException();
-			var productDetail = await _productDetailQuotationRepository.GetAsync(s => s.ProductDetailId == requestProductDetail.ProductDetailId && s.QuotationId == quotation.Id);
+			var productDetail = await (await _productDetailQuotationRepository.FindAsync(s => s.ProductDetailId == requestProductDetail.ProductDetailId && s.QuotationId == quotation.Id))
+				.Include(s => s.ProductDetailQuotationRevisions)
+				.FirstOrDefaultAsync();
 			
 			if (productDetail == null)
 			{
@@ -346,10 +348,15 @@ public class QuotationService : IQuotationService
 				continue;
 			};
 			
-			quotation.ProductDetailQuotations.Remove(productDetail);
-			productDetail.Quantity = requestProductDetail.Quantity;
-			productDetail.Price = requestProductDetail.Price;
-			quotation.ProductDetailQuotations.Add(productDetail);
+			var productDetailQuotationRevision = new ProductDetailQuotationRevision
+			{
+				ProductDetailQuotationId = productDetail.Id,
+				Price = requestProductDetail.Price,
+				Quantity = requestProductDetail.Quantity,
+				Version = productDetail.ProductDetailQuotationRevisions.Count
+			};
+
+			productDetail.ProductDetailQuotationRevisions.Add(productDetailQuotationRevision);
 		}
 		
 		var excludedProductDetails = new List<ProductDetailQuotation>(quotation.ProductDetailQuotations.Where(s => !request.ProductDetailQuotations.Select(pdq => pdq.ProductDetailId).Contains(s.ProductDetailId)));

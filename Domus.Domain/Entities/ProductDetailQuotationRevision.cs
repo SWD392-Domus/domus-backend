@@ -10,5 +10,7 @@ public partial class ProductDetailQuotationRevision : BaseEntity<Guid>
 
     public double Price { get; set; }
 
+	public double Quantity { get; set; }
+
     public virtual ProductDetailQuotation ProductDetailQuotation { get; set; } = null!;
 }
