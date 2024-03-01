@@ -1,8 +1,6 @@
-using Domus.Domain.Entities;
+namespace Domus.Domain.Entities;
 
-namespace Domus.Entities;
-
-public class QuotationService
+public partial class ServiceQuotation
 {
 	public Guid QuotationId { get; set; }
 	public Guid ServiceId { get; set; }

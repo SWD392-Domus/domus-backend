@@ -67,5 +67,7 @@
     <EmbeddedResource Include="Scripts\22.Add_Price_To_Service_Quotation.sql" />
     <None Remove="Scripts\23.Add_Quantity_To_ProductDetailQuotationRevision.sql" />
     <EmbeddedResource Include="Scripts\23.Add_Quantity_To_ProductDetailQuotationRevision.sql" />
+    <None Remove="Scripts\24.Change_Table_QuotationService_Name.sql" />
+    <EmbeddedResource Include="Scripts\24.Change_Table_QuotationService_Name.sql" />
   </ItemGroup>
 </Project>
