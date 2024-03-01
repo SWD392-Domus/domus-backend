@@ -138,6 +138,14 @@ public class QuotationService : IQuotationService
 				QuantityType = "Unit",
 			};
 
+			var productDetailQuotationRevision = new ProductDetailQuotationRevision
+			{
+				ProductDetailQuotation = productDetailQuotation,
+				Price = productDetailQuotation.Price,
+				Version = 0
+			};
+
+			productDetailQuotation.ProductDetailQuotationRevisions.Add(productDetailQuotationRevision);
 			quotation.ProductDetailQuotations.Add(productDetailQuotation);
 		}
 
