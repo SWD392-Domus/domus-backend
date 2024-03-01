@@ -166,12 +166,15 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<Domain.Entities.Service, DtoService>().ReverseMap();
 		mapper.CreateMap<CreateServiceRequest,Domain.Entities.Service>();
 		mapper.CreateMap<UpdateServiceRequest, Domain.Entities.Service>();
+		mapper.CreateMap<ServiceQuotation, DtoServiceQuotation>()
+			.ForMember(dest => dest.Name,
+				opt => opt.MapFrom(src => src.Service.Name));
 	}
 
 	private static void CreateQuotationMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<CreateQuotationRequest, Quotation>()
-			.ForMember(dest => dest.Services, opt => opt.Ignore());
+			.ForMember(dest => dest.ServiceQuotations, opt => opt.Ignore());
 		
 		mapper.CreateMap<Quotation, DtoQuotation>()
 			.ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.UserName))
@@ -195,7 +198,7 @@ public static class AutoMapperConfiguration
 				opt => opt.Condition(src => src.ExpireAt != default))
 			.ForMember(dest => dest.ProductDetailQuotations,
 				opt => opt.Ignore())
-			.ForMember(dest => dest.Services,
+			.ForMember(dest => dest.ServiceQuotations,
 				opt => opt.Ignore());
 
 		mapper.CreateMap<ProductDetailInUpdatingQuotationRequest, ProductDetailQuotation>()
@@ -219,7 +222,6 @@ public static class AutoMapperConfiguration
 			.ForMember(d => d.ProductName, opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName))
 			.ForMember(d => d.DisplayPrice, opt => opt.MapFrom(src => src.ProductDetail.DisplayPrice))
 			.ForMember(d => d.ProductAttributeValues, opt => opt.MapFrom(src => src.ProductDetail.ProductAttributeValues))
-			.ForMember(d => d.ProductImages, opt => opt.MapFrom(src => src.ProductDetail.ProductImages))
-			;
+			.ForMember(d => d.ProductImages, opt => opt.MapFrom(src => src.ProductDetail.ProductImages));
 	}
 }

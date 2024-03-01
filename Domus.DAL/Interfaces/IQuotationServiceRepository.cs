@@ -1,8 +1,8 @@
 using Domus.Common.Interfaces;
-using Domus.Entities;
+using Domus.Domain.Entities;
 
 namespace Domus.DAL.Interfaces;
 
-public interface IQuotationServiceRepository : IGenericRepository<QuotationService>, IAutoRegisterable
+public interface IServiceQuotationRepository : IGenericRepository<ServiceQuotation>, IAutoRegisterable
 {
 }

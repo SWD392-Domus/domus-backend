@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using Domus.Domain.Dtos.Products;
-using Domus.Domain.Entities;
 
 namespace Domus.Domain.Dtos.Quotations;
 
@@ -14,14 +13,15 @@ public class DtoQuotationFullDetails
 
     public string Status { get; set; } = null!;
 
-	public float TotalPrice { get; set; }
+	public double TotalPrice { get; set; }
 
     public DateTime? ExpireAt { get; set; }
 
 	[JsonPropertyName("products")]
 	public ICollection<DtoProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotation>();
 
-	public ICollection<DtoService> Services { get; set; }
+	[JsonPropertyName("services")]
+	public ICollection<DtoServiceQuotation> ServiceQuotations { get; set; } = new List<DtoServiceQuotation>();
 
 	[JsonPropertyName("negotiationLog")]
 	public DtoQuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
