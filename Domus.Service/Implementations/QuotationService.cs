@@ -103,7 +103,7 @@ public class QuotationService : IQuotationService
 	    if (!isValidToken)
 		    throw new InvalidTokenException();
 	    
-	    if (!await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+	    if (request.PackageId != default && !await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
 		    throw new PackageNotFoundException();
 	    
 	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
@@ -117,7 +117,7 @@ public class QuotationService : IQuotationService
 			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
 			CreatedBy = userId,
 			CreatedAt = DateTime.Now,
-			ExpireAt = request.ExpireAt == null ? request.ExpireAt : DateTime.Now.AddDays(30),
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
 			PackageId = request.PackageId
