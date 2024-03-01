@@ -15,5 +15,5 @@ public class UpdateQuotationRequest
     [JsonPropertyName("productdetails")]
     public ICollection<ProductDetailInUpdatingQuotationRequest> ProductDetailQuotations { get; set; } = new List<ProductDetailInUpdatingQuotationRequest>();
 
-    public ICollection<Guid> Services { get; set; } = new List<Guid>();
+    public ICollection<ServiceInUpdatingQuotationRequest> Services { get; set; } = new List<ServiceInUpdatingQuotationRequest>();
 }

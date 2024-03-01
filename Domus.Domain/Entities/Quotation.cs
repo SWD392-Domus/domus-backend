@@ -22,11 +22,11 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
 
+    public virtual ICollection<ServiceQuotation> ServiceQuotations { get; set; } = new List<ServiceQuotation>();
+
     public virtual QuotationNegotiationLog QuotationNegotiationLog { get; set; } = null!;
 
     public virtual DomusUser Staff { get; set; } = null!;
-
-    public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 
     public virtual Package? Package { get; set; }
 }

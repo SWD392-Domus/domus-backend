@@ -48,21 +48,6 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.HasOne(d => d.Staff).WithMany(p => p.QuotationStaffs)
                 .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasMany(d => d.Services).WithMany(p => p.Quotations)
-                .UsingEntity<Dictionary<string, object>>(
-                    "QuotationService",
-                    r => r.HasOne<Service>().WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    l => l.HasOne<Quotation>().WithMany()
-                        .HasForeignKey("QuotationId")
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey("QuotationId", "ServiceId");
-                        j.ToTable("QuotationService");
-                    });
         });
     }
 }
