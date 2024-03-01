@@ -8,5 +8,5 @@ public class CreateQuotationRequest
 
     public ICollection<ProductDetailInCreatingQuotationRequest> ProductDetails { get; set; } = new List<ProductDetailInCreatingQuotationRequest>();
 
-    public ICollection<Guid> Services { get; set; } = new List<Guid>();
+    public ICollection<ServiceInCreatingQuotationRequest> Services { get; set; } = new List<ServiceInCreatingQuotationRequest>();
 }

@@ -133,7 +133,7 @@ public class QuotationService : IQuotationService
 			{
 				ProductDetailId = productDetail.Id,
 				QuotationId = quotation.Id,
-				Quantity = productDetail.Quantity,
+				Quantity = Math.Max(productDetail.Quantity, 1),
 				Price = productDetailEntity.DisplayPrice,
 				MonetaryUnit = "USD",
 				QuantityType = "Unit",
@@ -143,6 +143,7 @@ public class QuotationService : IQuotationService
 			{
 				ProductDetailQuotation = productDetailQuotation,
 				Price = productDetailQuotation.Price,
+				Quantity = Math.Max(productDetailQuotation.Quantity, 1),
 				Version = 0
 			};
 
@@ -150,15 +151,21 @@ public class QuotationService : IQuotationService
 			quotation.ProductDetailQuotations.Add(productDetailQuotation);
 		}
 
-		// Todo: change to ServiceQuotation
-		// foreach (var serviceId in request.Services)
-		// {
-		// 	var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == serviceId);
-		// 	if (serviceEntity == null)
-		// 		throw new ServiceNotFoundException();
-		//
-		// 	quotation.Services.Add(serviceEntity);
-		// }
+		foreach (var service in request.Services)
+		{
+			var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == service.ServiceId);
+			if (serviceEntity == null)
+				throw new ServiceNotFoundException();
+
+			var serviceQuotation = new ServiceQuotation
+			{
+				ServiceId = service.ServiceId,
+				QuotationId = quotation.Id,
+				Price = service.Price
+			};
+
+			quotation.ServiceQuotations.Add(serviceQuotation);
+		}
 
 		await _quotationRepository.AddAsync(quotation);
 		await _unitOfWork.CommitAsync();
