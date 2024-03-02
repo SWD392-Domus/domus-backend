@@ -36,7 +36,8 @@ public abstract class BaseApiController : ControllerBase
 			statusCode = StatusCodes.Status404NotFound;
 		else if (ex.GetType().IsAssignableTo(typeof(IBusinessException)))
 			statusCode = StatusCodes.Status409Conflict;
-
+		else if (ex.GetType().IsAssignableTo(typeof(IForbiddenException)))
+			statusCode = StatusCodes.Status403Forbidden;
 		errorResult.StatusCode = statusCode;
 		return base.Ok(errorResult);
 	}

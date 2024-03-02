@@ -115,4 +115,11 @@ public class QuotationsController : BaseApiController
 		var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
 		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
 	}
+
+	[HttpGet("history")]
+	[Authorize(Roles = UserRoleConstants.CLIENT)]
+	public async Task<IActionResult> GetUserQuotationHistory()
+	{
+		return await ExecuteServiceLogic(async () => await _quotationService.GetUserQuotationHistory(GetJwtToken())).ConfigureAwait(false);
+	}
 }

@@ -19,4 +19,5 @@ public interface IQuotationService : IAutoRegisterable
     Task<ServiceActionResult> GetPaginatedNegotiationMessages(BasePaginatedRequest request, Guid quotationId);
     Task<ServiceActionResult> SearchQuotations(SearchUsingGetRequest request);
     Task<ServiceActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids);
+    Task<ServiceActionResult> GetUserQuotationHistory(string token);
 }
