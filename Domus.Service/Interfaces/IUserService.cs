@@ -16,4 +16,5 @@ public interface IUserService : IAutoRegisterable
 	Task<ServiceActionResult> GetSelfProfile(string token);
     Task<ServiceActionResult> UpdateSelfProfile(UpdateUserRequest request, string token);
     Task<ServiceActionResult> UpdatePassword(UpdateUserPasswordRequest request, string token);
+    Task<ServiceActionResult> GetAllStaff();
 }
