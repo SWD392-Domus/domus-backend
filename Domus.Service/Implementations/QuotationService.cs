@@ -15,6 +15,7 @@ using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using UnauthorizedAccessException = System.UnauthorizedAccessException;
 
 namespace Domus.Service.Implementations;
 
@@ -179,6 +180,24 @@ public class QuotationService : IQuotationService
 	    await _unitOfWork.CommitAsync();
 	    
 	    return new ServiceActionResult(true) { Detail = "Quotations deleted successfully"};
+    }
+
+    public async Task<ServiceActionResult> GetUserQuotationHistory(string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userRepository.GetAsync(x => x.Id == userId) ?? throw new UserNotFoundException();
+	    var userRole = await _userManager.GetRolesAsync(user);
+	    if (!userRole.Contains(UserRoleConstants.CLIENT) || userRole.Count != 1)
+		    throw new Service.Exceptions.UnauthorizedAccessException();
+	    
+	    var quotations = (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.CustomerId.Equals(userId))).ProjectTo<DtoQuotation>(_mapper.ConfigurationProvider);
+	    return new ServiceActionResult(true)
+	    {
+		    Data = quotations
+	    };
     }
 
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
