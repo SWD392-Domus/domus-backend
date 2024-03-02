@@ -93,4 +93,13 @@ public class UsersController : BaseApiController
 			async () => await _userService.UpdatePassword(request, token).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+
+	[Authorize(Roles = UserRoleConstants.ADMIN)]
+	[HttpGet("staff")]
+	public async Task<IActionResult> GetAllStaff()
+	{
+		return await ExecuteServiceLogic(
+			async () => await _userService.GetAllStaff().ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }
