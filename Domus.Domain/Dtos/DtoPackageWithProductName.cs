@@ -12,7 +12,9 @@ public class DtoPackageWithProductName
 
     public double Discount { get; set; }
     
-    public double EstimatedPrice { get; set; } 
+    public double EstimatedPrice { get; set; }
+
+    public string? Description { get; set; } 
 
     public ICollection<DtoService> Services { get; set; } = new List<DtoService>();
     [JsonPropertyName("productDetails")]

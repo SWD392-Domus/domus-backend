@@ -11,6 +11,8 @@ public class DtoPackage
 
     public double Discount { get; set; }
 
+    public string? Description { get; set; } 
+
     public ICollection<DtoService> Services { get; set; } = new List<DtoService>();
 
     public ICollection<DtoProductDetail> ProductDetails { get; set; } = new List<DtoProductDetail>();

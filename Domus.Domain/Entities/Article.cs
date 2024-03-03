@@ -11,7 +11,7 @@ public partial class Article : TrackableEntity<Guid, string>
     public string Content { get; set; } = null!;
 
     public string? ConcurrencyStamp { get; set; }
-
+    
     public virtual ArticleCategory ArticleCategory { get; set; } = null!;
 
     public virtual ICollection<ArticleImage> ArticleImages { get; set; } = new List<ArticleImage>();

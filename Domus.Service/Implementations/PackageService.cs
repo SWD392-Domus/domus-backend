@@ -127,6 +127,7 @@ public class PackageService : IPackageService
                       throw new PackageNotFoundException();
         package.Name = request.Name ?? package.Name;
         package.Discount = request.Discount ?? package.Discount;
+        package.Description = request.Description ?? package.Description;g
         package.Services = (request.ServiceIds.Count > 0) ? (await _serviceService.GetServices(request.ServiceIds)).ToList() : package.Services ;
         package.PackageProductDetails = (request.ProductDetailIds.Count > 0) ? 
             request.ProductDetailIds

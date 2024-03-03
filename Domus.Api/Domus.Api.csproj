@@ -71,5 +71,7 @@
     <EmbeddedResource Include="Scripts\24.Change_Table_QuotationService_Name.sql" />
     <None Remove="Scripts\25.Change_Date_To_DateTime.sql" />
     <EmbeddedResource Include="Scripts\25.Change_Date_To_DateTime.sql" />
+    <None Remove="Scripts\26.Add_Article_In_Package.sql" />
+    <EmbeddedResource Include="Scripts\26.Add_Article_In_Package.sql" />
   </ItemGroup>
 </Project>
