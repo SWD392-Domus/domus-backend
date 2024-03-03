@@ -20,7 +20,9 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public virtual DomusUser Customer { get; set; } = null!;
 
-    public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
+    // public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
+
+	public virtual ICollection<QuotationRevision> QuotationRevisions { get; set; } = new List<QuotationRevision>();
 
     public virtual ICollection<ServiceQuotation> ServiceQuotations { get; set; } = new List<ServiceQuotation>();
 

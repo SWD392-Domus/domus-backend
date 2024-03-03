@@ -136,7 +136,7 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<ProductDetail, DtoProductDetailPackage>()
 			.ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.ProductName));
 		
-		mapper.CreateMap<ProductDetailQuotation, DtoProductDetailQuotation>()
+		mapper.CreateMap<ProductDetailQuotationRevision, DtoProductDetailQuotationRevision>()
 			.ForMember(dest => dest.ProductName,
 				opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName));
 		
@@ -196,16 +196,16 @@ public static class AutoMapperConfiguration
 				opt => opt.Condition(src => !string.IsNullOrEmpty(src.Status)))
 			.ForMember(dest => dest.ExpireAt,
 				opt => opt.Condition(src => src.ExpireAt != default))
-			.ForMember(dest => dest.ProductDetailQuotations,
+			.ForMember(dest => dest.QuotationRevisions,
 				opt => opt.Ignore())
 			.ForMember(dest => dest.ServiceQuotations,
 				opt => opt.Ignore());
 
-		mapper.CreateMap<ProductDetailInUpdatingQuotationRequest, ProductDetailQuotation>()
-			.ForMember(dest => dest.MonetaryUnit,
-				opt => opt.Condition(src => !string.IsNullOrEmpty(src.MonetaryUnit)))
-			.ForMember(dest => dest.QuantityType,
-				opt => opt.Condition(src => !string.IsNullOrEmpty(src.QuantityType)));
+		// mapper.CreateMap<ProductDetailInUpdatingQuotationRequest, ProductDetailQuotation>()
+		// 	.ForMember(dest => dest.MonetaryUnit,
+		// 		opt => opt.Condition(src => !string.IsNullOrEmpty(src.MonetaryUnit)))
+		// 	.ForMember(dest => dest.QuantityType,
+		// 		opt => opt.Condition(src => !string.IsNullOrEmpty(src.QuantityType)));
 		
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
 	}
