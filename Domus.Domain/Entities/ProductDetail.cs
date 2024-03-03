@@ -12,7 +12,9 @@ public partial class ProductDetail : DeletableEntity<Guid>
 
     public virtual ICollection<ProductAttributeValue> ProductAttributeValues { get; set; } = new List<ProductAttributeValue>();
 
-    public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
+    // public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
+
+	public virtual ICollection<ProductDetailQuotationRevision> ProductDetailQuotationRevisions { get; set; } = new List<ProductDetailQuotationRevision>();
 
     public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 

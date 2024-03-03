@@ -1,0 +1,23 @@
+DROP TABLE IF EXISTS [ProductDetail_QuotationRevision]
+DROP TABLE IF EXISTS [ProductDetail_Quotation]
+
+CREATE TABLE [QuotationRevision] (
+	[Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+	[QuotationId] UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [Quotation]([Id]),
+	[Version] INT NOT NULL,
+	[CreatedAt] DATETIME NOT NULL,
+	[IsDeleted] BIT NOT NULL
+)
+GO
+
+CREATE TABLE [ProductDetail_QuotationRevision] (
+	[Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+	[QuotationRevisionId] UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [QuotationRevision]([Id]),
+	[ProductDetailId] UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES [ProductDetail]([Id]),
+	[Price] FLOAT NOT NULL,
+	[MonetaryUnit] NVARCHAR(256) NOT NULL,
+	[Quantity] FLOAT NOT NULL,
+	[QuantityType] NVARCHAR(256) NOT NULL,
+	[IsDeleted] BIT DEFAULT 0
+)
+GO
