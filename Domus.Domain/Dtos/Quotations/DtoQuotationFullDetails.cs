@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Domus.Domain.Dtos.Products;
 
 namespace Domus.Domain.Dtos.Quotations;
 
@@ -18,7 +17,8 @@ public class DtoQuotationFullDetails
     public DateTime? ExpireAt { get; set; }
 
 	[JsonPropertyName("products")]
-	public ICollection<DtoProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotation>();
+	// public ICollection<DtoProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotation>();
+	public ICollection<DtoProductDetailQuotationRevision> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotationRevision>();
 
 	[JsonPropertyName("services")]
 	public ICollection<DtoServiceQuotation> ServiceQuotations { get; set; } = new List<DtoServiceQuotation>();
