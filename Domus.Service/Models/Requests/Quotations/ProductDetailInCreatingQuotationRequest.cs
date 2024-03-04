@@ -10,4 +10,7 @@ public class ProductDetailInCreatingQuotationRequest
 
 	[Range(0, int.MaxValue)]
     public int Quantity { get; set; }
+
+    [Range(0, double.MaxValue)]
+    public double Price { get; set; }
 }
