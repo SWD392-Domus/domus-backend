@@ -138,7 +138,9 @@ public static class AutoMapperConfiguration
 		
 		mapper.CreateMap<ProductDetailQuotationRevision, DtoProductDetailQuotationRevision>()
 			.ForMember(dest => dest.ProductName,
-				opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName));
+				opt => opt.MapFrom(src => src.ProductDetail.Product.ProductName))
+			.ForMember(dest => dest.Id,
+				opt => opt.MapFrom(src => src.ProductDetailId));
 		
 		mapper.CreateMap<ProductDetail, DtoProductDetail>()
 			.ForMember(dest => dest.DisplayPrice,
@@ -200,14 +202,10 @@ public static class AutoMapperConfiguration
 				opt => opt.Ignore())
 			.ForMember(dest => dest.ServiceQuotations,
 				opt => opt.Ignore());
-
-		// mapper.CreateMap<ProductDetailInUpdatingQuotationRequest, ProductDetailQuotation>()
-		// 	.ForMember(dest => dest.MonetaryUnit,
-		// 		opt => opt.Condition(src => !string.IsNullOrEmpty(src.MonetaryUnit)))
-		// 	.ForMember(dest => dest.QuantityType,
-		// 		opt => opt.Condition(src => !string.IsNullOrEmpty(src.QuantityType)));
 		
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
+		mapper.CreateMap<QuotationRevision, DtoQuotationRevisionWithPriceAndVersion>();
+		mapper.CreateMap<Quotation, DtoQuotationWithoutProductsAndServices>();
 	}
 
 	private static void CreatePackageMaps(IMapperConfigurationExpression mapper)

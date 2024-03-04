@@ -90,7 +90,7 @@ public static class PaginationHelper
         var results = source.Skip((pageIndex - 1) * pageSize)
             .Take(pageSize);
         paginatedResult.Items = results;
-        paginatedResult.Items = mapper is null ? results : mapper.Map<IEnumerable<TDto>>(results.AsEnumerable());
+        paginatedResult.Items = mapper is null ? results.ToList() : mapper.Map<IEnumerable<TDto>>(results.AsEnumerable());
         return paginatedResult;
     }
     
