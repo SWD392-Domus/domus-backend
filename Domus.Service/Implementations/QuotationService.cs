@@ -212,7 +212,7 @@ public class QuotationService : IQuotationService
 
 	    var quotationPricesHistory = new List<QuotationPriceHistory>();
 
-	    var orderedRevisions = new List<QuotationRevision>(quotation.QuotationRevisions.OrderByDescending(r => r.Version));
+	    var orderedRevisions = new List<QuotationRevision>(quotation.QuotationRevisions.OrderBy(r => r.Version));
 
 	    for (var i = 0; i < orderedRevisions.Count - 1; i++)
 	    {
