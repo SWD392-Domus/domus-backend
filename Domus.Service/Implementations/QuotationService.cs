@@ -125,31 +125,32 @@ public class QuotationService : IQuotationService
 			PackageId = request.PackageId
 		};
 
+		var quotationRevision = new QuotationRevision
+		{
+			Quotation = quotation,
+			Version = 0,
+			CreatedAt = DateTime.Now
+		};
+
 		foreach (var productDetail in request.ProductDetails)
 		{
 			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetail.Id);
 			if (productDetailEntity == null)
 				throw new ProductDetailNotFoundException();
 
-			var quotationRevision = new QuotationRevision
-			{
-				Quotation = quotation,
-				Version = 0,
-				CreatedAt = DateTime.Now
-			};
 
 			var productDetailQuotationRevision = new ProductDetailQuotationRevision
 			{
 				ProductDetailId = productDetail.Id,
 				QuotationRevision = quotationRevision,
 				Quantity = Math.Max(productDetail.Quantity, 1),
-				Price = productDetailEntity.DisplayPrice,
+				Price = productDetail.Price,
 				MonetaryUnit = "USD",
 				QuantityType = "Unit",
 			};
 
 			quotationRevision.ProductDetailQuotationRevisions.Add(productDetailQuotationRevision);
-			quotation.QuotationRevisions.Add(quotationRevision);
+			quotationRevision.TotalPrice += productDetailQuotationRevision.Price * productDetailQuotationRevision.Quantity;
 		}
 
 		foreach (var service in request.Services)
@@ -166,8 +167,10 @@ public class QuotationService : IQuotationService
 			};
 
 			quotation.ServiceQuotations.Add(serviceQuotation);
+			quotationRevision.TotalPrice += service.Price;
 		}
 
+		quotation.QuotationRevisions.Add(quotationRevision);
 		await _quotationRepository.AddAsync(quotation);
 		await _unitOfWork.CommitAsync();
 
@@ -228,7 +231,10 @@ public class QuotationService : IQuotationService
 
 		foreach (var quotation in quotations)
 		{
-			quotation.TotalPrice = (float)await GetQuotationTotalPrice(quotation.Id);
+			var quotationRevisions = (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotation.Id))
+				.ProjectTo<DtoQuotationRevisionWithPriceAndVersion>(_mapper.ConfigurationProvider);
+			
+			quotation.TotalPrice = (float)(quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefault()?.TotalPrice ?? 0);
 		}
 
 		return new ServiceActionResult(true) { Data = quotations };
@@ -253,7 +259,10 @@ public class QuotationService : IQuotationService
 		
 		foreach (var quotation in await ((IQueryable<DtoQuotation>)paginatedResult.Items!).ToListAsync())
 		{
-			quotation.TotalPrice = (float)await GetQuotationTotalPrice(quotation.Id);
+			var quotationRevisions = (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotation.Id))
+				.ProjectTo<DtoQuotationRevisionWithPriceAndVersion>(_mapper.ConfigurationProvider);
+			
+			quotation.TotalPrice = (float)(quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefault()?.TotalPrice ?? 0);
 			quotationList.Add(quotation);
 		}
 
@@ -280,9 +289,8 @@ public class QuotationService : IQuotationService
 
 		quotation.ProductDetailQuotations = _mapper.Map<ICollection<DtoProductDetailQuotationRevision>>(products);
 		
-		var totalProductPrice = products.Sum(r => (float)(r?.Price ?? 0) * r?.Quantity ?? 0);
-		var totalServicePrice = quotation.ServiceQuotations.Sum(s => s.Price);
-		quotation.TotalPrice = totalProductPrice + totalServicePrice;
+		quotation.TotalPrice =
+			(await quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefaultAsync())?.TotalPrice ?? 0;
 
 		return new ServiceActionResult(true) { Data = quotation };
     }
@@ -291,30 +299,39 @@ public class QuotationService : IQuotationService
     {
 		var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted))
 			.OrderByDescending(p => p.CreatedAt)
-		    .ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
+		    .ProjectTo<DtoQuotationWithoutProductsAndServices>(_mapper.ConfigurationProvider)
 		    .ToListAsync();
-		
-		foreach (var quotation in quotations)
-		{
-			quotation.TotalPrice = await GetQuotationTotalPrice(quotation.Id);
-		}
 	    
 	    if (!string.IsNullOrEmpty(request.SearchField))
 	    {
 			quotations = quotations 
-				.Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoQuotationFullDetails), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+				.Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
 				.ToList();
 	    }
 
 	    if (!string.IsNullOrEmpty(request.SortField))
 	    {
-			Expression<Func<DtoQuotationFullDetails, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoQuotationFullDetails), request.SortField, p);
+			Expression<Func<DtoQuotationWithoutProductsAndServices, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SortField, p);
 			quotations = request.Descending
 				? quotations.OrderByDescending(orderExpr.Compile()).ToList()
 				: quotations.OrderBy(orderExpr.Compile()).ToList();
 	    }
-
+		
 	    var paginatedResult = PaginationHelper.BuildPaginatedResult(quotations, request.PageSize, request.PageIndex);
+
+		var paginatedQuotations = (ICollection<DtoQuotationWithoutProductsAndServices>)paginatedResult.Items!;
+		var quotationList = new List<DtoQuotationWithoutProductsAndServices>();
+
+		foreach (var quotation in paginatedQuotations)
+		{
+			var quotationRevisions = (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotation.Id))
+				.ProjectTo<DtoQuotationRevisionWithPriceAndVersion>(_mapper.ConfigurationProvider);
+			
+			quotation.TotalPrice = quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefault()?.TotalPrice ?? 0;
+			quotationList.Add(quotation);
+		}
+
+		paginatedResult.Items = quotationList;
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
@@ -356,12 +373,14 @@ public class QuotationService : IQuotationService
 				};
 	 
 				quotation.ServiceQuotations.Add(newServiceQuotation);
+				newQuotationRevision.TotalPrice += requestService.Price;
 				continue;
 			}
 	 
 			quotation.ServiceQuotations.Remove(serviceQuotation);
 			serviceQuotation.Price = requestService.Price;
 			quotation.ServiceQuotations.Add(serviceQuotation);
+			newQuotationRevision.TotalPrice += requestService.Price;
 		}
 	 
 		var excludedServices = new List<ServiceQuotation>(quotation.ServiceQuotations.Where(s => !request.Services.Select(rs => rs.ServiceId).Contains(s.ServiceId)));
@@ -376,7 +395,7 @@ public class QuotationService : IQuotationService
 			{
 				Price = requestProductDetail.Price,
 				MonetaryUnit = string.IsNullOrEmpty(requestProductDetail.MonetaryUnit) ? "USD" : requestProductDetail.MonetaryUnit,
-				Quantity = requestProductDetail.Quantity,
+				Quantity = Math.Max(requestProductDetail.Quantity, 1),
 				QuantityType = string.IsNullOrEmpty(requestProductDetail.QuantityType) ? "Unit" : requestProductDetail.QuantityType,
 				IsDeleted = false,
 				ProductDetailId = requestProductDetail.ProductDetailId,
@@ -384,6 +403,7 @@ public class QuotationService : IQuotationService
 			};
 			
 			newQuotationRevision.ProductDetailQuotationRevisions.Add(productDetailInQuotaionRevision);
+			newQuotationRevision.TotalPrice += productDetailInQuotaionRevision.Price * productDetailInQuotaionRevision.Quantity;
 		}
 		
 		quotation.QuotationRevisions.Add(newQuotationRevision);

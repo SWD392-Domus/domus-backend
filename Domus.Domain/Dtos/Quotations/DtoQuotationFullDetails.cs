@@ -17,7 +17,6 @@ public class DtoQuotationFullDetails
     public DateTime? ExpireAt { get; set; }
 
 	[JsonPropertyName("products")]
-	// public ICollection<DtoProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotation>();
 	public ICollection<DtoProductDetailQuotationRevision> ProductDetailQuotations { get; set; } = new List<DtoProductDetailQuotationRevision>();
 
 	[JsonPropertyName("services")]

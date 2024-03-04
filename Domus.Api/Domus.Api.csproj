@@ -75,5 +75,7 @@
     <EmbeddedResource Include="Scripts\26.Add_Article_In_Package.sql" />
 	<None Remove="Scripts\27.Add_Table_Quotation_Revision.sql" />
 	<EmbeddedResource Include="Scripts\27.Add_Table_Quotation_Revision.sql" />
+	<None Remove="Scripts\28.Add_Total_Price_To_QuotationRevision.sql" />
+	<EmbeddedResource Include="Scripts\28.Add_Total_Price_To_QuotationRevision.sql" />
   </ItemGroup>
 </Project>
