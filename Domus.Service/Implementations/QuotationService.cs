@@ -12,6 +12,7 @@ using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
+using Domus.Service.Models.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -201,6 +202,45 @@ public class QuotationService : IQuotationService
 	    {
 		    Data = quotations
 	    };
+    }
+
+    public async Task<ServiceActionResult> GetQuotationRevisions(Guid quotationId)
+    {
+	    var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == quotationId))
+		    .Include(q => q.QuotationRevisions)
+		    .FirstOrDefaultAsync() ?? throw new QuotationNotFoundException();
+
+	    var quotationPricesHistory = new List<QuotationPriceHistory>();
+
+	    var orderedRevisions = new List<QuotationRevision>(quotation.QuotationRevisions.OrderByDescending(r => r.Version));
+
+	    for (var i = 0; i < orderedRevisions.Count - 1; i++)
+	    {
+		    var currentPrice = orderedRevisions[i].TotalPrice;
+		    var previousPrice = i > 0 ? orderedRevisions[i - 1].TotalPrice : 0;
+		    var priceChange = currentPrice - previousPrice;
+		    
+		    double priceChangeInPercentage;
+		    if (priceChange == 0)
+			    priceChangeInPercentage = 0;
+		    else if (previousPrice == 0)
+			    priceChangeInPercentage = 1;
+		    else
+			    priceChangeInPercentage = priceChange / previousPrice;
+		    
+		    var priceHistory = new QuotationPriceHistory
+		    {
+			    CurrentPrice = currentPrice,
+			    PreviousPrice = previousPrice,
+			    UpdatedAt = orderedRevisions[i].CreatedAt,
+			    PriceChange = priceChange,
+			    PriceChangeInPercentage = Math.Round(priceChangeInPercentage, 2)
+		    };
+		    
+		    quotationPricesHistory.Add(priceHistory);
+	    }
+
+	    return new ServiceActionResult(true) { Data = quotationPricesHistory };
     }
 
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
