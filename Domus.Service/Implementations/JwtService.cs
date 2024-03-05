@@ -6,6 +6,7 @@ using Domus.Common.Exceptions;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
+using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -56,6 +57,60 @@ public class JwtService : IJwtService
         return existingRefreshToken.Value;
     }
 
+    public bool IsValidToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidateIssuer = _jwtSettings.ValidateIssuer,
+            ValidAudience = _jwtSettings.Audience,
+            ValidateAudience = _jwtSettings.ValidateAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SigningKey)),
+            ValidateIssuerSigningKey = _jwtSettings.ValidateIssuerSigningKey,
+            ValidateLifetime = _jwtSettings.ValidateLifetime,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        try
+        {
+            tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public object? GetTokenClaim(string token, string claimName)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidateIssuer = _jwtSettings.ValidateIssuer,
+            ValidAudience = _jwtSettings.Audience,
+            ValidateAudience = _jwtSettings.ValidateAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SigningKey)),
+            ValidateIssuerSigningKey = _jwtSettings.ValidateIssuerSigningKey,
+            ValidateLifetime = _jwtSettings.ValidateLifetime,
+            ClockSkew = TimeSpan.Zero
+        };
+        
+        try
+        {
+            tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
+            var jwtSecurityToken = (JwtSecurityToken)validatedToken;
+            var propInfo = typeof(JwtSecurityToken).GetProperties().FirstOrDefault(p => p.Name == claimName);
+            return propInfo?.GetValue(jwtSecurityToken);
+        }
+        catch
+        {
+            throw new InvalidTokenException();
+        }
+    }
+
     public string GenerateAccessToken(DomusUser user, IEnumerable<string> roles)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SigningKey));
@@ -74,7 +129,8 @@ public class JwtService : IJwtService
             Audience = _jwtSettings.Audience,
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.Now,
-            Expires = DateTime.Now.AddMinutes(_jwtSettings.AccessTokenLifetimeInMinutes),
+            // Expires = DateTime.Now.AddMinutes(_jwtSettings.AccessTokenLifetimeInMinutes),
+            Expires = DateTime.Now.AddMinutes(60),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
         };
         

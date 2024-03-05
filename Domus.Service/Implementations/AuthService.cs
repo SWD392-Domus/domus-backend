@@ -22,8 +22,6 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserTokenRepository _userTokenRepository;
-    
-    private const string PASSWORD_PATTERN = @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$";
 
 	public AuthService(
 		UserManager<DomusUser> userManager,
@@ -58,14 +56,19 @@ public class AuthService : IAuthService
 		}
 
 		var roles = await _userManager.GetRolesAsync(user);
-		var tokenResponse = new TokenResponse
+		var response = new AuthResponse
 		{
-			AccessToken = _jwtService.GenerateAccessToken(user, roles),
-			RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
-			ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			Username = user.UserName ?? user.Email ?? string.Empty,
+			Roles = roles,
+			Token = new TokenResponse
+			{
+				AccessToken = _jwtService.GenerateAccessToken(user, roles),
+				RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
+				ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			}
 		};
 
-		return new ServiceActionResult(true) { Data = tokenResponse };
+		return new ServiceActionResult(true) { Data = response };
     }
 
     public async Task<ServiceActionResult> RefreshTokenAsync(RefreshTokenRequest request)
@@ -108,8 +111,8 @@ public class AuthService : IAuthService
 	    if (await _userRepository.ExistsAsync(u => u.Email!.ToLower() == request.Email.ToLower()))
 		    throw new UserAlreadyExistsException($"User '{request.Email}' already exists");
 
-	    if (!Regex.IsMatch(request.Password, PASSWORD_PATTERN))
-		    throw new PasswordTooWeakException("Provided password is too simple");
+	    if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
+		    throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
 	    
 	    var user = _mapper.Map<DomusUser>(request);
 

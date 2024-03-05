@@ -2,7 +2,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
-using Domus.Domain.Dtos;
+using Domus.Domain.Dtos.Articles;
 using Domus.Domain.Entities;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;

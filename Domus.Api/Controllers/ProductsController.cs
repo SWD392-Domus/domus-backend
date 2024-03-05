@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
 
-[Authorize(Roles = $"{UserRoleConstants.ADMIN},{UserRoleConstants.STAFF}", AuthenticationSchemes = "Bearer")]
+[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class ProductsController : BaseApiController
 {
-	private IProductService _productService;
+	private readonly IProductService _productService;
 
 	public ProductsController(IProductService productService)
 	{
@@ -46,6 +46,24 @@ public class ProductsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[AllowAnonymous]
+	[HttpPost("search")]
+	public async Task<IActionResult> SearchProducts(BaseSearchRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productService.SearchProducts(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[AllowAnonymous]
+	[HttpGet("search")]
+	public async Task<IActionResult> SearchProductsUsingGetRequest([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productService.SearchProductsUsingGet(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
 	[HttpPost]
 	public async Task<IActionResult> CreateProduct(CreateProductRequest request)
 	{
@@ -67,6 +85,14 @@ public class ProductsController : BaseApiController
 	{
 		return await ExecuteServiceLogic(
 			async () => await _productService.DeleteProduct(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpDelete("multiple")]
+	public async Task<IActionResult> DeleteMultipleProducts(IEnumerable<Guid> ids)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productService.DeleteMultipleProducts(ids).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

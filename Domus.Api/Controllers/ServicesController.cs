@@ -1,5 +1,4 @@
 ﻿using Domus.Api.Controllers.Base;
-using Domus.DAL.Interfaces;
 using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
@@ -8,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
-[Authorize(Roles = $"{UserRoleConstants.ADMIN},{UserRoleConstants.STAFF}", AuthenticationSchemes = "Bearer")]
+[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
 [Route("/api/[Controller]")]
 public class ServicesController : BaseApiController
 {
@@ -18,6 +17,7 @@ public class ServicesController : BaseApiController
     {
         _service = service;
     }
+
     [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetPaginatedArticles([FromQuery] BasePaginatedRequest request)
@@ -26,6 +26,7 @@ public class ServicesController : BaseApiController
             async () => await _service.GetPaginatedServices(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+
     [AllowAnonymous]
     [HttpGet("all")]
     public async Task<IActionResult> GetAllService()
@@ -34,6 +35,7 @@ public class ServicesController : BaseApiController
             async () => await _service.GetAllServices().ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)

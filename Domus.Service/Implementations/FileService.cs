@@ -4,6 +4,7 @@ using Domus.Common.Settings;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Common;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 namespace Domus.Service.Implementations;
@@ -34,9 +35,25 @@ public class FileService : IFileService
 
     public async Task<Stream> GetFile(string fileName)
     {
-        var containerInsatance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
-        var blobInstance = containerInsatance.GetBlobClient(fileName);
+        var containerInstance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
+        var blobInstance = containerInstance.GetBlobClient(fileName);
         var downloadResult = await blobInstance.DownloadAsync();
         return downloadResult.Value.Content;
     }
+
+    public async Task<ICollection<string>> GetUrlAfterUploadedFile(List<IFormFile> files)
+    {
+        var listUrl = new List<string>();
+        var containerInstance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
+        
+        foreach (var file in files)
+        {
+            var blobInstance = containerInstance.GetBlobClient(StringInterpolationHelper.GenerateUniqueFileName(file.FileName,10));
+            await blobInstance.UploadAsync(file.OpenReadStream());
+            listUrl.Add(blobInstance.Uri.ToString());
+        }
+        return listUrl;
+    }
+
+   
 }

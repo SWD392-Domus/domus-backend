@@ -14,16 +14,20 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.ToTable(nameof(Quotation));
 
 			entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.CreatedAt).HasColumnType("date");
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.CustomerId).HasMaxLength(450);
-            entity.Property(e => e.ExpireAt).HasColumnType("date");
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
             entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
-            entity.Property(e => e.LastUpdatedAt).HasColumnType("date");
+            entity.Property(e => e.LastUpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.LastUpdatedBy).HasMaxLength(450);
             entity.Property(e => e.StaffId).HasMaxLength(450);
             entity.Property(e => e.Status).HasMaxLength(256);
 			entity.Property(e => e.ConcurrencyStamp).IsConcurrencyToken().HasValueGenerator(typeof(StringValueGenerator));
+
+            entity.HasOne(e => e.Package).WithMany(p => p.Quotations)
+                .HasForeignKey(q => q.PackageId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.QuotationCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
@@ -44,21 +48,6 @@ public class QuotationModelMapper : IDatabaseModelMapper
             entity.HasOne(d => d.Staff).WithMany(p => p.QuotationStaffs)
                 .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasMany(d => d.Services).WithMany(p => p.Quotations)
-                .UsingEntity<Dictionary<string, object>>(
-                    "QuotationService",
-                    r => r.HasOne<Service>().WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    l => l.HasOne<Quotation>().WithMany()
-                        .HasForeignKey("QuotationId")
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey("QuotationId", "ServiceId");
-                        j.ToTable("QuotationService");
-                    });
         });
     }
 }

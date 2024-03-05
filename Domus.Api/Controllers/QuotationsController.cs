@@ -1,11 +1,15 @@
 using Domus.Api.Controllers.Base;
+using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Quotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
 
+[Authorize(AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class QuotationsController : BaseApiController
 {
@@ -40,11 +44,19 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[HttpGet("search")]
+	public async Task<IActionResult> SearchQuotations([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.SearchQuotations(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 	[HttpPost]
 	public async Task<IActionResult> CreateQuotation(CreateQuotationRequest request)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _quotationService.CreateQuotation(request).ConfigureAwait(false)
+			async () => await _quotationService.CreateQuotation(request, GetJwtToken()).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
@@ -56,6 +68,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpDelete("{id:guid}")]
 	public async Task<IActionResult> DeleteQuotation(Guid id)
 	{
@@ -64,7 +77,16 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpPost("{id:guid}/negotations/messages")]
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+	[HttpDelete("multiple")]
+	public async Task<IActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.DeleteMultipleQuotations(ids).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpPost("{id:guid}/negotiations/messages")]
 	public async Task<IActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid id)
 	{
 		return await ExecuteServiceLogic(
@@ -72,7 +94,7 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpGet("{id:guid}/negotations/messages")]
+	[HttpGet("{id:guid}/negotiations/messages")]
 	public async Task<IActionResult> GetPaginatedNegotiationMessages([FromQuery] BasePaginatedRequest request, Guid id)
 	{
 		return await ExecuteServiceLogic(
@@ -80,11 +102,32 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
-	[HttpGet("{id:guid}/negotations/messages/all")]
+	[HttpGet("{id:guid}/negotiations/messages/all")]
 	public async Task<IActionResult> GetAllNegotiationMessages(Guid id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _quotationService.GetAllNegotiationMessages(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	private string GetJwtToken()
+	{
+		var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
+		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
+	}
+
+	[HttpGet("history")]
+	[Authorize(Roles = UserRoleConstants.CLIENT)]
+	public async Task<IActionResult> GetUserQuotationHistory()
+	{
+		return await ExecuteServiceLogic(async () => await _quotationService.GetUserQuotationHistory(GetJwtToken())).ConfigureAwait(false);
+	}
+
+	[HttpGet("{id:guid}/negotiations")]
+	public async Task<IActionResult> GetQuotationRevisions(Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.GetQuotationRevisions(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

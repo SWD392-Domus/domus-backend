@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domus.DAL\Domus.DAL.csproj" />
-    <ProjectReference Include="..\Domus.Domain\Domus.Domain.csproj" />
   
   </ItemGroup>
 
