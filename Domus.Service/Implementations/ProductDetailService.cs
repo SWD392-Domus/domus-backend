@@ -286,4 +286,13 @@ public class ProductDetailService : IProductDetailService
 	    
 	    return new ServiceActionResult(true);
     }
+
+    public async Task<ServiceActionResult> SearchProductDetailsInStorage(SearchUsingGetRequest request)
+    {
+	    var productsInStorage = (await _productDetailRepository.GetAllAsync())
+		    .ProjectTo<DtoProductDetailInStorage>(_mapper.ConfigurationProvider);
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(productsInStorage, request.PageSize, request.PageIndex);
+
+		return new ServiceActionResult(true) { Data = paginatedResult };
+    }
 }

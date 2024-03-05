@@ -25,4 +25,5 @@ public interface IProductDetailService : IAutoRegisterable
     Task<ServiceActionResult> SearchProductDetails(BaseSearchRequest request);
     Task<ServiceActionResult> SearchProductDetailsUsingGet(SearchUsingGetRequest request);
     Task<ServiceActionResult> CreateProductPrice(CreateProductPriceRequest request, Guid productId);
+    Task<ServiceActionResult> SearchProductDetailsInStorage(SearchUsingGetRequest request);
 }
