@@ -289,7 +289,7 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> SearchProductDetailsInStorage(SearchUsingGetRequest request)
     {
-	    var productsInStorage = (await _productDetailRepository.GetAllAsync())
+	    var productsInStorage = (await _productDetailRepository.FindAsync(pd => !pd.IsDeleted))
 		    .ProjectTo<DtoProductDetailInStorage>(_mapper.ConfigurationProvider);
 		var paginatedResult = PaginationHelper.BuildPaginatedResult(productsInStorage, request.PageSize, request.PageIndex);
 
