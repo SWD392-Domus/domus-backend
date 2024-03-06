@@ -308,7 +308,8 @@ public class ProductDetailService : IProductDetailService
 			{
 				Price = productDetail.Price,
 				Quantity = productDetail.Quantity,
-				MonetaryUnit = productDetail.MonetaryUnit
+				MonetaryUnit = productDetail.MonetaryUnit,
+				CreatedAt = DateTime.Now
 			};
 
 			retrievedDetail.ProductPrices.Add(newProductPrice);
