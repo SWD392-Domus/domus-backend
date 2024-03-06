@@ -14,5 +14,7 @@ public partial class ProductPrice : BaseEntity<Guid>
 
     public string QuantityType { get; set; } = "N/A";
 
+	public DateTime CreatedAt { get; set; }
+
     public virtual ProductDetail ProductDetail { get; set; } = null!;
 }
