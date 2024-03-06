@@ -10,6 +10,10 @@ public class DtoProductDetailInStorage
 
 	public string ProductName { get; set; } = null!;
 
+	public string? Brand { get; set; }
+
+	public int TotalQuantity { get; set; }
+
 	[JsonPropertyName("attributes")]
     public virtual ICollection<DtoProductAttributeValue> ProductAttributeValues { get; set; } = new List<DtoProductAttributeValue>();
 

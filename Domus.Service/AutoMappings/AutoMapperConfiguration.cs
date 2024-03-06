@@ -154,7 +154,11 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.ProductAttributeValues,
 				opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { AttributeId = pav.ProductAttributeId, Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })))
 			.ForMember(dest => dest.ProductName,
-				opt => opt.MapFrom(src => src.Product.ProductName));
+				opt => opt.MapFrom(src => src.Product.ProductName))
+			.ForMember(dest => dest.Brand,
+				opt => opt.MapFrom(src => src.Product.Brand))
+			.ForMember(dest => dest.TotalQuantity,
+				opt => opt.MapFrom(src => src.ProductPrices.Sum(pp => (int)pp.Quantity)));
 		
 		mapper.CreateMap<ProductDetail, DtoSingleProductDetail>()
 			.ForMember(dest => dest.DisplayPrice,

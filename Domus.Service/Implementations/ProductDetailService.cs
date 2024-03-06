@@ -295,4 +295,28 @@ public class ProductDetailService : IProductDetailService
 
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
+
+    public async Task<ServiceActionResult> ImportProductDetailsToStorage(IEnumerable<ImportProductDetailRequest> productDetails)
+    {
+		foreach (var productDetail in productDetails)
+		{
+			var retrievedDetail = await (await _productDetailRepository.FindAsync(p => !p.IsDeleted && p.Id == productDetail.ProductDetailId))
+				.Include(pd => pd.ProductPrices)
+				.FirstOrDefaultAsync() ?? throw new ProductDetailNotFoundException();
+
+			var newProductPrice = new ProductPrice
+			{
+				Price = productDetail.Price,
+				Quantity = productDetail.Quantity,
+				MonetaryUnit = productDetail.MonetaryUnit
+			};
+
+			retrievedDetail.ProductPrices.Add(newProductPrice);
+			await _productDetailRepository.UpdateAsync(retrievedDetail);
+		}
+	    
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true);
+    }
 }
