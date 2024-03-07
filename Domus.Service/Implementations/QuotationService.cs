@@ -279,6 +279,17 @@ public class QuotationService : IQuotationService
 	    return new ServiceActionResult(true) { Data = quotation };
     }
 
+    public async Task<ServiceActionResult> UpdateQuotationStatus(Guid quotationId, string status)
+    {
+	    var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == quotationId) ?? throw new QuotationNotFoundException();
+	    quotation.Status = status;
+	    
+	    await _quotationRepository.UpdateAsync(quotation);
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true);
+    }
+
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
     {
 		var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == id) ?? throw new QuotationNotFoundException();

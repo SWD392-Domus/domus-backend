@@ -146,4 +146,12 @@ public class QuotationsController : BaseApiController
 			async () => await _quotationService.GetQuotationRevision(quotationId, revisionId).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpPut("{quotationId:guid}/status")]
+	public async Task<IActionResult> UpdateQuotationStatus(Guid quotationId, [FromBody] string status)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.UpdateQuotationStatus(quotationId, status).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }
