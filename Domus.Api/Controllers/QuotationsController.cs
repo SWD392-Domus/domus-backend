@@ -124,6 +124,14 @@ public class QuotationsController : BaseApiController
 	}
 
 	[HttpGet("{id:guid}/negotiations")]
+	public async Task<IActionResult> GetQuotationPriceChangeHistory(Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.GetQuotationPriceChangeHistory(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpGet("{id:guid}/revisions")]
 	public async Task<IActionResult> GetQuotationRevisions(Guid id)
 	{
 		return await ExecuteServiceLogic(

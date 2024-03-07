@@ -204,7 +204,7 @@ public class QuotationService : IQuotationService
 	    };
     }
 
-    public async Task<ServiceActionResult> GetQuotationRevisions(Guid quotationId)
+    public async Task<ServiceActionResult> GetQuotationPriceChangeHistory(Guid quotationId)
     {
 	    var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == quotationId))
 		    .Include(q => q.QuotationRevisions)
@@ -241,6 +241,19 @@ public class QuotationService : IQuotationService
 	    }
 
 	    return new ServiceActionResult(true) { Data = quotationPricesHistory };
+    }
+
+    public async Task<ServiceActionResult> GetQuotationRevisions(Guid id)
+    {
+	    var revisions = await (await _quotationRevisionRepository.FindAsync(qr => !qr.IsDeleted && qr.QuotationId == id))
+		    .Select(qr => new
+		    {
+			    qr.Version,
+			    qr.CreatedAt
+		    })
+		    .ToListAsync();
+
+	    return new ServiceActionResult(true) { Data = revisions };
     }
 
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
