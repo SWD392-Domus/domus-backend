@@ -121,4 +121,13 @@ public class ProductDetailsController : BaseApiController
 			async () => await _productDetailService.ImportProductDetailsToStorage(productDetails).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpGet]
+	[Route("/api/storage/products/prices")]
+	public async Task<IActionResult> GetProductPricesFromStorage([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.GetProductPricesFromStorage(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }

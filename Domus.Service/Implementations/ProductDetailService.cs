@@ -24,6 +24,7 @@ public class ProductDetailService : IProductDetailService
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IProductAttributeRepository _productAttributeRepository;
 	private readonly IFileService _fileService;
+	private readonly IProductPriceRepository _productPriceRepository;
 
 	public ProductDetailService(
 			IProductDetailRepository productDetailRepository,
@@ -31,13 +32,15 @@ public class ProductDetailService : IProductDetailService
 			IUnitOfWork unitOfWork,
 			IProductRepository productRepository,
 			IFileService fileService,
-			IProductAttributeRepository productAttributeRepository)
+			IProductAttributeRepository productAttributeRepository,
+			IProductPriceRepository productPriceRepository)
 	{
 		_productDetailRepository = productDetailRepository;
 		_mapper = mapper;
 		_unitOfWork = unitOfWork;
 		_productRepository = productRepository;
 		_productAttributeRepository = productAttributeRepository;
+		_productPriceRepository = productPriceRepository;
 		_fileService = fileService;
 	}
 
@@ -289,10 +292,26 @@ public class ProductDetailService : IProductDetailService
 
     public async Task<ServiceActionResult> SearchProductDetailsInStorage(SearchUsingGetRequest request)
     {
-	    var productsInStorage = (await _productDetailRepository.FindAsync(pd => !pd.IsDeleted))
-		    .ProjectTo<DtoProductDetailInStorage>(_mapper.ConfigurationProvider);
-		var paginatedResult = PaginationHelper.BuildPaginatedResult(productsInStorage, request.PageSize, request.PageIndex);
+	    var productsInStorage = await (await _productDetailRepository.FindAsync(pd => !pd.IsDeleted))
+		    .ProjectTo<DtoProductDetailInStorage>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
 
+		if (!string.IsNullOrEmpty(request.SearchField))
+		{
+			productsInStorage = productsInStorage
+				.Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoProductDetailInStorage), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+		}
+		if (!string.IsNullOrEmpty(request.SortField))
+		{
+			Expression<Func<DtoProductDetailInStorage, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProductDetailInStorage), request.SortField, p);
+			productsInStorage = request.Descending
+				? productsInStorage.OrderByDescending(orderExpr.Compile()).ToList()
+				: productsInStorage.OrderBy(orderExpr.Compile()).ToList();
+		}
+
+		var paginatedResult = PaginationHelper.BuildPaginatedResult(productsInStorage, request.PageSize, request.PageIndex);
+		
 		return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
@@ -319,5 +338,30 @@ public class ProductDetailService : IProductDetailService
 	    await _unitOfWork.CommitAsync();
 	    
 	    return new ServiceActionResult(true);
+    }
+
+    public async Task<ServiceActionResult> GetProductPricesFromStorage(SearchUsingGetRequest request)
+    {
+	    var productPricesInStorage = await (await _productPriceRepository.GetAllAsync())
+		    .ProjectTo<DtoProductPrice>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    productPricesInStorage = productPricesInStorage
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoProductPrice), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoProductPrice, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoProductPrice), request.SortField, p);
+		    productPricesInStorage = request.Descending
+			    ? productPricesInStorage.OrderByDescending(orderExpr.Compile()).ToList()
+			    : productPricesInStorage.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(productPricesInStorage, request.PageSize, request.PageIndex);
+		
+	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 }
