@@ -138,4 +138,12 @@ public class QuotationsController : BaseApiController
 			async () => await _quotationService.GetQuotationRevisions(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpGet("{quotationId:guid}/revisions/{revisionId:guid}")]
+	public async Task<IActionResult> GetQuotationRevision(Guid quotationId, Guid revisionId)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.GetQuotationRevision(quotationId, revisionId).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }

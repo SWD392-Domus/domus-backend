@@ -22,4 +22,5 @@ public interface IQuotationService : IAutoRegisterable
     Task<ServiceActionResult> GetUserQuotationHistory(string token);
     Task<ServiceActionResult> GetQuotationPriceChangeHistory(Guid quotationId);
     Task<ServiceActionResult> GetQuotationRevisions(Guid id);
+    Task<ServiceActionResult> GetQuotationRevision(Guid quotationId, Guid revisionId);
 }
