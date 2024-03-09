@@ -148,10 +148,10 @@ public class QuotationsController : BaseApiController
 	}
 	
 	[HttpPut("{quotationId:guid}/status")]
-	public async Task<IActionResult> UpdateQuotationStatus(Guid quotationId, [FromBody] string status)
+	public async Task<IActionResult> UpdateQuotationStatus(Guid quotationId, [FromBody] UpdateQuotationStatusRequest request)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _quotationService.UpdateQuotationStatus(quotationId, status).ConfigureAwait(false)
+			async () => await _quotationService.UpdateQuotationStatus(quotationId, request.Status).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }
