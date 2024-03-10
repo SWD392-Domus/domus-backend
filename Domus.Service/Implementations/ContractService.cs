@@ -5,7 +5,9 @@ using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
+using Domus.Service.Constants;
 using Domus.Service.Enums;
+using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Common;
@@ -13,7 +15,9 @@ using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using UnauthorizedAccessException = Domus.Service.Exceptions.UnauthorizedAccessException;
 
 namespace Domus.Service.Implementations;
 
@@ -22,12 +26,13 @@ public class ContractService : IContractService
     private readonly IQuotationRepository _quotationRepository;
     private readonly IFileService _fileService;
     private readonly IQuotationRevisionRepository _quotationRevisionRepository;
+    private readonly UserManager<DomusUser> _userManager;
     private readonly IContractRepository _contractRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService)
+    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, UserManager<DomusUser> userManager)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
@@ -36,6 +41,7 @@ public class ContractService : IContractService
         _quotationRepository = quotationRepository;
         _quotationRevisionRepository = quotationRevisionRepository;
         _fileService = fileService;
+        _userManager = userManager;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -70,13 +76,7 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> CreateContract(ContractRequest request)
     {
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted))
-            throw new Exception($"Not found Client: {request.ClientId}");
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId )&& !x.IsDeleted))
-            throw new Exception($"Not found Contractor: {request.ClientId}");
-        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted && !x.Quotation.IsDeleted))
-            throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
-
+        await ValidateContractRequest(request);
         var contract = _mapper.Map<Contract>(request);
         contract.Status = ContractStatus.SENT;
         await _contractRepository.AddAsync(contract);
@@ -86,12 +86,8 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> UpdateContract(ContractRequest request, Guid ContractId)
     {
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted))
-            throw new Exception($"Not found Client: {request.ClientId}");
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId )&& !x.IsDeleted))
-            throw new Exception($"Not found Contractor: {request.ClientId}");
-        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted && !x.Quotation.IsDeleted))
-            throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
+        await ValidateContractRequest(request);
+
         var contract = await _contractRepository.GetAsync(x => x.Id == ContractId && !x.IsDeleted) ?? throw new Exception("Contract Not Found");
         contract.Name = request.Name ?? contract.Name;
         contract.Description = request.Description ?? contract.Description;
@@ -249,5 +245,23 @@ public class ContractService : IContractService
         await _contractRepository.UpdateAsync(contract);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
+    }
+
+    private async Task ValidateContractRequest(ContractRequest request)
+    {
+        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted && !x.Quotation.IsDeleted))
+            throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
+        
+        var clientUser = await _userRepository.GetAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted) ??
+                         throw new Exception($"Not found Client: {request.ClientId}");
+        var clientRoles = await _userManager.GetRolesAsync(clientUser);
+        if (clientRoles.Contains(UserRoleConstants.STAFF))
+            throw new UnauthorizedAccessException($"Unauthorized ContractorId: {request.ClientId}");
+        
+        var contractorUser = await _userRepository.GetAsync(x => x.Id.Equals(request.ContractorId)&& !x.IsDeleted) ??
+                             throw new Exception($"Not found Contractor: {request.ContractorId}");
+        var contractorRoles = await _userManager.GetRolesAsync(contractorUser);
+        if (!contractorRoles.Contains(UserRoleConstants.STAFF))
+            throw new UnauthorizedAccessException($"Unauthorized ContractorId: {request.ContractorId}");
     }
 }
