@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using AutoMapper;
+using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
@@ -7,6 +8,7 @@ using Domus.Service.Constants;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
+using Domus.Service.Models.Email;
 using Domus.Service.Models.Requests.Authentication;
 using Domus.Service.Models.Responses;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +24,7 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserTokenRepository _userTokenRepository;
+    private readonly IEmailService _emailService;
 
 	public AuthService(
 		UserManager<DomusUser> userManager,
@@ -30,7 +33,7 @@ public class AuthService : IAuthService
 		IJwtService jwtService,
 		IUserRepository userRepository,
 		IUnitOfWork unitOfWork, 
-		IUserTokenRepository userTokenRepository)
+		IUserTokenRepository userTokenRepository, IEmailService emailService)
 	{
 		_userManager = userManager;
 		_roleManager = roleManager;
@@ -39,6 +42,7 @@ public class AuthService : IAuthService
 		_userRepository = userRepository;
 		_unitOfWork = unitOfWork;
 		_userTokenRepository = userTokenRepository;
+		_emailService = emailService;
 	}
 
     public async Task<ServiceActionResult> LoginAsync(LoginRequest request)
@@ -108,21 +112,31 @@ public class AuthService : IAuthService
 
     public async Task<ServiceActionResult> RegisterAsync(RegisterRequest request)
     {
-	    if (await _userRepository.ExistsAsync(u => u.Email!.ToLower() == request.Email.ToLower()))
+	    var retrievedUser =
+		    await _userRepository.GetAsync(u => u.Email!.ToLower() == request.Email.ToLower());
+	    if (retrievedUser is { EmailConfirmed: true })
 		    throw new UserAlreadyExistsException($"User '{request.Email}' already exists");
 
 	    if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
 		    throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
 	    
-	    var user = _mapper.Map<DomusUser>(request);
+	    retrievedUser ??= _mapper.Map<DomusUser>(request);
 
-	    var result = await _userManager.CreateAsync(user, request.Password);
+	    var result = await _userManager.CreateAsync(retrievedUser, request.Password);
 	    await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
-	    await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
+	    await _userManager.AddToRoleAsync(retrievedUser, UserRoleConstants.CLIENT);
 	    if (result.Succeeded)
 	    {
-		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email);
-		    return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(returnedUser) };
+		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email) ?? throw new Exception("An error occurred when registering user");
+		    _emailService.SendEmail(new OtpEmail
+		    {
+			    UserName = returnedUser.UserName!,
+			    Subject = "Email confirmation",
+			    To = retrievedUser.Email!,
+			    Otp = RandomPasswordHelper.GenerateRandomPassword(10)
+		    });
+		    
+		    return new ServiceActionResult(true);
 	    }
 
 	    var error = result.Errors.First();
