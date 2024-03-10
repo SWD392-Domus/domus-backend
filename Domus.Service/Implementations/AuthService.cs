@@ -85,14 +85,8 @@ public class AuthService : IAuthService
 	    var user = await _userRepository.GetAsync(u => u.Id == refreshToken.UserId);
 	    if (user is null)
 		    throw new UserNotFoundException($"User '{refreshToken.UserId}' does not exist");
-	    
-	    var roles = await _userManager.GetRolesAsync(user);
-		var tokenResponse = new TokenResponse
-		{
-			AccessToken = _jwtService.GenerateAccessToken(user, roles),
-			RefreshToken = request.RefreshToken,
-			ExpiresAt = DateTimeOffset.Now.AddHours(1)
-		};
+
+	    var tokenResponse = GenerateAuthResponseAsync(user);
 
 		return new ServiceActionResult(true) { Data = tokenResponse };
     }
@@ -111,6 +105,23 @@ public class AuthService : IAuthService
 	    return new ServiceActionResult(true);
     }
 
+    public async Task<ServiceActionResult> ConfirmOtpAsync(ConfirmOtpRequest request)
+    {
+	    var otp = await _otpRepository.GetAsync(o => o.Code == request.Otp && !o.Used) ?? throw new InvalidOtpCodeException();
+	    var user = await _userRepository.GetAsync(u => !u.IsDeleted && u.Id == otp.UserId && !u.EmailConfirmed) ??
+	               throw new UserNotFoundException();
+	    
+	    otp.Used = true;
+	    user.EmailConfirmed = true;
+	    
+	    await _otpRepository.UpdateAsync(otp);
+	    await _userRepository.UpdateAsync(user);
+	    await _unitOfWork.CommitAsync();
+
+	    var tokenResponse = await GenerateAuthResponseAsync(user);
+	    return new ServiceActionResult(true) { Data = tokenResponse };
+    }
+
     public async Task<ServiceActionResult> RegisterAsync(RegisterRequest request)
     {
 	    var retrievedUser =
@@ -120,37 +131,40 @@ public class AuthService : IAuthService
 
 	    if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
 		    throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
-	    
-	    retrievedUser ??= _mapper.Map<DomusUser>(request);
 
-	    var result = await _userManager.CreateAsync(retrievedUser, request.Password);
-	    await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
-	    await _userManager.AddToRoleAsync(retrievedUser, UserRoleConstants.CLIENT);
-	    if (result.Succeeded)
+	    if (retrievedUser == null)
 	    {
-		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email) ?? throw new Exception("An error occurred when registering user");
-		    var otp = new Otp
-		    {
-			    UserId = returnedUser.Id,
-			    Used = false,
-			    CreatedAt= DateTime.Now,
-			    Code = RandomPasswordHelper.GenerateRandomPassword(10)
-		    };
-		    await _otpRepository.AddAsync(otp);
-		    
-		    _emailService.SendEmail(new OtpEmail
-		    {
-			    UserName = returnedUser.UserName!,
-			    Subject = "Email confirmation",
-			    To = retrievedUser.Email!,
-			    Otp = otp.Code
-		    });
-		    
-		    return new ServiceActionResult(true);
+			retrievedUser = _mapper.Map<DomusUser>(request);
+			var result = await _userManager.CreateAsync(retrievedUser, request.Password);
+			await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
+			await _userManager.AddToRoleAsync(retrievedUser, UserRoleConstants.CLIENT);
+			
+			if (!result.Succeeded)
+			{
+				var error = result.Errors.First();
+				return new ServiceActionResult(false, error.Description);
+			}
 	    }
+	    
+		var otp = new Otp
+		{
+			UserId = retrievedUser.Id,
+			Used = false,
+			CreatedAt= DateTime.Now,
+			Code = RandomPasswordHelper.GenerateRandomPassword(10)
+		};
+		await _otpRepository.AddAsync(otp);
+		await _unitOfWork.CommitAsync();
+		
+		_emailService.SendEmail(new OtpEmail
+		{
+			UserName = retrievedUser.UserName!,
+			Subject = "Email confirmation",
+			To = retrievedUser.Email!,
+			Otp = otp.Code
+		});
 
-	    var error = result.Errors.First();
-	    return new ServiceActionResult(false, error.Description);
+		return new ServiceActionResult(true);
     }
 
     private async Task EnsureRoleExistsAsync(string role)
@@ -159,5 +173,23 @@ public class AuthService : IAuthService
 	    {
 		    await _roleManager.CreateAsync(new IdentityRole(role));
 	    }
+    }
+
+    private async Task<AuthResponse> GenerateAuthResponseAsync(DomusUser user)
+    {
+		var roles = await _userManager.GetRolesAsync(user);
+		var response = new AuthResponse
+		{
+			Username = user.UserName ?? user.Email ?? string.Empty,
+			Roles = roles,
+			Token = new TokenResponse
+			{
+				AccessToken = _jwtService.GenerateAccessToken(user, roles),
+				RefreshToken = await _jwtService.GenerateRefreshToken(user.Id),
+				ExpiresAt = DateTimeOffset.Now.AddHours(1)
+			}
+		};
+
+		return response;
     }
 }
