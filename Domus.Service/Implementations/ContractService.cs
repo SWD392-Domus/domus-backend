@@ -56,7 +56,8 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> GetContract(Guid ContractId)
     {
-        var contract = _mapper.Map<DtoContract>(await _contractRepository.GetAsync(x => !x.IsDeleted && x.Id == ContractId)) ?? throw new Exception("Contract Not Found");
+        var contract = await (await _contractRepository.FindAsync((x => !x.IsDeleted && x.Id == ContractId)))
+            .ProjectTo<DtoContract>(_mapper.ConfigurationProvider).FirstOrDefaultAsync() ?? throw new Exception("Contract Not Found");
         return new ServiceActionResult(true)
         {
             Data = contract
