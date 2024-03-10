@@ -10,4 +10,5 @@ public partial class QuotationRevision : DeletableEntity<Guid>
 	public double TotalPrice { get; set; }
 	public virtual Quotation Quotation { get; set; } = null!;
 	public virtual ICollection<ProductDetailQuotationRevision> ProductDetailQuotationRevisions { get; set; } = new List<ProductDetailQuotationRevision>();
+	public virtual Contract Contract { get; set; } = null!;
 }

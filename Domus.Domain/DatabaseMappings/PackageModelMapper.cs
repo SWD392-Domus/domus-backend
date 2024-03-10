@@ -14,7 +14,7 @@ public class PackageModelMapper : IDatabaseModelMapper
 			entity.HasMany(e => e.Services).WithMany(e => e.Packages)  
 				.UsingEntity<Dictionary<string, object>>(
 					"Package_Service",
-					r => r.HasOne<Service>().WithMany()
+					r => r.HasOne<Entities.Service>().WithMany()
 						.HasForeignKey("ServiceId")
 						.OnDelete(DeleteBehavior.ClientSetNull),
 					l => l.HasOne<Package>().WithMany()

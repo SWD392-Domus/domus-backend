@@ -3,6 +3,6 @@ using Domus.Domain.Entities;
 
 namespace Domus.DAL.Interfaces;
 
-public interface IServiceRepository : IGenericRepository<Service>, IAutoRegisterable
+public interface IServiceRepository : IGenericRepository<Domain.Entities.Service>, IAutoRegisterable
 {
 }
