@@ -11,6 +11,8 @@ namespace Domus.Service.Interfaces;
 public interface IFileService : IAutoRegisterable
 {
     Task<ServiceActionResult> UploadFile(FileModels fileModels);
+
+    Task<string> UploadFile(IFormFile file);
     Task<Stream> GetFile(string fileName);
     
     Task<ICollection<string>> GetUrlAfterUploadedFile(List<IFormFile> files);

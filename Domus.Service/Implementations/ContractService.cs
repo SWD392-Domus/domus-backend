@@ -8,9 +8,11 @@ using Domus.Domain.Entities;
 using Domus.Service.Enums;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
+using Domus.Service.Models.Common;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
@@ -18,13 +20,14 @@ namespace Domus.Service.Implementations;
 public class ContractService : IContractService
 {
     private readonly IQuotationRepository _quotationRepository;
+    private readonly IFileService _fileService;
     private readonly IQuotationRevisionRepository _quotationRevisionRepository;
     private readonly IContractRepository _contractRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository)
+    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
@@ -32,6 +35,7 @@ public class ContractService : IContractService
         _userRepository = userRepository;
         _quotationRepository = quotationRepository;
         _quotationRevisionRepository = quotationRevisionRepository;
+        _fileService = fileService;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -70,11 +74,11 @@ public class ContractService : IContractService
             throw new Exception($"Not found Client: {request.ClientId}");
         if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId )&& !x.IsDeleted))
             throw new Exception($"Not found Contractor: {request.ClientId}");
-        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted))
+        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted && !x.Quotation.IsDeleted))
             throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
-     
+
         var contract = _mapper.Map<Contract>(request);
-        contract.Status = ContractStatus.WAITING;
+        contract.Status = ContractStatus.SENT;
         await _contractRepository.AddAsync(contract);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
@@ -82,11 +86,11 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> UpdateContract(ContractRequest request, Guid ContractId)
     {
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)))
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted))
             throw new Exception($"Not found Client: {request.ClientId}");
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId)))
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId )&& !x.IsDeleted))
             throw new Exception($"Not found Contractor: {request.ClientId}");
-        if (!await _quotationRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId))
+        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted && !x.Quotation.IsDeleted))
             throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
         var contract = await _contractRepository.GetAsync(x => x.Id == ContractId && !x.IsDeleted) ?? throw new Exception("Contract Not Found");
         contract.Name = request.Name ?? contract.Name;
@@ -236,12 +240,14 @@ public class ContractService : IContractService
         return new ServiceActionResult(true);
     }
 
-    public async Task<ServiceActionResult> SignContract(Guid contractId, string signature)
+    public async Task<ServiceActionResult> SignContract(Guid contractId, IFormFile signature)
     {
         var contract = await _contractRepository.GetAsync(x => x.Id == contractId) ??
                        throw new Exception("Contract Not Found");
-        contract.Signature = signature;
-        contract.Status = ContractStatus.COMPLETED;
+        contract.Signature = await _fileService.UploadFile(signature);
+        contract.Status = ContractStatus.SIGNED;
+        await _contractRepository.UpdateAsync(contract);
+        await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }
 }
