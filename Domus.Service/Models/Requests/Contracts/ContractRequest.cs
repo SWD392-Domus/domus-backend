@@ -4,7 +4,7 @@ public class ContractRequest
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public DateTime? StartDate { get; set; }
+    public DateTime? SignedAt { get; set; }
     public string? Notes { get; set; }
     public string? Attachments { get; set; }
     public string ClientId { get; set; }

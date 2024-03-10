@@ -11,6 +11,7 @@ using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Common;
+using Domus.Service.Models.Email;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
@@ -25,6 +26,7 @@ public class ContractService : IContractService
 {
     private readonly IQuotationRepository _quotationRepository;
     private readonly IFileService _fileService;
+    private readonly IEmailService _emailService;
     private readonly IQuotationRevisionRepository _quotationRevisionRepository;
     private readonly UserManager<DomusUser> _userManager;
     private readonly IContractRepository _contractRepository;
@@ -32,7 +34,7 @@ public class ContractService : IContractService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, UserManager<DomusUser> userManager)
+    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, UserManager<DomusUser> userManager, IEmailService emailService)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
@@ -42,6 +44,7 @@ public class ContractService : IContractService
         _quotationRevisionRepository = quotationRevisionRepository;
         _fileService = fileService;
         _userManager = userManager;
+        _emailService = emailService;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -76,26 +79,53 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> CreateContract(ContractRequest request)
     {
-        await ValidateContractRequest(request);
+        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted && !x.Quotation.IsDeleted))
+            throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
+        
+        var clientUser = await _userRepository.GetAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted) ??
+                         throw new Exception($"Not found Client: {request.ClientId}");
+        var clientRoles = await _userManager.GetRolesAsync(clientUser);
+        if (clientRoles.Contains(UserRoleConstants.STAFF))
+            throw new UnauthorizedAccessException($"Unauthorized ContractorId: {request.ClientId}");
+        
+        var contractorUser = await _userRepository.GetAsync(x => x.Id.Equals(request.ContractorId)&& !x.IsDeleted) ??
+                             throw new Exception($"Not found Contractor: {request.ContractorId}");
+        var contractorRoles = await _userManager.GetRolesAsync(contractorUser);
+        if (!contractorRoles.Contains(UserRoleConstants.STAFF))
+            throw new UnauthorizedAccessException($"Unauthorized ContractorId: {request.ContractorId}");
+        
+        _emailService.SendEmail(new ContractEmail()
+        {
+            UserName = clientUser.FullName,
+            Subject = "Contract Email",
+            To = clientUser.Email!,
+            ContractName = request.Name,
+            ContractorName = contractorUser.FullName,
+        });
         var contract = _mapper.Map<Contract>(request);
         contract.Status = ContractStatus.SENT;
+        contract.SignedAt = request.SignedAt ?? DateTime.Now;
         await _contractRepository.AddAsync(contract);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }
 
-    public async Task<ServiceActionResult> UpdateContract(ContractRequest request, Guid ContractId)
+    public async Task<ServiceActionResult> UpdateContract(ContractRequest request, Guid contractId)
     {
         await ValidateContractRequest(request);
 
-        var contract = await _contractRepository.GetAsync(x => x.Id == ContractId && !x.IsDeleted) ?? throw new Exception("Contract Not Found");
+        var contract = await _contractRepository.GetAsync(x => x.Id == contractId && !x.IsDeleted) ?? throw new Exception("Contract Not Found");
+
+        if (contract.Status == ContractStatus.SIGNED) throw new Exception("The contract has been signed.");
+        
         contract.Name = request.Name ?? contract.Name;
+        contract.SignedAt = request.SignedAt ?? contract.SignedAt;
         contract.Description = request.Description ?? contract.Description;
         contract.Notes = request.Notes ?? contract.Notes;
         contract.Attachments = request.Attachments ?? contract.Attachments;
         contract.Signature = request.Signature ?? contract.Signature;
-        contract.ClientId = request.ClientId ?? contract.ClientId;
-        contract.ContractorId = request.ContractorId ?? contract.ContractorId;
+        contract.ClientId = request.ClientId;
+        contract.ContractorId = request.ContractorId;
         await _contractRepository.UpdateAsync(contract);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
@@ -245,6 +275,7 @@ public class ContractService : IContractService
                        throw new Exception("Contract Not Found");
         contract.Signature = await _fileService.UploadFile(signature);
         contract.Status = ContractStatus.SIGNED;
+        _emailService.SendEmail(new ContractEmail(){});
         await _contractRepository.UpdateAsync(contract);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);

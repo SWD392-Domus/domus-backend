@@ -1,0 +1,1 @@
+﻿EXEC sp_rename 'Contract.StartDate' ,'SignedAt','column'

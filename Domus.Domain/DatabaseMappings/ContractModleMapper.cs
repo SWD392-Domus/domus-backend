@@ -13,7 +13,7 @@ public class ContractModelMapper : IDatabaseModelMapper
             entity.ToTable(nameof(Contract));
 
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.SignedAt).HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(450);
             entity.Property(e => e.Description).HasMaxLength(450);
             entity.Property(e => e.Signature).HasMaxLength(450);
