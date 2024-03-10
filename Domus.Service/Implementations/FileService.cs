@@ -24,13 +24,21 @@ public class FileService : IFileService
     public async Task<ServiceActionResult> UploadFile(FileModels fileModels)
     {
         var containerInstance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
-        var blobInstance = containerInstance.GetBlobClient(fileModels.ImageFile.FileName.TrimSpaceString());
+        var blobInstance = containerInstance.GetBlobClient(StringInterpolationHelper.GenerateUniqueFileName(fileModels.ImageFile.FileName,10));
         await blobInstance.UploadAsync(fileModels.ImageFile.OpenReadStream());
         return new ServiceActionResult()
         {
             IsSuccess = true,
             Data = blobInstance.Uri.ToString()
         };
+    }
+
+    public async Task<string> UploadFile(IFormFile file)
+    {
+        var containerInstance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
+        var blobInstance = containerInstance.GetBlobClient(StringInterpolationHelper.GenerateUniqueFileName(file.FileName,10));
+        await blobInstance.UploadAsync(file.OpenReadStream());
+        return blobInstance.Uri.ToString();
     }
 
     public async Task<Stream> GetFile(string fileName)

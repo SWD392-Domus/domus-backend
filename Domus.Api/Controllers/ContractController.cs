@@ -1,5 +1,6 @@
 ﻿using Domus.Api.Controllers.Base;
 using Domus.Service.Interfaces;
+using Domus.Service.Models.Common;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
@@ -60,10 +61,11 @@ public class ContractController : BaseApiController
             await _contractService.DeleteContract(id).ConfigureAwait(false)).ConfigureAwait(false);
     }
     [HttpPost("{id:guid}/sign")]
-    public async Task<IActionResult> SignContract(string signature, Guid id)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> SignContract([FromForm] FileModels signature, Guid id)
     {
         return await ExecuteServiceLogic(async () =>
-            await _contractService.SignContract(id,signature).ConfigureAwait(false)).ConfigureAwait(false);
+            await _contractService.SignContract(id,signature.ImageFile).ConfigureAwait(false)).ConfigureAwait(false);
     }
     [HttpPost("search")]
     public async Task<IActionResult> SearchPackages([FromForm] BaseSearchRequest request)

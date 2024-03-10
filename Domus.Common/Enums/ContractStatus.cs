@@ -2,7 +2,7 @@
 
 public enum ContractStatus
 {
-    WAITING,
-    COMPLETED,
+    SENT,
+    SIGNED,
     CANCELED
 }
