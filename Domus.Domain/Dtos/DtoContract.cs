@@ -1,4 +1,5 @@
-﻿using Domus.Domain.Entities;
+﻿using Domus.Domain.Dtos.Quotations;
+using Domus.Domain.Entities;
 
 namespace Domus.Domain.Dtos;
 
@@ -21,7 +22,8 @@ public class DtoContract
     
     public string? Signature { get; set; }
     
-    public  DtoDomusUser Client { get; set; }= null!;
-    public  DtoDomusUser Contractor { get; set; }= null!;
-    public  QuotationRevision QuotationRevision { get; set; } = null!;
+    public DtoDomusUser Client { get; set; }= null!;
+    public DtoDomusUser Contractor { get; set; }= null!;
+    public QuotationRevision QuotationRevision { get; set; } = null!;
+    public ICollection<DtoServiceQuotation> ServiceQuotations { get; set; } = new List<DtoServiceQuotation>();
 }
