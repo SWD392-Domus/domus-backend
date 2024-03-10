@@ -112,10 +112,12 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> GetContractByClientId(string clientId)
     {
-        if (!_userRepository.Exists(x => x.Id == clientId))
-        {
-            throw new Exception("Not Found Client");
-        }
+       
+        var clientUser = await _userRepository.GetAsync(x => x.Id.Equals(clientId)&& !x.IsDeleted) ??
+                         throw new Exception($"Not found Client: {clientId}");
+        var clientRoles = await _userManager.GetRolesAsync(clientUser);
+        if (clientRoles.Contains(UserRoleConstants.STAFF))
+            throw new UnauthorizedAccessException($"Unauthorized ContractorId: {clientId}");
 
         var contracts = (await _contractRepository.FindAsync(x => !x.IsDeleted && x.ClientId.Equals(clientId))).ProjectTo<DtoContract>(_mapper.ConfigurationProvider) ;
         return new ServiceActionResult(true)
@@ -126,10 +128,11 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> GetContractByContractorId(string contractorId)
     {
-        if (!await _userRepository.ExistsAsync(x => x.Id == contractorId))
-        {
-            throw new Exception("Not Found Contractor");
-        }
+        var contractorUser = await _userRepository.GetAsync(x => x.Id.Equals(contractorId)&& !x.IsDeleted) ??
+                             throw new Exception($"Not found Contractor: {contractorId}");
+        var contractorRoles = await _userManager.GetRolesAsync(contractorUser);
+        if (!contractorRoles.Contains(UserRoleConstants.STAFF))
+            throw new UnauthorizedAccessException($"Unauthorized ContractorId: {contractorId}");
         var contract = (await _contractRepository.FindAsync(x => !x.IsDeleted && x.ContractorId.Equals(contractorId))).ProjectTo<DtoContract>(_mapper.ConfigurationProvider);
         return new ServiceActionResult(true)
         {
