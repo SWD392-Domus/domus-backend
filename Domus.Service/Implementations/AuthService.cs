@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using AutoMapper;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
-using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
 using Domus.Service.Exceptions;
@@ -25,6 +24,7 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserTokenRepository _userTokenRepository;
     private readonly IEmailService _emailService;
+    private readonly IOtpRepository _otpRepository;
 
 	public AuthService(
 		UserManager<DomusUser> userManager,
@@ -33,7 +33,7 @@ public class AuthService : IAuthService
 		IJwtService jwtService,
 		IUserRepository userRepository,
 		IUnitOfWork unitOfWork, 
-		IUserTokenRepository userTokenRepository, IEmailService emailService)
+		IUserTokenRepository userTokenRepository, IEmailService emailService, IOtpRepository otpRepository)
 	{
 		_userManager = userManager;
 		_roleManager = roleManager;
@@ -43,11 +43,12 @@ public class AuthService : IAuthService
 		_unitOfWork = unitOfWork;
 		_userTokenRepository = userTokenRepository;
 		_emailService = emailService;
+		_otpRepository = otpRepository;
 	}
 
     public async Task<ServiceActionResult> LoginAsync(LoginRequest request)
 	{
-		var user = await _userRepository.GetAsync(u => u.UserName!.ToLower() == request.Email.ToLower());
+		var user = await _userRepository.GetAsync(u => u.UserName!.ToLower() == request.Email.ToLower() && u.EmailConfirmed);
 		if (user == null)
 		{
 			throw new UserNotFoundException($"User '{request.Email}' does not exist");
@@ -128,12 +129,21 @@ public class AuthService : IAuthService
 	    if (result.Succeeded)
 	    {
 		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email) ?? throw new Exception("An error occurred when registering user");
+		    var otp = new Otp
+		    {
+			    UserId = returnedUser.Id,
+			    Used = false,
+			    CreatedAt= DateTime.Now,
+			    Code = RandomPasswordHelper.GenerateRandomPassword(10)
+		    };
+		    await _otpRepository.AddAsync(otp);
+		    
 		    _emailService.SendEmail(new OtpEmail
 		    {
 			    UserName = returnedUser.UserName!,
 			    Subject = "Email confirmation",
 			    To = retrievedUser.Email!,
-			    Otp = RandomPasswordHelper.GenerateRandomPassword(10)
+			    Otp = otp.Code
 		    });
 		    
 		    return new ServiceActionResult(true);
