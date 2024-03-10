@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.Contracts;
+using System.Text.Json.Serialization;
 using Domus.Common.Settings;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
@@ -69,6 +70,11 @@ public class EmailService : IEmailService
     {
         return await SendEmail(request);
     }
-    
-    
+
+    public async Task<ServiceActionResult> SendContractEmail(ContractEmail request)
+    {
+        return await SendEmail(request);
+    }
+
+
 }
