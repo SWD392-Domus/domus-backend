@@ -1,6 +1,8 @@
 ﻿using Domus.Api.Controllers.Base;
 using Domus.Service.Interfaces;
+using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers;
@@ -63,6 +65,26 @@ public class ContractController : BaseApiController
         return await ExecuteServiceLogic(async () =>
             await _contractService.SignContract(id,signature).ConfigureAwait(false)).ConfigureAwait(false);
     }
-
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchPackages([FromForm] BaseSearchRequest request)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _contractService.SearchContracts(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchPackagesUsingGetRequest([FromQuery] SearchUsingGetRequest request)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _contractService.SearchContractsUsingGet(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetPaginatedArticles([FromQuery] BasePaginatedRequest request)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _contractService.GetPaginatedContracts(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
 
 }
