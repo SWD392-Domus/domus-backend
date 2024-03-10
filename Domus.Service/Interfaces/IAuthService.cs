@@ -10,4 +10,5 @@ public interface IAuthService : IAutoRegisterable
 	Task<ServiceActionResult> LoginAsync(LoginRequest request);
 	Task<ServiceActionResult> RefreshTokenAsync(RefreshTokenRequest request);
 	Task<ServiceActionResult> AssignRoleAsync(AssignRoleRequest request);
+	Task<ServiceActionResult> ConfirmOtpAsync(ConfirmOtpRequest request);
 }

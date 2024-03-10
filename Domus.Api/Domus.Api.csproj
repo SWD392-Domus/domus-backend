@@ -79,5 +79,7 @@
 	<EmbeddedResource Include="Scripts\28.Add_Total_Price_To_QuotationRevision.sql" />
 	<None Remove="Scripts\29.Add_CreateAt_To_Product_Price.sql" />
 	<EmbeddedResource Include="Scripts\29.Add_CreateAt_To_Product_Price.sql" />
+	<None Remove="Scripts\30.Add_Otp_Table.sql" />
+	<EmbeddedResource Include="Scripts\30.Add_Otp_Table.sql" />
   </ItemGroup>
 </Project>
