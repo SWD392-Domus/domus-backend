@@ -89,5 +89,8 @@
 	<EmbeddedResource Include="Scripts\32.Change_Relationship_Quotation_Contract.sql" />
 	<None Remove="Scripts\33.Modify_DataType_Contract.sql" />
 	<EmbeddedResource Include="Scripts\33.Modify_DataType_Contract.sql" />
+	<None Remove="Scripts\30.Add_Otp_Table.sql" />
+	<EmbeddedResource Include="Scripts\30.Add_Otp_Table.sql" />
+
   </ItemGroup>
 </Project>

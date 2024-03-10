@@ -25,8 +25,8 @@ public partial class DomusUser : IdentityUser
     public virtual ICollection<Quotation> QuotationLastUpdatedByNavigations { get; set; } = new List<Quotation>();
 
     public virtual ICollection<Quotation> QuotationStaffs { get; set; } = new List<Quotation>();
-
     public virtual ICollection<Contract> ClientContracts { get; set; } = new List<Contract>();
     public virtual ICollection<Contract> ContractorContracts { get; set; } = new List<Contract>();
+    public ICollection<Otp> OtpCodes { get; set; } = new List<Otp>();
 
 }
