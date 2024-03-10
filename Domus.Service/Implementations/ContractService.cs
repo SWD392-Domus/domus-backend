@@ -18,18 +18,20 @@ namespace Domus.Service.Implementations;
 public class ContractService : IContractService
 {
     private readonly IQuotationRepository _quotationRepository;
+    private readonly IQuotationRevisionRepository _quotationRevisionRepository;
     private readonly IContractRepository _contractRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository)
+    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _userRepository = userRepository;
         _quotationRepository = quotationRepository;
+        _quotationRevisionRepository = quotationRevisionRepository;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -63,11 +65,11 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> CreateContract(ContractRequest request)
     {
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)))
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted))
             throw new Exception($"Not found Client: {request.ClientId}");
-        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId)))
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId )&& !x.IsDeleted))
             throw new Exception($"Not found Contractor: {request.ClientId}");
-        if (!await _quotationRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId))
+        if (!await _quotationRevisionRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId && !x.IsDeleted))
             throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
      
         var contract = _mapper.Map<Contract>(request);

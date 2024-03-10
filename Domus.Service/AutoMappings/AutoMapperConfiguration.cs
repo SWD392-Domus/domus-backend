@@ -241,6 +241,7 @@ public static class AutoMapperConfiguration
 	private static void CreateContractMaps(IMapperConfigurationExpression mapper)
 	{
 		mapper.CreateMap<ContractRequest, Contract>();
-		mapper.CreateMap<Contract, DtoContract>();
+		mapper.CreateMap<Contract, DtoContract>()
+			.ForMember(d => d.ServiceQuotations,opt => opt.MapFrom(src => src.QuotationRevision.Quotation.ServiceQuotations));
 	}
 }
