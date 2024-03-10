@@ -16,8 +16,6 @@ public partial class Quotation : TrackableEntity<Guid, string>
 
     public string? ConcurrencyStamp { get; set; }
 
-    public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
-
     public virtual DomusUser Customer { get; set; } = null!;
 
     // public virtual ICollection<ProductDetailQuotation> ProductDetailQuotations { get; set; } = new List<ProductDetailQuotation>();
