@@ -124,4 +124,13 @@ public class ContractService : IContractService
     {
         throw new NotImplementedException();
     }
+
+    public async Task<ServiceActionResult> SignContract(Guid contractId, string signature)
+    {
+        var contract = await _contractRepository.GetAsync(x => x.Id == contractId) ??
+                       throw new Exception("Contract Not Found");
+        contract.Signature = signature;
+        contract.Status = ContractStatus.COMPLETED;
+        return new ServiceActionResult(true);
+    }
 }

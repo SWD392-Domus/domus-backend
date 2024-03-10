@@ -57,6 +57,12 @@ public class ContractController : BaseApiController
         return await ExecuteServiceLogic(async () =>
             await _contractService.DeleteContract(id).ConfigureAwait(false)).ConfigureAwait(false);
     }
+    [HttpPost("{id:guid}/sign")]
+    public async Task<IActionResult> SignContract(string signature, Guid id)
+    {
+        return await ExecuteServiceLogic(async () =>
+            await _contractService.SignContract(id,signature).ConfigureAwait(false)).ConfigureAwait(false);
+    }
 
 
 }
