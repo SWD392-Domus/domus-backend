@@ -1,5 +1,7 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
@@ -9,22 +11,25 @@ using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
+using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
 
 public class ContractService : IContractService
 {
+    private readonly IQuotationRepository _quotationRepository;
     private readonly IContractRepository _contractRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository)
+    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _userRepository = userRepository;
+        _quotationRepository = quotationRepository;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -36,9 +41,15 @@ public class ContractService : IContractService
         };
     }
 
-    public Task<ServiceActionResult> GetPaginatedContracts(BasePaginatedRequest request)
+    public async Task<ServiceActionResult> GetPaginatedContracts(BasePaginatedRequest request)
     {
-        throw new NotImplementedException();
+        var dtoPackages = (await _contractRepository.GetAllAsync()).Where(pk => !pk.IsDeleted).ProjectTo<DtoContract>(_mapper.ConfigurationProvider);
+        var paginatedList = PaginationHelper.BuildPaginatedResult(dtoPackages.AsQueryable(), request.PageSize, request.PageIndex);
+        return new ServiceActionResult()
+        {
+            IsSuccess = true,
+            Data = paginatedList
+        };
     }
 
     public async Task<ServiceActionResult> GetContract(Guid ContractId)
@@ -52,6 +63,13 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> CreateContract(ContractRequest request)
     {
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)))
+            throw new Exception($"Not found Client: {request.ClientId}");
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId)))
+            throw new Exception($"Not found Contractor: {request.ClientId}");
+        if (!await _quotationRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId))
+            throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
+     
         var contract = _mapper.Map<Contract>(request);
         contract.Status = ContractStatus.WAITING;
         await _contractRepository.AddAsync(contract);
@@ -61,6 +79,12 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> UpdateContract(ContractRequest request, Guid ContractId)
     {
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ClientId)))
+            throw new Exception($"Not found Client: {request.ClientId}");
+        if (!await _userRepository.ExistsAsync(x => x.Id.Equals(request.ContractorId)))
+            throw new Exception($"Not found Contractor: {request.ClientId}");
+        if (!await _quotationRepository.ExistsAsync(x => x.Id == request.QuotationRevisionId))
+            throw new Exception($"Not found quotation revision: {request.QuotationRevisionId}");
         var contract = await _contractRepository.GetAsync(x => x.Id == ContractId && !x.IsDeleted) ?? throw new Exception("Contract Not Found");
         contract.Name = request.Name ?? contract.Name;
         contract.Description = request.Description ?? contract.Description;
@@ -110,19 +134,103 @@ public class ContractService : IContractService
         };
     }
 
-    public Task<ServiceActionResult> SearchContracts(BaseSearchRequest request)
+    public async Task<ServiceActionResult> SearchContracts(BaseSearchRequest request)
     {
-        throw new NotImplementedException();
+        var contracts = (await _contractRepository.FindAsync(c => !c.IsDeleted)).ToList();
+        
+        foreach (var searchInfo in request.DisjunctionSearchInfos)
+        {
+            contracts = contracts
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(Contract), searchInfo.FieldName, p)
+                    .Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (request.ConjunctionSearchInfos.Any())
+        {
+            var initialSearchInfo = request.ConjunctionSearchInfos.First();
+            Expression<Func<Contract, bool>> conjunctionWhere = p => ReflectionHelper.GetStringValueByName(typeof(Contract), initialSearchInfo.FieldName, p)
+                .Contains(initialSearchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+            
+            foreach (var (searchInfo, i) in request.ConjunctionSearchInfos.Select((value, i) => (value, i)))
+            {
+                if (i == 0)
+                    continue;
+                
+                Expression<Func<Contract, bool>> whereExpr = p => ReflectionHelper.GetStringValueByName(typeof(Contract), searchInfo.FieldName, p)
+                    .Contains(searchInfo.Keyword, StringComparison.OrdinalIgnoreCase);
+                conjunctionWhere = ExpressionHelper.CombineOrExpressions(conjunctionWhere, whereExpr);
+            }
+
+            contracts = contracts.Where(conjunctionWhere.Compile()).ToList();
+        }
+
+        if (request.SortInfos.Any())
+        {
+            request.SortInfos = request.SortInfos.OrderBy(si => si.Priority).ToList();
+            var initialSortInfo = request.SortInfos.First();
+            Expression<Func<Contract, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(Contract), initialSortInfo.FieldName, p);
+
+            contracts = initialSortInfo.Descending ? contracts.OrderByDescending(orderExpr.Compile()).ToList() : contracts.OrderBy(orderExpr.Compile()).ToList();
+            
+            foreach (var (sortInfo, i) in request.SortInfos.Select((value, i) => (value, i)))
+            {
+                if (i == 0)
+                    continue;
+                
+                orderExpr = p => ReflectionHelper.GetValueByName(typeof(Contract), sortInfo.FieldName, p);
+                contracts = sortInfo.Descending ? contracts.OrderByDescending(orderExpr.Compile()).ToList() : contracts.OrderBy(orderExpr.Compile()).ToList();
+            }
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult<Contract, DtoContract>(_mapper, contracts, request.PageSize, request.PageIndex);
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public Task<ServiceActionResult> SearchContractsUsingGet(SearchUsingGetRequest request)
+    public async Task<ServiceActionResult> SearchContractsUsingGet(SearchUsingGetRequest request)
     {
-        throw new NotImplementedException();
+        var contracts = await (await _contractRepository.FindAsync(p => !p.IsDeleted))
+            .ProjectTo<DtoContract>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+      
+        
+        if (!string.IsNullOrEmpty(request.SearchField))
+        {
+            contracts = contracts
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoContract), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        if (!string.IsNullOrEmpty(request.SortField))
+        {
+            Expression<Func<DtoContract, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoContract), request.SortField, p);
+            contracts = request.Descending
+                ? contracts.OrderByDescending(orderExpr.Compile()).ToList()
+                : contracts.OrderBy(orderExpr.Compile()).ToList();
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult(contracts, request.PageSize, request.PageIndex);
+        var finalProducts = (IEnumerable<DtoContract>)paginatedResult.Items!;
+
+        paginatedResult.Items = finalProducts;
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public Task<ServiceActionResult> DeleteContracts(List<Guid> ContractIds)
+    public async Task<ServiceActionResult> DeleteContracts(List<Guid> ContractIds)
     {
-        throw new NotImplementedException();
+        var contracts = new List<Contract>();
+
+        foreach (var contractId in ContractIds)
+        {
+            var contract = await _contractRepository.GetAsync(y => y.Id == contractId) ?? throw new Exception($"Not Found Contract: {contractId}");
+            contract.IsDeleted = true;
+            contracts.Add(contract); 
+        }
+
+        await _contractRepository.UpdateManyAsync(contracts);
+        await _unitOfWork.CommitAsync();
+        return new ServiceActionResult(true);
     }
 
     public async Task<ServiceActionResult> SignContract(Guid contractId, string signature)

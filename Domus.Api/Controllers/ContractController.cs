@@ -39,7 +39,7 @@ public class ContractController : BaseApiController
         return await ExecuteServiceLogic(async () =>
             await _contractService.CreateContract(request).ConfigureAwait(false)).ConfigureAwait(false);
     }
-    [HttpGet("{id:guid  }")]
+    [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetContract(Guid id)
     {
         return await ExecuteServiceLogic(async () =>
