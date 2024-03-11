@@ -107,7 +107,7 @@ public class AuthService : IAuthService
 
     public async Task<ServiceActionResult> ConfirmOtpAsync(ConfirmOtpRequest request)
     {
-	    var otp = await _otpRepository.GetAsync(o => o.Code == request.Otp && !o.Used) ?? throw new InvalidOtpCodeException();
+	    var otp = await _otpRepository.GetAsync(o => o.Code == request.Otp && !o.Used && o.UserId == request.Id) ?? throw new InvalidOtpCodeException();
 	    var user = await _userRepository.GetAsync(u => !u.IsDeleted && u.Id == otp.UserId && !u.EmailConfirmed) ??
 	               throw new UserNotFoundException();
 	    
@@ -164,7 +164,7 @@ public class AuthService : IAuthService
 			Otp = otp.Code
 		});
 
-		return new ServiceActionResult(true) { Data = new { Id = retrievedUser.Id } };
+		return new ServiceActionResult(true) { Data = new { Id = otp.UserId } };
     }
 
     private async Task EnsureRoleExistsAsync(string role)

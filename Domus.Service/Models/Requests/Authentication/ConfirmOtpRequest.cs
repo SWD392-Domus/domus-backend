@@ -6,4 +6,7 @@ public class ConfirmOtpRequest
 {
     [Required]
     public string Otp { get; set; } = null!;
+
+    [Required]
+    public string Id { get; set; } = null!;
 }
