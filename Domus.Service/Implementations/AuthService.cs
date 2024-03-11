@@ -164,7 +164,7 @@ public class AuthService : IAuthService
 			Otp = otp.Code
 		});
 
-		return new ServiceActionResult(true);
+		return new ServiceActionResult(true) { Data = new { Id = retrievedUser.Id } };
     }
 
     private async Task EnsureRoleExistsAsync(string role)
