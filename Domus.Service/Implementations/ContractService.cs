@@ -271,7 +271,7 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> SignContract(Guid contractId, IFormFile signature)
     {
-        var contract = await _contractRepository.GetAsync(x => x.Id == contractId) ??
+        var contract = await _contractRepository.GetAsync(x => x.Id == contractId && !x.IsDeleted) ??
                        throw new Exception("Contract Not Found");
         contract.Signature = await _fileService.UploadFile(signature);
         contract.Status = ContractStatus.SIGNED;

@@ -221,6 +221,7 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
 		mapper.CreateMap<QuotationRevision, DtoQuotationRevisionWithPriceAndVersion>();
 		mapper.CreateMap<Quotation, DtoQuotationWithoutProductsAndServices>();
+		mapper.CreateMap<QuotationRevision, DtoQuotationRevision>();
 	}
 
 	private static void CreatePackageMaps(IMapperConfigurationExpression mapper)
@@ -242,6 +243,9 @@ public static class AutoMapperConfiguration
 	{
 		mapper.CreateMap<ContractRequest, Contract>();
 		mapper.CreateMap<Contract, DtoContract>()
-			.ForMember(d => d.ServiceQuotations,opt => opt.MapFrom(src => src.QuotationRevision.Quotation.ServiceQuotations));
+			.ForMember(d => d.ServiceQuotations,
+				opt => opt.MapFrom(src => src.QuotationRevision.Quotation.ServiceQuotations))
+			// .ForMember(d => d.QuotationRevision.ProductDetailQuotationRevisions,opt => opt.MapFrom(src => src.QuotationRevision.ProductDetailQuotationRevisions));
+			;
 	}
 }
