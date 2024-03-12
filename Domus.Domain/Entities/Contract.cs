@@ -24,6 +24,8 @@ public partial class Contract : BaseEntity<Guid>
     
     public string? Signature { get; set; }
     
+    public string? FullName { get; set; }
+    
     public ContractStatus  Status { get; set; }
     
     public virtual DomusUser Client { get; set; }= null!;

@@ -33,8 +33,10 @@ public class ContractService : IContractService
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IJwtService _jwtService;
 
-    public ContractService(IContractRepository contractRepository, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, UserManager<DomusUser> userManager, IEmailService emailService)
+
+    public ContractService(IContractRepository contractRepository, IJwtService jwtService, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, UserManager<DomusUser> userManager, IEmailService emailService)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
@@ -45,6 +47,7 @@ public class ContractService : IContractService
         _fileService = fileService;
         _userManager = userManager;
         _emailService = emailService;
+        _jwtService = jwtService;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -269,16 +272,75 @@ public class ContractService : IContractService
         return new ServiceActionResult(true);
     }
 
-    public async Task<ServiceActionResult> SignContract(Guid contractId, IFormFile signature)
+    public async Task<ServiceActionResult> SignContract(Guid contractId, SignedContractRequest request)
     {
         var contract = await _contractRepository.GetAsync(x => x.Id == contractId && !x.IsDeleted) ??
                        throw new Exception("Contract Not Found");
-        contract.Signature = await _fileService.UploadFile(signature);
+        contract.Signature = await _fileService.UploadFile(request.Signature);
+        contract.FullName = request.FullName;
         contract.Status = ContractStatus.SIGNED;
         _emailService.SendEmail(new ContractEmail(){});
         await _contractRepository.UpdateAsync(contract);
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
+    }
+
+    public async Task<ServiceActionResult> GetUsersContract(string token)
+    {
+        var isValidToken = _jwtService.IsValidToken(token);
+        if (!isValidToken)
+            throw new InvalidTokenException();
+        var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+        var user = await _userRepository.GetAsync(x => x.Id == userId) ?? throw new UserNotFoundException();
+        var userRole = await _userManager.GetRolesAsync(user);
+        if (!userRole.Contains(UserRoleConstants.CLIENT) || userRole.Count != 1)
+            throw new Service.Exceptions.UnauthorizedAccessException();
+
+        var contracts =
+            (await _contractRepository.FindAsync(x => x.ClientId == userId && !x.IsDeleted)).ProjectTo<DtoContract>(
+                _mapper.ConfigurationProvider);
+        return new ServiceActionResult(true)
+        {
+            Data = contracts
+        };
+
+    }
+
+    public async Task<ServiceActionResult> SearchMyContractsUsingGet(SearchUsingGetRequest request, string token)
+    {
+        var isValidToken = _jwtService.IsValidToken(token);
+        if (!isValidToken)
+            throw new InvalidTokenException();
+        var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+        var user = await _userRepository.GetAsync(x => x.Id == userId) ?? throw new UserNotFoundException();
+        var userRole = await _userManager.GetRolesAsync(user);
+        if (!userRole.Contains(UserRoleConstants.CLIENT) || userRole.Count != 1)
+            throw new Service.Exceptions.UnauthorizedAccessException();
+
+        var contracts =
+            (await _contractRepository.FindAsync(x => x.ClientId == userId && !x.IsDeleted)).ProjectTo<DtoContract>(
+                _mapper.ConfigurationProvider).ToList();
+        
+        if (!string.IsNullOrEmpty(request.SearchField))
+        {
+            contracts = contracts
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoContract), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        if (!string.IsNullOrEmpty(request.SortField))
+        {
+            Expression<Func<DtoContract, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoContract), request.SortField, p);
+            contracts = request.Descending
+                ? contracts.OrderByDescending(orderExpr.Compile()).ToList()
+                : contracts.OrderBy(orderExpr.Compile()).ToList();
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult(contracts, request.PageSize, request.PageIndex);
+        var finalProducts = (IEnumerable<DtoContract>)paginatedResult.Items!;
+
+        paginatedResult.Items = finalProducts;
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     private async Task ValidateContractRequest(ContractRequest request)

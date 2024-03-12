@@ -79,10 +79,10 @@ public class ContractController : BaseApiController
 
     [HttpPost("{id:guid}/sign")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> SignContract([FromForm] FileModels signature, Guid id)
+    public async Task<IActionResult> SignContract([FromForm] SignedContractRequest request, Guid id)
     {
         return await ExecuteServiceLogic(async () =>
-            await _contractService.SignContract(id, signature.ImageFile).ConfigureAwait(false)).ConfigureAwait(false);
+            await _contractService.SignContract(id, request).ConfigureAwait(false)).ConfigureAwait(false);
     }
 
     [HttpPost("search")]
@@ -117,5 +117,25 @@ public class ContractController : BaseApiController
         return await ExecuteServiceLogic(
             async () => await _contractService.DeleteContracts(contractIds).ConfigureAwait(false)
             ).ConfigureAwait(false);
+    }
+    private string GetJwtToken()
+    {
+        var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
+        return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
+    }
+    [HttpGet("my-contract")]
+    [Authorize(Roles = UserRoleConstants.CLIENT)]
+    public async Task<IActionResult> GetMyContract()
+    {
+        return await ExecuteServiceLogic( async () => await _contractService.GetUsersContract(GetJwtToken())
+            ).ConfigureAwait(false);
+    }
+    [HttpGet("my-contract/search")]
+    [Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+    public async Task<IActionResult> SearchMyContractsUsingGetRequest([FromQuery] SearchUsingGetRequest request)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _contractService.SearchMyContractsUsingGet(request, GetJwtToken()).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
 }
