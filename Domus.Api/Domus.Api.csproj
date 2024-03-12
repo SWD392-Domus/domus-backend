@@ -93,6 +93,8 @@
 	<EmbeddedResource Include="Scripts\30.Add_Otp_Table.sql" />
 	<None Remove="Scripts\34.Change_ColumnName_Contract.sql" />
 	<EmbeddedResource Include="Scripts\34.Change_ColumnName_Contract.sql" />
+	<None Remove="Scripts\35.Add_FullName_Contract.sql" />
+	<EmbeddedResource Include="Scripts\35.Add_FullName_Contract.sql" />
 
   </ItemGroup>
 </Project>

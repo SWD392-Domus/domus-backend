@@ -23,5 +23,7 @@ public interface IContractService : IAutoRegisterable
     Task<ServiceActionResult> SearchContractsUsingGet(SearchUsingGetRequest request);
     Task<ServiceActionResult> DeleteContracts(List<Guid> ContractIds);
 
-    Task<ServiceActionResult> SignContract(Guid contractId, IFormFile signature);
+    Task<ServiceActionResult> SignContract(Guid contractId, SignedContractRequest request);
+    Task<ServiceActionResult> GetUsersContract(string token);
+    Task<ServiceActionResult> SearchMyContractsUsingGet(SearchUsingGetRequest request, string token);
 }
