@@ -58,4 +58,12 @@ public class AuthController : BaseApiController
 			async () => await _facebookOAuthService.LoginAsync(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpPost("confirm-otp")]
+	public async Task<IActionResult> ConfirmOtp(ConfirmOtpRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _authService.ConfirmOtpAsync(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }

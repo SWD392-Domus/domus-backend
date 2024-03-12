@@ -204,7 +204,7 @@ public class QuotationService : IQuotationService
 	    };
     }
 
-    public async Task<ServiceActionResult> GetQuotationRevisions(Guid quotationId)
+    public async Task<ServiceActionResult> GetQuotationPriceChangeHistory(Guid quotationId)
     {
 	    var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == quotationId))
 		    .Include(q => q.QuotationRevisions)
@@ -241,6 +241,53 @@ public class QuotationService : IQuotationService
 	    }
 
 	    return new ServiceActionResult(true) { Data = quotationPricesHistory };
+    }
+
+    public async Task<ServiceActionResult> GetQuotationRevisions(Guid id)
+    {
+	    var revisions = await (await _quotationRevisionRepository.FindAsync(qr => !qr.IsDeleted && qr.QuotationId == id))
+		    .Select(qr => new
+		    {
+			    qr.Id,
+			    qr.Version,
+			    qr.CreatedAt
+		    })
+		    .ToListAsync();
+
+	    return new ServiceActionResult(true) { Data = revisions };
+    }
+
+    public async Task<ServiceActionResult> GetQuotationRevision(Guid quotationId, Guid revisionId)
+    {
+	    var quotation = (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == quotationId))
+		    .ProjectTo<DtoQuotationFullDetails>(_mapper.ConfigurationProvider)
+		    .FirstOrDefault() ?? throw new QuotationNotFoundException();
+		
+	    var revision  =
+		    await (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotationId && r.Id == revisionId))
+		    .FirstOrDefaultAsync() ?? throw new RevisionNotFoundException();
+		
+	    var products = await (await _productDetailQuotationRevisionRepository.FindAsync(r => r.QuotationRevisionId == revisionId))
+		    .Include(r => r.ProductDetail)
+		    .ThenInclude(pd => pd.Product)
+		    .ToListAsync();
+
+	    quotation.ProductDetailQuotations = _mapper.Map<ICollection<DtoProductDetailQuotationRevision>>(products);
+
+	    quotation.TotalPrice = revision.TotalPrice + quotation.ServiceQuotations.Sum(sq => sq.Price);
+
+	    return new ServiceActionResult(true) { Data = quotation };
+    }
+
+    public async Task<ServiceActionResult> UpdateQuotationStatus(Guid quotationId, string status)
+    {
+	    var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == quotationId) ?? throw new QuotationNotFoundException();
+	    quotation.Status = status;
+	    
+	    await _quotationRepository.UpdateAsync(quotation);
+	    await _unitOfWork.CommitAsync();
+	    
+	    return new ServiceActionResult(true);
     }
 
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)

@@ -10,6 +10,8 @@ using Domus.DAL.Data;
 using Domus.DAL.Interfaces;
 using Domus.Domain.Entities;
 using Domus.Service.AutoMappings;
+using Domus.Service.Implementations;
+using Domus.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -132,7 +134,7 @@ public static class ServiceCollectionExtensions
 			if (implementationType != null)
 				services.AddScoped(type, implementationType);
 		}
-   
+
         var config = new MapperConfiguration(AutoMapperConfiguration.RegisterMaps);
         var mapper = config.CreateMapper();
         services.AddSingleton(mapper);

@@ -1,0 +1,2 @@
+﻿ALTER TABLE Contract 
+ADD FullName NVARCHAR(255) 

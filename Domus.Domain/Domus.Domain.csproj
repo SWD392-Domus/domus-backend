@@ -20,4 +20,8 @@
     <Compile Remove="Entities\ProductDetailQuotation.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Domus.Common\Domus.Common.csproj" />
+  </ItemGroup>
+
 </Project>

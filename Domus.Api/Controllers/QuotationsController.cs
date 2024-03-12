@@ -124,10 +124,34 @@ public class QuotationsController : BaseApiController
 	}
 
 	[HttpGet("{id:guid}/negotiations")]
+	public async Task<IActionResult> GetQuotationPriceChangeHistory(Guid id)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.GetQuotationPriceChangeHistory(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpGet("{id:guid}/revisions")]
 	public async Task<IActionResult> GetQuotationRevisions(Guid id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _quotationService.GetQuotationRevisions(id).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpGet("{quotationId:guid}/revisions/{revisionId:guid}")]
+	public async Task<IActionResult> GetQuotationRevision(Guid quotationId, Guid revisionId)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.GetQuotationRevision(quotationId, revisionId).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpPut("{quotationId:guid}/status")]
+	public async Task<IActionResult> UpdateQuotationStatus(Guid quotationId, [FromBody] UpdateQuotationStatusRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.UpdateQuotationStatus(quotationId, request.Status).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

@@ -73,6 +73,8 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : cla
         await Task.CompletedTask;
     }
 
+
+
     public async Task UpdateManyAsync(Expression<Func<T, bool>> predicate)
     {
         var entities = _dbSet.Where(predicate);

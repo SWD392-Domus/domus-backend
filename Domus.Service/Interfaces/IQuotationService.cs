@@ -20,5 +20,8 @@ public interface IQuotationService : IAutoRegisterable
     Task<ServiceActionResult> SearchQuotations(SearchUsingGetRequest request);
     Task<ServiceActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids);
     Task<ServiceActionResult> GetUserQuotationHistory(string token);
-    Task<ServiceActionResult> GetQuotationRevisions(Guid quotationId);
+    Task<ServiceActionResult> GetQuotationPriceChangeHistory(Guid quotationId);
+    Task<ServiceActionResult> GetQuotationRevisions(Guid id);
+    Task<ServiceActionResult> GetQuotationRevision(Guid quotationId, Guid revisionId);
+    Task<ServiceActionResult> UpdateQuotationStatus(Guid quotationId, string status);
 }

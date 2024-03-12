@@ -13,25 +13,24 @@ public class ContractModelMapper : IDatabaseModelMapper
             entity.ToTable(nameof(Contract));
 
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
-            entity.Property(e => e.CreatedBy).HasMaxLength(450);
-            entity.Property(e => e.EndDate).HasColumnType("date");
-            entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
-            entity.Property(e => e.LastUpdatedAt).HasColumnType("datetime");
-            entity.Property(e => e.LastUpdatedBy).HasMaxLength(450);
             entity.Property(e => e.SignedAt).HasColumnType("datetime");
-            entity.Property(e => e.StartDate).HasColumnType("date");
-            entity.Property(e => e.Status).HasMaxLength(256);
+            entity.Property(e => e.Name).HasMaxLength(450);
+            entity.Property(e => e.FullName).HasMaxLength(255);
+            entity.Property(e => e.Description).HasMaxLength(450);
+            entity.Property(e => e.Signature).HasMaxLength(450);
+            entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
+            entity.Property(e => e.Attachments).HasMaxLength(450);
+            entity.Property(e => e.Status).HasColumnName("Status");
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ContractCreatedByNavigations)
-                .HasForeignKey(d => d.CreatedBy)
+            entity.HasOne(d => d.Client).WithMany(p => p.ClientContracts)
+                .HasForeignKey(d => d.ClientId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.LastUpdatedByNavigation).WithMany(p => p.ContractLastUpdatedByNavigations)
-                .HasForeignKey(d => d.LastUpdatedBy);
+            entity.HasOne(d => d.Contractor).WithMany(p => p.ContractorContracts)
+                .HasForeignKey(d => d.ContractorId).OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.Quotation).WithMany(p => p.Contracts)
-                .HasForeignKey(d => d.QuotationId)
+            entity.HasOne(d => d.QuotationRevision).WithOne(p => p.Contract)
+                .HasForeignKey<Contract>(d => d.QuotationRevisionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

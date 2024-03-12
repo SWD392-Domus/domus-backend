@@ -8,7 +8,7 @@ public class ServiceModelMapper : IDatabaseModelMapper
 {
     public void Map(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Service>(entity =>
+        modelBuilder.Entity<Entities.Service>(entity =>
         {
             entity.ToTable(nameof(Service));
             entity.Property(e => e.Id).ValueGeneratedOnAdd();

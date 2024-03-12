@@ -10,8 +10,8 @@ public class PasswordEmail : BaseEmail
     public override string EmailBody => GenerateEmailBody();
     protected override string GenerateEmailBody()
     {
-        return LoadEmailTemplate().Replace("{"+$"{nameof(PasswordEmail.UserName)}"+"}", UserName)
-            .Replace("{"+$"{nameof(PasswordEmail.Password)}"+"}", Password);;
+        return LoadEmailTemplate().Replace($"{{{nameof(PasswordEmail.UserName)}}}", UserName)
+            .Replace($"{{{nameof(PasswordEmail.Password)}}}", Password);;
     }
 
     protected override string LoadEmailTemplate()

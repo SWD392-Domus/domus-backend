@@ -11,4 +11,6 @@ public class DtoProductPrice
 	public double Quantity { get; set; }
 
 	public string QuantityType { get; set; } = null!;
+
+	public DateTime CreatedAt { get; set; }
 }

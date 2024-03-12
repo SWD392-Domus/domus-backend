@@ -112,4 +112,22 @@ public class ProductDetailsController : BaseApiController
 			async () => await _productDetailService.SearchProductDetailsInStorage(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+
+	[HttpPost]
+	[Route("/api/storage/products")]
+	public async Task<IActionResult> ImportProductDetailsToStorage(IEnumerable<ImportProductDetailRequest> productDetails)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.ImportProductDetailsToStorage(productDetails).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpGet]
+	[Route("/api/storage/products/prices")]
+	public async Task<IActionResult> GetProductPricesFromStorage([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _productDetailService.GetProductPricesFromStorage(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
 }

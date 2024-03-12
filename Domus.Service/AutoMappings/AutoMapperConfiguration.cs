@@ -6,6 +6,7 @@ using Domus.Domain.Dtos.Quotations;
 using Domus.Domain.Entities;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Authentication;
+using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.OfferedPackages;
 using Domus.Service.Models.Requests.ProductDetails;
 using Domus.Service.Models.Requests.Products;
@@ -30,6 +31,8 @@ public static class AutoMapperConfiguration
 		CreateQuotationMaps(mapper);
 
 		CreatePackageMaps(mapper);
+		
+		CreateContractMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -154,7 +157,11 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.ProductAttributeValues,
 				opt => opt.MapFrom((src) => src.ProductAttributeValues.Select(pav => new DtoProductAttributeValue { AttributeId = pav.ProductAttributeId, Name = pav.ProductAttribute.AttributeName, Value = pav.Value, ValueType = pav.ValueType })))
 			.ForMember(dest => dest.ProductName,
-				opt => opt.MapFrom(src => src.Product.ProductName));
+				opt => opt.MapFrom(src => src.Product.ProductName))
+			.ForMember(dest => dest.Brand,
+				opt => opt.MapFrom(src => src.Product.Brand))
+			.ForMember(dest => dest.TotalQuantity,
+				opt => opt.MapFrom(src => src.ProductPrices.Sum(pp => (int)pp.Quantity)));
 		
 		mapper.CreateMap<ProductDetail, DtoSingleProductDetail>()
 			.ForMember(dest => dest.DisplayPrice,
@@ -214,6 +221,7 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<NegotiationMessage, DtoNegotiationMessage>();
 		mapper.CreateMap<QuotationRevision, DtoQuotationRevisionWithPriceAndVersion>();
 		mapper.CreateMap<Quotation, DtoQuotationWithoutProductsAndServices>();
+		mapper.CreateMap<QuotationRevision, DtoQuotationRevision>();
 	}
 
 	private static void CreatePackageMaps(IMapperConfigurationExpression mapper)
@@ -229,5 +237,15 @@ public static class AutoMapperConfiguration
 			.ForMember(d => d.DisplayPrice, opt => opt.MapFrom(src => src.ProductDetail.DisplayPrice))
 			.ForMember(d => d.ProductAttributeValues, opt => opt.MapFrom(src => src.ProductDetail.ProductAttributeValues))
 			.ForMember(d => d.ProductImages, opt => opt.MapFrom(src => src.ProductDetail.ProductImages));
+	}
+
+	private static void CreateContractMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<ContractRequest, Contract>();
+		mapper.CreateMap<Contract, DtoContract>()
+			.ForMember(d => d.ServiceQuotations,
+				opt => opt.MapFrom(src => src.QuotationRevision.Quotation.ServiceQuotations))
+			// .ForMember(d => d.QuotationRevision.ProductDetailQuotationRevisions,opt => opt.MapFrom(src => src.QuotationRevision.ProductDetailQuotationRevisions));
+			;
 	}
 }
