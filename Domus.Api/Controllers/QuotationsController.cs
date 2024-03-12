@@ -116,12 +116,21 @@ public class QuotationsController : BaseApiController
 		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
 	}
 
-	[HttpGet("history")]
+	[HttpGet("my-quotation")]
 	[Authorize(Roles = UserRoleConstants.CLIENT)]
 	public async Task<IActionResult> GetUserQuotationHistory()
 	{
 		return await ExecuteServiceLogic(async () => await _quotationService.GetUserQuotationHistory(GetJwtToken())).ConfigureAwait(false);
 	}
+	
+	[HttpGet("my-quotation/search")]
+	public async Task<IActionResult> GetMyQuotations([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.SearchUserQuotations(request,GetJwtToken()).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
 
 	[HttpGet("{id:guid}/negotiations")]
 	public async Task<IActionResult> GetQuotationPriceChangeHistory(Guid id)
