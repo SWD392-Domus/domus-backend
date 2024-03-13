@@ -131,7 +131,7 @@ public class ContractController : BaseApiController
             ).ConfigureAwait(false);
     }
     [HttpGet("my-contract/search")]
-    [Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+   
     public async Task<IActionResult> SearchMyContractsUsingGetRequest([FromQuery] SearchUsingGetRequest request)
     {
         return await ExecuteServiceLogic(
