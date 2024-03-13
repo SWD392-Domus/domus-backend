@@ -22,6 +22,7 @@ public class DtoContract
     public string ContractorId { get; set; }
     
     public string? Signature { get; set; }
+    public string? FullName { get; set; }
     public ContractStatus Status { get; set; }
     public DtoDomusUser Client { get; set; }= null!;
     public DtoDomusUser Contractor { get; set; }= null!;
