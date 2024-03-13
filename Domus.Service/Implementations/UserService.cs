@@ -133,7 +133,7 @@ public class UserService : IUserService
 			user.ProfileImage = profileImageUrl.First();
 		}
 
-		await _userManager.UpdateAsync(user);
+		await _userRepository.UpdateAsync(user);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true) { Detail = "User updated successfully" };
