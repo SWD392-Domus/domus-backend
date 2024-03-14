@@ -1,7 +1,9 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Domain.Dtos.Articles;
 using Domus.Domain.Entities;
 using Domus.Service.Exceptions;
@@ -9,6 +11,7 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domus.Service.Implementations;
@@ -75,6 +78,35 @@ public class ArticleService : IArticleService
 			throw new ArticleNotFoundException();
 
 		return new ServiceActionResult(true) { Data = _mapper.Map<DtoArticleWithoutCategory>(article) };
+    }
+
+    public async Task<ServiceActionResult> SearchArticlesUsingGet(SearchUsingGetRequest request)
+    {
+	    var articles = await (await _articleRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoArticle>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+      
+        
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    articles = articles
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoArticle), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoArticle, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoArticle), request.SortField, p);
+		    articles = request.Descending
+			    ? articles.OrderByDescending(orderExpr.Compile()).ToList()
+			    : articles.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(articles, request.PageSize, request.PageIndex);
+	    var finalArticles = (IEnumerable<DtoArticle>)paginatedResult.Items!;
+
+	    paginatedResult.Items = finalArticles;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     public async Task<ServiceActionResult> GetPaginatedArticles(BasePaginatedRequest request)
