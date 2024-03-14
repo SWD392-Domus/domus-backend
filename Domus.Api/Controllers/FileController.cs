@@ -34,4 +34,11 @@ public class FileController : BaseApiController
             async() => await _fileService.UploadFile(file).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+
+    [HttpPost("test")]
+    public async Task<string> Test([FromForm] FileModels file)
+    {
+        return await _fileService.UploadSingleFile(file);
+    }
+
 }
