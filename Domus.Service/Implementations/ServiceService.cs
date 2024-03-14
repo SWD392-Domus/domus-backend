@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
@@ -8,7 +9,9 @@ using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Services;
+using Microsoft.EntityFrameworkCore;
 using Service = Domus.Domain.Entities.Service;
 namespace Domus.Service.Implementations;
 
@@ -122,5 +125,48 @@ public class ServiceService : IServiceService
             serviceList.Add(service);
         }
         return serviceList.AsQueryable();
+    }
+
+    public async Task<ServiceActionResult> SearchServicesUsingGet(SearchUsingGetRequest request)
+    {
+        var services = await (await _serviceRepository.FindAsync(p => !p.IsDeleted))
+            .ProjectTo<DtoService>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+      
+        
+        if (!string.IsNullOrEmpty(request.SearchField))
+        {
+            services = services
+                .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoService), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        if (!string.IsNullOrEmpty(request.SortField))
+        {
+            Expression<Func<DtoService, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoService), request.SortField, p);
+            services = request.Descending
+                ? services.OrderByDescending(orderExpr.Compile()).ToList()
+                : services.OrderBy(orderExpr.Compile()).ToList();
+        }
+
+        var paginatedResult = PaginationHelper.BuildPaginatedResult(services, request.PageSize, request.PageIndex);
+        var finalProducts = (IEnumerable<DtoService>)paginatedResult.Items!;
+
+        paginatedResult.Items = finalProducts;
+
+        return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+    public async Task<ServiceActionResult> DeleteServices(List<Guid> serviceIds)
+    {
+        var services = new List<Domain.Entities.Service>();
+        foreach (var serviceId in serviceIds)
+        {
+            var service = await _serviceRepository.GetAsync(y => y.Id == serviceId) ?? throw new Exception($"Not Found Service: {serviceId}");
+            service.IsDeleted = true;
+            services.Add(service); 
+        }
+        await _serviceRepository.UpdateManyAsync(services);
+        await _unitOfWork.CommitAsync();
+        return new ServiceActionResult(true);
     }
 }

@@ -2,6 +2,7 @@ using Domus.Api.Controllers.Base;
 using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -102,4 +103,25 @@ public class UsersController : BaseApiController
 			async () => await _userService.GetAllStaff().ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpGet("search")]
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+	public async Task<IActionResult> SearchUsersUsingGetRequest([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _userService.SearchUsersUsingGet(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[HttpDelete("many")]
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+	public async Task<IActionResult> DeleteMultipleUsers(List<string> userIds)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _userService.DeleteUsers(userIds).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	
+	
 }

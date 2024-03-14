@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -10,6 +11,7 @@ using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -211,5 +213,48 @@ public class UserService : IUserService
 		}
 
 		return new ServiceActionResult(true) { Data = staffList };
+    }
+
+    public async Task<ServiceActionResult> SearchUsersUsingGet(SearchUsingGetRequest request)
+    {
+	    var users = await (await _userRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+      
+        
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    users = users
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoDomusUser), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoDomusUser, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoDomusUser), request.SortField, p);
+		    users = request.Descending
+			    ? users.OrderByDescending(orderExpr.Compile()).ToList()
+			    : users.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(users, request.PageSize, request.PageIndex);
+	    var finalUsers = (IEnumerable<DtoDomusUser>)paginatedResult.Items!;
+
+	    paginatedResult.Items = finalUsers;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+    public async Task<ServiceActionResult> DeleteUsers(List<string> userIds)
+    {
+	    var users = new List<DomusUser>();
+	    foreach (var userId in userIds)
+	    {
+		    var user = await _userRepository.GetAsync(y => y.Id.Equals(userId)) ?? throw new UserNotFoundException($"Not found user: {userId}");
+		    user.IsDeleted = true;
+		    users.Add(user); 
+	    }
+	    await _userRepository.UpdateManyAsync(users);
+	    await _unitOfWork.CommitAsync();
+	    return new ServiceActionResult(true);
     }
 }
