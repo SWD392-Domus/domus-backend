@@ -36,4 +36,6 @@ public class EmailController : BaseApiController
             async() => await _emailService.SendEmail(passwordEmail).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+    
+    
 }

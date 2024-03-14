@@ -33,6 +33,14 @@ public class FileService : IFileService
         };
     }
 
+    public async Task<string> UploadSingleFile(FileModels fileModels)
+    {
+        var containerInstance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
+        var blobInstance = containerInstance.GetBlobClient(StringInterpolationHelper.GenerateUniqueFileName(fileModels.ImageFile.FileName,10));
+        await blobInstance.UploadAsync(fileModels.ImageFile.OpenReadStream());
+        return blobInstance.Uri.ToString();
+    }
+
     public async Task<string> UploadFile(IFormFile file)
     {
         var containerInstance = _blobServiceClient.GetBlobContainerClient(_azureSettings.BlobContainer);
