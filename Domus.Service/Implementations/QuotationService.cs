@@ -34,6 +34,7 @@ public class QuotationService : IQuotationService
 	private readonly IServiceQuotationRepository _serviceQuotationRepository;
 	private readonly IQuotationRevisionRepository _quotationRevisionRepository;
 	private readonly IProductDetailQuotationRevisionRepository _productDetailQuotationRevisionRepository;
+	private readonly INotificationService _notificationService;
 
 	public QuotationService(
 		IQuotationRepository quotationRepository,
@@ -49,7 +50,8 @@ public class QuotationService : IQuotationService
 		IPackageRepository packageRepository,
 		IQuotationRevisionRepository quotationRevisionRepository,
 		IProductDetailQuotationRevisionRepository productDetailQuotationRevisionRepository,
-		IServiceQuotationRepository serviceQuotationRepository)
+		IServiceQuotationRepository serviceQuotationRepository,
+		INotificationService notificationService)
 	{
 		_quotationRepository = quotationRepository;
 		_unitOfWork = unitOfWork;
@@ -65,12 +67,16 @@ public class QuotationService : IQuotationService
 		_quotationRevisionRepository = quotationRevisionRepository;
 		_productDetailQuotationRevisionRepository = productDetailQuotationRevisionRepository;
 		_mapper = mapper;
+		_notificationService = notificationService;
 	}
 
 	public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid quotationId)
 	{
-		if (!await _quotationRepository.ExistsAsync(q => !q.IsDeleted && q.Id == quotationId))
-			throw new QuotationNotFoundException();
+		// if (!await _quotationRepository.ExistsAsync(q => !q.IsDeleted && q.Id == quotationId))
+		// 	throw new QuotationNotFoundException();
+		
+		var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == quotationId) ?? throw new QuotationNotFoundException();
+		
 		
 		var quotationNegotiationLog = await (await _quotationNegotiationLogRepository.GetAllAsync())
 			.Include(qnl => qnl.NegotiationMessages)
@@ -96,6 +102,22 @@ public class QuotationService : IQuotationService
 			await _quotationNegotiationLogRepository.UpdateAsync(quotationNegotiationLog);
 		}
 
+		_notificationService.CreateNotification(new Notification()
+			{
+				RecipientId = quotation.CustomerId,
+				Content = NotificationHelper.CreateNegotiationMessageForCustomer(quotation.StaffId,quotationId),
+				SentAt = DateTime.Now,
+				RedirectString = $"customer/settings/quotations/{quotationId}"
+			}
+		);
+		_notificationService.CreateNotification(new Notification()
+			{
+				RecipientId = quotation.StaffId,
+				Content = NotificationHelper.CreateNegotiationMessageForStaff(quotation.CustomerId,quotationId),
+				SentAt = DateTime.Now,
+				RedirectString = $"customer/settings/quotations/{quotationId}"
+			}
+		);
 		await _unitOfWork.CommitAsync();
 		return new ServiceActionResult(true);
      }
@@ -174,7 +196,13 @@ public class QuotationService : IQuotationService
 		quotation.QuotationRevisions.Add(quotationRevision);
 		await _quotationRepository.AddAsync(quotation);
 		await _unitOfWork.CommitAsync();
-
+		await _notificationService.CreateNotification(new Notification()
+		{
+			RecipientId = NotificationHelper.ADMIN_ID,
+			Content = NotificationHelper.CreateNewQuotationMessage(),
+			SentAt = DateTime.Now,
+			RedirectString = "staff/quotations/"
+		});
 		return new ServiceActionResult(true);
     }
 
@@ -546,6 +574,13 @@ public class QuotationService : IQuotationService
 		quotation.QuotationRevisions.Add(newQuotationRevision);
 		quotation.LastUpdatedAt = DateTime.Now;
 		await _quotationRepository.UpdateAsync(quotation);
+		await _notificationService.CreateNotification(new Notification()
+		{
+			RecipientId = quotation.StaffId,
+			Content = NotificationHelper.CreateUpdatedQuotationMessage(quotation.CustomerId,quotation.Id),
+			SentAt = DateTime.Now,
+			RedirectString = $"staff/quotations/${quotation.Id}"
+		});
 		await _unitOfWork.CommitAsync();
 	 
 		return new ServiceActionResult(true);
