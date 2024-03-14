@@ -78,4 +78,14 @@ public class ArticlesController : BaseApiController
 			async () => await _articleService.SearchArticlesUsingGet(request).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+	
+	[HttpDelete("many")]
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+	public async Task<IActionResult> DeleteMultipleArticles(List<Guid> articleIds)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _articleService.DeleteArticles(articleIds).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
 }

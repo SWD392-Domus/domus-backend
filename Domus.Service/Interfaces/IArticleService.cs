@@ -15,4 +15,5 @@ public interface IArticleService : IAutoRegisterable
 	Task<ServiceActionResult> DeleteArticle(Guid articleId);
     Task<ServiceActionResult> GetArticle(Guid articleId);
     Task<ServiceActionResult> SearchArticlesUsingGet(SearchUsingGetRequest request);
+    Task<ServiceActionResult> DeleteArticles(List<Guid> articleIds);
 }
