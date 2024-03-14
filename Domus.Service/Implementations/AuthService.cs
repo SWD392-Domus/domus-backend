@@ -156,7 +156,7 @@ public class AuthService : IAuthService
 		await _otpRepository.AddAsync(otp);
 		await _unitOfWork.CommitAsync();
 		
-		_emailService.SendEmail(new OtpEmail
+		_emailService.SendOtpEmail(new OtpEmail
 		{
 			UserName = retrievedUser.UserName!,
 			Subject = "Email confirmation",
