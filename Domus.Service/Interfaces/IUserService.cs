@@ -1,6 +1,7 @@
 using Domus.Common.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Users;
 
 namespace Domus.Service.Interfaces;
@@ -17,4 +18,6 @@ public interface IUserService : IAutoRegisterable
     Task<ServiceActionResult> UpdateSelfProfile(UpdateUserRequest request, string token);
     Task<ServiceActionResult> UpdatePassword(UpdateUserPasswordRequest request, string token);
     Task<ServiceActionResult> GetAllStaff();
+    Task<ServiceActionResult> SearchUsersUsingGet(SearchUsingGetRequest request);
+    Task<ServiceActionResult> DeleteUsers(List<string> userIds);
 }

@@ -103,8 +103,9 @@ public class ContractService : IContractService
             Subject = "Contract Email",
             To = clientUser.Email!,
             ContractName = request.Name,
-            ContractorName = contractorUser.FullName,
+            ContractorName = contractorUser. FullName,
         });
+        
         var contract = _mapper.Map<Contract>(request);
         contract.Status = ContractStatus.SENT;
         contract.SignedAt = request.SignedAt ?? DateTime.Now;
