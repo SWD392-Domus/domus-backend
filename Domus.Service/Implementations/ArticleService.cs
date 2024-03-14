@@ -109,6 +109,20 @@ public class ArticleService : IArticleService
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
+    public async Task<ServiceActionResult> DeleteArticles(List<Guid> articleIds)
+    {
+	    var articles = new List<Article>();
+	    foreach (var articleId in articleIds)
+	    {
+		    var article = await _articleRepository.GetAsync(y => y.Id == articleId) ?? throw new Exception($"Not Found Article: {articleId}");
+		    article.IsDeleted = true;
+		    articles.Add(article); 
+	    }
+	    await _articleRepository.UpdateManyAsync(articles);
+	    await _unitOfWork.CommitAsync();
+	    return new ServiceActionResult(true);
+    }
+
     public async Task<ServiceActionResult> GetPaginatedArticles(BasePaginatedRequest request)
     {
 		var queryableArticles = (await _articleRepository.GetAllAsync()).ProjectTo<DtoArticle>(_mapper.ConfigurationProvider);
