@@ -56,10 +56,10 @@ public class ArticlesController : BaseApiController
 	}
 
 	[HttpPut("{id:guid}")]
-	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId)
+	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid id)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.UpdateArticle(request, articleId).ConfigureAwait(false)
+			async () => await _articleService.UpdateArticle(request, id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 

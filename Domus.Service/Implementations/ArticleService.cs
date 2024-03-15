@@ -154,29 +154,27 @@ public class ArticleService : IArticleService
 
     public async Task<ServiceActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId)
     {
-		if (!await _articleCategoryRepository.ExistsAsync(c => c.Id == request.ArticleCategoryId))
+		if (request.ArticleCategoryId != default && !await _articleCategoryRepository.ExistsAsync(c => c.Id == request.ArticleCategoryId))
 			throw new ArticleCategoryNotFoundException();
 
 		var article = await (await _articleRepository.FindAsync(a => a.Id == articleId))
 			.Include(a => a.ArticleImages)
-			.FirstOrDefaultAsync(); 
-		if (article is null)
-			throw new ArticleNotFoundException();
+			.FirstOrDefaultAsync() ?? throw new ArticleNotFoundException();
 
-		_mapper.Map(article, request);
-		if (request.ReplaceImages)
-			article.ArticleImages = _mapper.Map<ICollection<ArticleImage>>(request.ArticleImages);
-		else 
-		{
-			foreach (var image in _mapper.Map<ICollection<ArticleImage>>(request.ArticleImages))
-			{
-				article.ArticleImages.Add(image);
-			}
-		}
+		_mapper.Map(request, article);
+		// if (request.ReplaceImages)
+		// 	article.ArticleImages = _mapper.Map<ICollection<ArticleImage>>(request.ArticleImages);
+		// else 
+		// {
+		// 	foreach (var image in _mapper.Map<ICollection<ArticleImage>>(request.ArticleImages))
+		// 	{
+		// 		article.ArticleImages.Add(image);
+		// 	}
+		// }
 
 		await _articleRepository.UpdateAsync(article);
 		await _unitOfWork.CommitAsync();
 
-		return new ServiceActionResult(true);
+		return new ServiceActionResult(true) { Data = _mapper.Map<DtoArticleWithoutCategory>(article) };
     }
 }
