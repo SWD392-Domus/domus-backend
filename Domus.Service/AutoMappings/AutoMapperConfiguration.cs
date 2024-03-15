@@ -72,6 +72,16 @@ public static class AutoMapperConfiguration
 
 		mapper.CreateMap<ArticleCategory, DtoArticleCategory>();
 		mapper.CreateMap<ArticleImage, DtoArticleImage>();
+
+		mapper.CreateMap<UpdateArticleRequest, Article>()
+			.ForMember(dest => dest.ArticleImages,
+				opt => opt.Ignore())
+			.ForMember(dest => dest.ArticleCategoryId,
+				opt => opt.Condition((req, _) => req.ArticleCategoryId != default))
+			.ForMember(dest => dest.Content,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.Content)))
+			.ForMember(dest => dest.Title,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.Title)));
 	}
 	
 	private static void CreateProductMaps(IMapperConfigurationExpression mapper)
