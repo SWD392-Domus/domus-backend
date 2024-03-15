@@ -33,6 +33,8 @@ public static class AutoMapperConfiguration
 		CreatePackageMaps(mapper);
 		
 		CreateContractMaps(mapper);
+
+		CreateNotificationMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -248,4 +250,10 @@ public static class AutoMapperConfiguration
 			// .ForMember(d => d.QuotationRevision.ProductDetailQuotationRevisions,opt => opt.MapFrom(src => src.QuotationRevision.ProductDetailQuotationRevisions));
 			;
 	}
+	private static void CreateNotificationMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<DtoNotification, Notification>().ReverseMap();
+		
+	}
+	
 }
