@@ -401,4 +401,3 @@ global.json
 .idea/
 $HOME
 .env
-docker-compose.yml
