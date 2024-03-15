@@ -62,10 +62,6 @@ jobs:
         
       - name: Deploy to Azure VM
         run: |
-          scp -i ~/.ssh/azure_vm_key \
-                    -o StrictHostKeyChecking=no \
-                    docker-compose.yml \
-                    ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }}:/app/docker-compose.yml
           ssh -i ~/.ssh/azure_vm_key \
                     -o StrictHostKeyChecking=no \
                     ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_IP_ADDRESS }} \
