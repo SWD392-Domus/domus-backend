@@ -10,7 +10,7 @@ public interface IArticleService : IAutoRegisterable
 {
 	Task<ServiceActionResult> GetAllArticles();
 	Task<ServiceActionResult> GetPaginatedArticles(BasePaginatedRequest request);
-	Task<ServiceActionResult> CreateArticle(CreateArticleRequest request);
+	Task<ServiceActionResult> CreateArticle(CreateArticleRequest request, string jwtToken);
 	Task<ServiceActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId);
 	Task<ServiceActionResult> DeleteArticle(Guid articleId);
     Task<ServiceActionResult> GetArticle(Guid articleId);
