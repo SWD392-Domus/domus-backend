@@ -18,11 +18,6 @@ public static class NotificationHelper
         return $"Your contract with Id [${contractId}] has just been deleted by a contractor with ID: {contractContractorId}. Please contact with us in case of problems.";
     }
 
-    public static string CreateNewQuotationMessage()
-    {
-        throw new NotImplementedException();
-    }
-
     public static string CreateNegotiationMessageForCustomer(string quotationStaffId, Guid quotationId)
     {
         return $"The staff [{quotationStaffId}] has just replied your quotation request negotiation at Quotation [${quotationId}]. Please check the quotation again and feel free to contact with us.";
@@ -36,5 +31,16 @@ public static class NotificationHelper
     public static string CreateUpdatedQuotationMessage(string quotationCustomerId, Guid quotationId)
     {
         return $"The client [{quotationCustomerId}] has just updated the Quotation [{quotationId}]. Please check the quotation again.";
+    }
+
+    public static string CreateDeletedQuotation(Guid quotationId, string StaffId)
+    {
+        return $"The Staff [{StaffId}] has just deleted the Quotation [{quotationId}]. Please check the quotation again.";
+
+    }
+
+    public static string CreateNewQuotationMessage(string quotationCustomerId, Guid quotationId)
+    {
+        return $"The Client [{quotationCustomerId}] has just requested an Quotation[${quotationId}]. Please check the quotation and assign a staff for this quotation.";
     }
 }
