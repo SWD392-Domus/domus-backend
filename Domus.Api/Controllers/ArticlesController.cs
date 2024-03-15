@@ -51,7 +51,7 @@ public class ArticlesController : BaseApiController
 	public async Task<IActionResult> CreateArticle(CreateArticleRequest request)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.CreateArticle(request).ConfigureAwait(false)
+			async () => await _articleService.CreateArticle(request, GetJwtToken()).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
@@ -88,4 +88,9 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 	
+	private string GetJwtToken()
+	{
+		var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
+		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
+	}
 }
