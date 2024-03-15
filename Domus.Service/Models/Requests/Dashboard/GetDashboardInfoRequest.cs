@@ -1,7 +1,9 @@
-﻿namespace Domus.Service.Models.Requests.Dashboard;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domus.Service.Models.Requests.Dashboard;
 
 public class GetDashboardInfoRequest
 {
-    public DateOnly StartDate { get; set; }
-    public DateOnly EndDate { get; set; }
+    [Range(typeof(int),"1970", "2030")]
+    public int Year { get; set; }
 }
