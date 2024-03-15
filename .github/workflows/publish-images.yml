@@ -71,4 +71,4 @@ jobs:
                       echo ${{ secrets.DOCKER_PAT_KEY }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin &&
                       API_VERSION=${{ needs.publish.outputs.version }} &&
                       DOMAIN=${{ secrets.VM_WEB_DOMAIN }}
-                      docker-compose up'
+                      docker-compose up -f /app/docker-compose.yml'
