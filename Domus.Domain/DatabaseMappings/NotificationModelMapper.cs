@@ -17,6 +17,7 @@ public class NotificationModelMapper:IDatabaseModelMapper
             entity.Property(e => e.SentAt);
             entity.Property(e => e.Status).HasColumnName("Status").HasColumnType("INT");
             entity.Property(e => e.RedirectString).HasColumnName("RedirectString");
+            entity.Property(e => e.Image).HasColumnName("Image");
 
             entity.HasOne(e => e.Recipient)
                 .WithMany(r => r.Notifications)

@@ -9,4 +9,5 @@ public class DtoNotification
     public DateTime SentAt { get; set; }
     public NotificationStatus Status { get; set; }
     public string RedirectString { get; set; }
+    public string Image { get; set; }
 }

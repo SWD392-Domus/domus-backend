@@ -121,14 +121,15 @@ public class ContractService : IContractService
         
         await _contractRepository.AddAsync(contract);
         await _unitOfWork.CommitAsync();
-        var newContract =await _contractRepository.GetAsync(x => !x.IsDeleted && x.ClientId == request.ClientId 
-                                                                         && x.QuotationRevisionId == request.QuotationRevisionId);
+        var newContract =(await _contractRepository.FindAsync(x => !x.IsDeleted && x.ClientId == request.ClientId 
+                                                                         && x.QuotationRevisionId == request.QuotationRevisionId)).Include(x => x.Contractor).FirstOrDefault();
         await _notificationRepository.AddAsync(new Notification()
         {
             RecipientId = request.ClientId,
             Content = NotificationHelper.CreateContractMessage(contractorUser.FullName, newContract.Id, request.QuotationRevisionId),
             SentAt = DateTime.Now,
-            RedirectString = $"customer/settings/contracts/{newContract.Id}"
+            RedirectString = $"customer/settings/contracts/{newContract.Id}",
+            Image = contract.Contractor.ProfileImage
         });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
@@ -161,13 +162,15 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> DeleteContract(Guid ContractId)
     {
-        var contract = (await _contractRepository.GetAsync(x => !x.IsDeleted && x.Id == ContractId)) ?? throw new Exception("Contract Not Found");
+        var contract = (await _contractRepository.FindAsync(x => !x.IsDeleted && x.Id == ContractId))
+            .Include(x => x.Contractor).FirstOrDefault()?? throw new Exception("Contract Not Found");
         contract.IsDeleted = true;
         await _contractRepository.UpdateAsync(contract);
         await _notificationRepository.AddAsync(new Notification()
         {
             RecipientId = contract.ClientId,
-            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, contract.ContractorId),
+            Image = contract.Contractor.ProfileImage,
+            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, (contract.Contractor.FullName.Equals("N/A")) ? contract.Contractor.Email : contract.Contractor.FullName),
         });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
@@ -319,7 +322,8 @@ public class ContractService : IContractService
             RecipientId = contract.ContractorId,
             Content = NotificationHelper.CreateSignedContractMessage(contract.Client.FullName,contract.ClientId,contract.Id),
             SentAt = DateTime.Now,
-            RedirectString = $"staff/contracts/{contractId}"
+            RedirectString = $"staff/contracts/{contractId}",
+            Image = contract.Client.ProfileImage
         });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
