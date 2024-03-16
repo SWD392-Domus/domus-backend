@@ -76,7 +76,9 @@ public class QuotationService : IQuotationService
 		// if (!await _quotationRepository.ExistsAsync(q => !q.IsDeleted && q.Id == quotationId))
 		// 	throw new QuotationNotFoundException();
 		
-		var quotation = await _quotationRepository.GetAsync(q => !q.IsDeleted && q.Id == quotationId) ?? throw new QuotationNotFoundException();
+		var quotation = (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == quotationId))
+			.Include(x => x.Customer)
+			.Include(x => x.Staff).FirstOrDefault()?? throw new QuotationNotFoundException();
 		
 		
 		var quotationNegotiationLog = await (await _quotationNegotiationLogRepository.GetAllAsync())
@@ -110,6 +112,7 @@ public class QuotationService : IQuotationService
 					RecipientId = quotation.StaffId,
 					Content = NotificationHelper.CreateNegotiationMessageForStaff((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotationId),
 					SentAt = DateTime.Now,
+					Image = quotation.Customer.ProfileImage,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
 			);
@@ -121,6 +124,7 @@ public class QuotationService : IQuotationService
 					RecipientId = quotation.CustomerId,
 					Content = NotificationHelper.CreateNegotiationMessageForCustomer((quotation.Staff.FullName.Equals("N/A") ? quotation.Staff.Email : quotation.Staff.FullName),quotationId),
 					SentAt = DateTime.Now,
+					Image = quotation.Staff.ProfileImage,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
 			);
@@ -202,12 +206,13 @@ public class QuotationService : IQuotationService
 
 		quotation.QuotationRevisions.Add(quotationRevision);
 		await _quotationRepository.AddAsync(quotation);
-		
+		var customerImage = (await _userRepository.GetAsync(x => !x.IsDeleted && x.Id == quotation.Customer.Id)).ProfileImage;
 		await _notificationRepository.AddAsync(new Notification()
 		{
 			RecipientId = NotificationHelper.ADMIN_ID,
 			Content = NotificationHelper.CreateNewQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
 			SentAt = DateTime.Now,
+			Image = customerImage,
 			RedirectString = $"staff/quotations/{quotation.Id}"
 		});
 		await _unitOfWork.CommitAsync();
@@ -226,6 +231,7 @@ public class QuotationService : IQuotationService
 		    var x = (await _quotationRepository.FindAsync(x => !x.IsDeleted && x.Id == id))
 		            .Include(x => x.QuotationNegotiationLog)
 		            .Include(x => x.QuotationRevisions)
+		            .Include(x=> x.Staff)
 		            .FirstOrDefault()
 			    ?? throw new QuotationNotFoundException($"Not Found Quotation: {id}");
 		    x.IsDeleted = true;
@@ -239,6 +245,7 @@ public class QuotationService : IQuotationService
 		    notifications.Add(new Notification()
 		    {
 			    RecipientId = x.CustomerId,
+			    Image = x.Staff.ProfileImage,
 			    Content = NotificationHelper.CreateDeletedQuotation(x.Id, (x.Staff.FullName.Equals("N/A")? x.Staff.Email : x.Staff.FullName)),
 			    SentAt = DateTime.Now,
 		    });
@@ -547,6 +554,7 @@ public class QuotationService : IQuotationService
 		var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == id))
 			.Include(q => q.ServiceQuotations)
 			.Include(q => q.QuotationRevisions)
+			.Include(q => q.Customer)
 			.FirstOrDefaultAsync() ?? throw new QuotationNotFoundException();
 	 
 		_mapper.Map(request, quotation);
@@ -615,6 +623,7 @@ public class QuotationService : IQuotationService
 			RecipientId = quotation.StaffId,
 			Content = NotificationHelper.CreateUpdatedQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
 			SentAt = DateTime.Now,
+			Image = quotation.Customer.ProfileImage,
 			RedirectString = $"staff/quotations/${quotation.Id}"
 		});
 		await _unitOfWork.CommitAsync();
