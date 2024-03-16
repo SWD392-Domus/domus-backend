@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers; 
 
-[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
+[Authorize(AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class ArticlesController : BaseApiController
 {
@@ -47,6 +47,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpPost]
 	public async Task<IActionResult> CreateArticle(CreateArticleRequest request)
 	{
@@ -55,6 +56,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpPut("{id:guid}")]
 	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid id)
 	{
@@ -63,6 +65,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpDelete("{id:guid}")]
 	public async Task<IActionResult> DeleteArticle(Guid id)
 	{
@@ -70,8 +73,8 @@ public class ArticlesController : BaseApiController
 			async () => await _articleService.DeleteArticle(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
+
 	[HttpGet("search")]
-	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	public async Task<IActionResult> SearchArticlesUsingGetRequest([FromQuery] SearchUsingGetRequest request)
 	{
 		return await ExecuteServiceLogic(
@@ -79,8 +82,8 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 	
-	[HttpDelete("many")]
 	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+	[HttpDelete("many")]
 	public async Task<IActionResult> DeleteMultipleArticles(List<Guid> articleIds)
 	{
 		return await ExecuteServiceLogic(
