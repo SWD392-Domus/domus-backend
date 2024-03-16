@@ -167,7 +167,7 @@ public class ContractService : IContractService
         await _notificationRepository.AddAsync(new Notification()
         {
             RecipientId = contract.ClientId,
-            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, contract.ContractorId),
+            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, (contract.Contractor.FullName.Equals("N/A")) ? contract.Contractor.Email : contract.Contractor.FullName),
         });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);

@@ -108,7 +108,7 @@ public class QuotationService : IQuotationService
 			_notificationRepository.AddAsync(new Notification()
 				{
 					RecipientId = quotation.StaffId,
-					Content = NotificationHelper.CreateNegotiationMessageForStaff(quotation.CustomerId,quotationId),
+					Content = NotificationHelper.CreateNegotiationMessageForStaff((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotationId),
 					SentAt = DateTime.Now,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
@@ -119,7 +119,7 @@ public class QuotationService : IQuotationService
 			_notificationRepository.AddAsync(new Notification()
 				{
 					RecipientId = quotation.CustomerId,
-					Content = NotificationHelper.CreateNegotiationMessageForCustomer(quotation.StaffId,quotationId),
+					Content = NotificationHelper.CreateNegotiationMessageForCustomer((quotation.Staff.FullName.Equals("N/A") ? quotation.Staff.Email : quotation.Staff.FullName),quotationId),
 					SentAt = DateTime.Now,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
@@ -206,7 +206,7 @@ public class QuotationService : IQuotationService
 		await _notificationRepository.AddAsync(new Notification()
 		{
 			RecipientId = NotificationHelper.ADMIN_ID,
-			Content = NotificationHelper.CreateNewQuotationMessage(quotation.CustomerId,quotation.Id),
+			Content = NotificationHelper.CreateNewQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
 			SentAt = DateTime.Now,
 			RedirectString = $"staff/quotations/{quotation.Id}"
 		});
@@ -239,7 +239,7 @@ public class QuotationService : IQuotationService
 		    notifications.Add(new Notification()
 		    {
 			    RecipientId = x.CustomerId,
-			    Content = NotificationHelper.CreateDeletedQuotation(x.Id, x.StaffId),
+			    Content = NotificationHelper.CreateDeletedQuotation(x.Id, (x.Staff.FullName.Equals("N/A")? x.Staff.Email : x.Staff.FullName)),
 			    SentAt = DateTime.Now,
 		    });
 	    }
@@ -613,7 +613,7 @@ public class QuotationService : IQuotationService
 		await _notificationRepository.AddAsync(new Notification()
 		{
 			RecipientId = quotation.StaffId,
-			Content = NotificationHelper.CreateUpdatedQuotationMessage(quotation.CustomerId,quotation.Id),
+			Content = NotificationHelper.CreateUpdatedQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
 			SentAt = DateTime.Now,
 			RedirectString = $"staff/quotations/${quotation.Id}"
 		});
