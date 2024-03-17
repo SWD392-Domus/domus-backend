@@ -97,12 +97,10 @@ public class UserService : IUserService
 	    // var clientUser = await _userRepository.GetAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted) ??
 	    //                  throw new Exception($"Not found Client: {request.ClientId}");
 	    // var clientRoles = await _userManager.GetRolesAsync(clientUser);
-	    var users = (await _userRepository.GetAllAsync())
-		    .Where(u => !u.IsDeleted).ToList();
+	    var users = await (await _userRepository.FindAsync(u => !u.IsDeleted)).ToListAsync();
 	    var dtoList = new List<DtoDomusUserWithRole>();
-		foreach (var dtoDomusUserWithRole in users)
+		foreach (var user in users)
 		{
-			var user = await _userRepository.GetAsync(x => x.Id.Equals(dtoDomusUserWithRole.Id) && !x.IsDeleted);
 			var userRole = await _userManager.GetRolesAsync(user);
 			var x = _mapper.Map<DtoDomusUserWithRole>(user);
 			x.Role = userRole;
