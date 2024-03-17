@@ -372,7 +372,7 @@ public class QuotationService : IQuotationService
 	    if (!userRole.Contains(UserRoleConstants.CLIENT) || userRole.Count != 1)
 		    throw new Service.Exceptions.UnauthorizedAccessException();
 	    
-	    var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted && p.Id == new Guid(userId)))
+	    var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted && p.CustomerId == userId))
 		    .OrderByDescending(p => p.CreatedAt)
 		    .ProjectTo<DtoQuotationWithoutProductsAndServices>(_mapper.ConfigurationProvider)
 		    .ToListAsync();
