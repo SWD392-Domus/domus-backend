@@ -14,5 +14,5 @@ public interface INotificationService : IAutoRegisterable
     Task<ServiceActionResult> UpdateNotificationStatus(string token);
 
     Task<ServiceActionResult> SearchNotificationsUsingGet(SearchUsingGetRequest request,string token);
-    Task<ServiceActionResult> GetPaginatedNotifications(BasePaginatedRequest request);
+    Task<ServiceActionResult> GetPaginatedNotifications(BasePaginatedRequest request,string token);
 }

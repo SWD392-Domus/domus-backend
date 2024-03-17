@@ -43,6 +43,7 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email))
 			.ForMember(dest => dest.FullName, opt => opt.MapFrom((_) => "N/A"));
 		mapper.CreateMap<LoginRequest, DomusUser>();
+		mapper.CreateMap<DomusUser, DtoDomusUserWithRole>();
 		mapper.CreateMap<CreateUserRequest, DomusUser>();
 		
 		mapper.CreateMap<UpdateUserRequest, DomusUser>()

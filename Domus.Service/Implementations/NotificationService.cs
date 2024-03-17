@@ -104,10 +104,17 @@ public class NotificationService : INotificationService
         return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
-    public async Task<ServiceActionResult> GetPaginatedNotifications(BasePaginatedRequest request)
+    public async Task<ServiceActionResult> GetPaginatedNotifications(BasePaginatedRequest request,string token)
     {
-        var dtoNotifications = (await _notificationRepository.GetAllAsync()).ProjectTo<DtoPackage>(_mapper.ConfigurationProvider);
-        var paginatedList = PaginationHelper.BuildPaginatedResult(dtoNotifications, request.PageSize, request.PageIndex);
+        // var dtoNotifications = (await _notificationRepository.GetAllAsync()).ProjectTo<DtoPackage>(_mapper.ConfigurationProvider);
+        var isValidToken = _jwtService.IsValidToken(token);
+        if (!isValidToken)
+            throw new InvalidTokenException();
+        var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+        var notifications = await (await _notificationRepository.FindAsync(x => x.RecipientId == userId))
+            .ProjectTo<DtoNotification>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+        var paginatedList = PaginationHelper.BuildPaginatedResult(notifications.AsQueryable(), request.PageSize, request.PageIndex);
         return new ServiceActionResult()
         {
             IsSuccess = true,

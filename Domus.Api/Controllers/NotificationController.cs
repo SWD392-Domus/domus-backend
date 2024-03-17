@@ -22,7 +22,7 @@ public class NotificationController : BaseApiController
         var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
         return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
     }
-    [HttpGet]
+    [HttpGet("my-notification")]
     public async Task<IActionResult> GetNotification()
     {
         return await ExecuteServiceLogic(async () => await _notificationService.GetNotification(GetJwtToken()).ConfigureAwait(false)).ConfigureAwait(false);
@@ -41,10 +41,10 @@ public class NotificationController : BaseApiController
         return await ExecuteServiceLogic(async () => await _notificationService.UpdateNotificationStatus(GetJwtToken()).ConfigureAwait(false)).ConfigureAwait(false);
     }
     [HttpGet]
-    public async Task<IActionResult> GetPaginatedArticles([FromQuery] BasePaginatedRequest request)
+    public async Task<IActionResult> GetPaginatedNotifications([FromQuery] BasePaginatedRequest request)
     {
         return await ExecuteServiceLogic(
-            async () => await _notificationService.GetPaginatedNotifications(request).ConfigureAwait(false)
+            async () => await _notificationService.GetPaginatedNotifications(request,GetJwtToken()).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 
