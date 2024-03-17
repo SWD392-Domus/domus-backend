@@ -98,18 +98,18 @@ public class UserService : IUserService
 	    //                  throw new Exception($"Not found Client: {request.ClientId}");
 	    // var clientRoles = await _userManager.GetRolesAsync(clientUser);
 	    var users = (await _userRepository.GetAllAsync())
-		    .Where(u => !u.IsDeleted);
-	 //    var dtoList = new List<DtoDomusUserWithRole>();
-		// foreach (var dtoDomusUserWithRole in users)g
-		// {
-		// 	var user = await _userRepository.GetAsync(x => x.Id.Equals(dtoDomusUserWithRole.Id) && !x.IsDeleted);
-		// 	var userRole = await _userManager.GetRolesAsync(user);
-		// 	var x = _mapper.Map<DtoDomusUserWithRole>(user);
-		// 	x.Role = userRole;
-		// 	dtoList.Add(x);
-		// }
+		    .Where(u => !u.IsDeleted).ToList();
+	    var dtoList = new List<DtoDomusUserWithRole>();
+		foreach (var dtoDomusUserWithRole in users)
+		{
+			var user = await _userRepository.GetAsync(x => x.Id.Equals(dtoDomusUserWithRole.Id) && !x.IsDeleted);
+			var userRole = await _userManager.GetRolesAsync(user);
+			var x = _mapper.Map<DtoDomusUserWithRole>(user);
+			x.Role = userRole;
+			dtoList.Add(x);
+		}
 
-		return new ServiceActionResult(true) { Data = users };
+		return new ServiceActionResult(true) { Data = dtoList };
     }
 
     public async Task<ServiceActionResult> GetPaginatedUsers(BasePaginatedRequest request)
