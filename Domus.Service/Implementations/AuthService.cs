@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using AutoMapper;
 using Domus.Common.Helpers;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
 using Domus.Service.Exceptions;
@@ -73,7 +74,8 @@ public class AuthService : IAuthService
 			}
 		};
 
-		return new ServiceActionResult(true) { Data = response };
+	    var returnedUser = _mapper.Map<DtoDomusUser>(user);
+		return new ServiceActionResult(true) { Data = new { userInfo = returnedUser, token = response } };
     }
 
     public async Task<ServiceActionResult> RefreshTokenAsync(RefreshTokenRequest request)
