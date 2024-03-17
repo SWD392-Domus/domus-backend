@@ -74,6 +74,7 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[AllowAnonymous]
 	[HttpGet("search")]
 	public async Task<IActionResult> SearchArticlesUsingGetRequest([FromQuery] SearchUsingGetRequest request)
 	{
