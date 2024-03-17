@@ -1,5 +1,6 @@
 ﻿using Domus.Api.Controllers.Base;
 using Domus.Service.Interfaces;
+using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +39,13 @@ public class NotificationController : BaseApiController
     public async Task<IActionResult> SeenAllNotification()
     {
         return await ExecuteServiceLogic(async () => await _notificationService.UpdateNotificationStatus(GetJwtToken()).ConfigureAwait(false)).ConfigureAwait(false);
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetPaginatedArticles([FromQuery] BasePaginatedRequest request)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _notificationService.GetPaginatedNotifications(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
 
 }
