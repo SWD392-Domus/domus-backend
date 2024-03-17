@@ -53,14 +53,21 @@ public class NotificationService : INotificationService
         };
     }
     
-    public async Task UpdateNotificationStatus(IQueryable<Notification> notifications)
+    public async Task<ServiceActionResult> UpdateNotificationStatus(string token)
     {
+        var isValidToken = _jwtService.IsValidToken(token);
+        if (!isValidToken)
+            throw new InvalidTokenException();
+        var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+        var notifications = await _notificationRepository.FindAsync(x => x.RecipientId == userId);
+            
         foreach (var notification in notifications)
         {
             notification.Status = NotificationStatus.Read;
         }
         await _notificationRepository.UpdateManyAsync(notifications);
         await _unitOfWork.CommitAsync();
+        return new ServiceActionResult(true);
     }
 
     public async Task<ServiceActionResult> SearchNotificationsUsingGet(SearchUsingGetRequest request,string token)

@@ -34,4 +34,10 @@ public class NotificationController : BaseApiController
         ).ConfigureAwait(false);
     }
 
+    [HttpPut]
+    public async Task<IActionResult> SeenAllNotification()
+    {
+        return await ExecuteServiceLogic(async () => await _notificationService.UpdateNotificationStatus(GetJwtToken()).ConfigureAwait(false)).ConfigureAwait(false);
+    }
+
 }

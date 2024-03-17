@@ -10,7 +10,7 @@ public interface INotificationService : IAutoRegisterable
 {
     Task CreateNotification(Notification notification);
     Task<ServiceActionResult> GetNotification(string token);
-    Task UpdateNotificationStatus(IQueryable<Notification> notifications);
+    Task<ServiceActionResult> UpdateNotificationStatus(string token);
 
     Task<ServiceActionResult> SearchNotificationsUsingGet(SearchUsingGetRequest request,string token);
 }
