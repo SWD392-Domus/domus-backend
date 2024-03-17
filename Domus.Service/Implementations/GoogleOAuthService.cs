@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using AutoMapper;
 using Domus.Common.Constants;
 using Domus.Common.Exceptions;
 using Domus.Common.Extensions;
 using Domus.Common.Helpers;
 using Domus.Common.Settings;
 using Domus.DAL.Interfaces;
+using Domus.Domain.Dtos;
 using Domus.Domain.Entities;
 using Domus.Service.Constants;
 using Domus.Service.Exceptions;
@@ -27,14 +29,16 @@ public class GoogleOAuthService : IGoogleOAuthService
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IJwtService _jwtService;
 	private readonly IEmailService _emailService;
+	private readonly IMapper _mapper;
 
-	public GoogleOAuthService(IConfiguration configuration, UserManager<DomusUser> userManager, IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService)
+	public GoogleOAuthService(IConfiguration configuration, UserManager<DomusUser> userManager, IUnitOfWork unitOfWork, IJwtService jwtService, IEmailService emailService, IMapper mapper)
 	{
 		_configuration = configuration;
 		_userManager = userManager;
 		_unitOfWork = unitOfWork;
 		_jwtService = jwtService;
 		_emailService = emailService;
+		_mapper = mapper;
 	}
 
 	public async Task<ServiceActionResult> LoginAsync(OAuthRequest request)
@@ -83,7 +87,8 @@ public class GoogleOAuthService : IGoogleOAuthService
 			}
 		};
 
-        return new ServiceActionResult(true) { Data = authResponse };
+	    var returnedUser = _mapper.Map<DtoDomusUser>(user);
+		return new ServiceActionResult(true) { Data = new { userInfo = returnedUser, token = authResponse } };
     }
 
 	private async Task<DomusUser> CreateNewUserAsync(string email, string emailVerified, string fullName, string picture)
