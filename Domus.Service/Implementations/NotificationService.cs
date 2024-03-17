@@ -10,6 +10,7 @@ using Domus.Service.Enums;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
+using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -101,5 +102,16 @@ public class NotificationService : INotificationService
         paginatedResult.Items = finalProducts;
 
         return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+    public async Task<ServiceActionResult> GetPaginatedNotifications(BasePaginatedRequest request)
+    {
+        var dtoNotification = (await _notificationRepository.GetAllAsync()).ProjectTo<DtoPackage>(_mapper.ConfigurationProvider);
+        var paginatedList = PaginationHelper.BuildPaginatedResult(dtoNotification, request.PageSize, request.PageIndex);
+        return new ServiceActionResult()
+        {
+            IsSuccess = true,
+            Data = paginatedList
+        };
     }
 }

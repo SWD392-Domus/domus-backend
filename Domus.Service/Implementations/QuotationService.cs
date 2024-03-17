@@ -598,7 +598,7 @@ public class QuotationService : IQuotationService
 		
 		foreach (var requestProductDetail in request.ProductDetailQuotations)
 		{
-			if (!await _productDetailRepository.ExistsAsync(x => x.Id == requestProductDetail.ProductDetailId))
+			if (!await _productDetailRepository.ExistsAsync(x => x.Id == requestProductDetail.Id))
 				throw new ProductDetailNotFoundException();
 			var productDetailInQuotaionRevision = new ProductDetailQuotationRevision
 			{
@@ -607,7 +607,7 @@ public class QuotationService : IQuotationService
 				Quantity = Math.Max(requestProductDetail.Quantity, 1),
 				QuantityType = string.IsNullOrEmpty(requestProductDetail.QuantityType) ? "Unit" : requestProductDetail.QuantityType,
 				IsDeleted = false,
-				ProductDetailId = requestProductDetail.ProductDetailId,
+				ProductDetailId = requestProductDetail.Id,
 				QuotationRevision = newQuotationRevision
 			};
 			
