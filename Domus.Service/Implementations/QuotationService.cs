@@ -206,15 +206,16 @@ public class QuotationService : IQuotationService
 
 		quotation.QuotationRevisions.Add(quotationRevision);
 		await _quotationRepository.AddAsync(quotation);
-		var customerImage = (await _userRepository.GetAsync(x => !x.IsDeleted && x.Id == quotation.Customer.Id)).ProfileImage;
+		var customer = await _userRepository.GetAsync(x => !x.IsDeleted && x.Id == quotation.CustomerId) ??  throw new UserNotFoundException("Customer not found");
 		await _notificationRepository.AddAsync(new Notification()
 		{
 			RecipientId = NotificationHelper.ADMIN_ID,
-			Content = NotificationHelper.CreateNewQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
+			Content = NotificationHelper.CreateNewQuotationMessage((string.IsNullOrEmpty(customer.FullName) || customer.FullName.Equals("N/A") ? customer.Email! : customer.FullName), quotation.Id),
 			SentAt = DateTime.Now,
-			Image = customerImage,
+			Image = customer.ProfileImage ?? string.Empty,
 			RedirectString = $"staff/quotations/{quotation.Id}"
 		});
+
 		await _unitOfWork.CommitAsync();
 		return new ServiceActionResult(true);
     }
