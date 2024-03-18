@@ -652,4 +652,54 @@ public class QuotationService : IQuotationService
 
 	    return totalProductPrice + totalServicePrice;
     }
+
+    public async Task<ServiceActionResult> SearchStaffQuotations(SearchUsingGetRequest request, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userRepository.GetAsync(x => x.Id == userId) ?? throw new UserNotFoundException();
+	    var userRoles = await _userManager.GetRolesAsync(user);
+	    if (!userRoles.Contains(UserRoleConstants.STAFF))
+		    throw new Service.Exceptions.UnauthorizedAccessException();
+	    
+	    var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted && p.StaffId == user.Id))
+		    .OrderByDescending(p => p.CreatedAt)
+		    .ProjectTo<DtoQuotationWithoutProductsAndServices>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+	    
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    quotations = quotations 
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoQuotationWithoutProductsAndServices, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SortField, p);
+		    quotations = request.Descending
+			    ? quotations.OrderByDescending(orderExpr.Compile()).ToList()
+			    : quotations.OrderBy(orderExpr.Compile()).ToList();
+	    }
+		
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(quotations, request.PageSize, request.PageIndex);
+
+	    var paginatedQuotations = (ICollection<DtoQuotationWithoutProductsAndServices>)paginatedResult.Items!;
+	    var quotationList = new List<DtoQuotationWithoutProductsAndServices>();
+
+	    foreach (var quotation in paginatedQuotations)
+	    {
+		    var quotationRevisions = (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotation.Id))
+			    .ProjectTo<DtoQuotationRevisionWithPriceAndVersion>(_mapper.ConfigurationProvider);
+			
+		    quotation.TotalPrice = quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefault()?.TotalPrice ?? 0;
+		    quotationList.Add(quotation);
+	    }
+
+	    paginatedResult.Items = quotationList;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
+    }
 }

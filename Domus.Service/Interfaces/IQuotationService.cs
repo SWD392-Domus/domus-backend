@@ -25,4 +25,5 @@ public interface IQuotationService : IAutoRegisterable
     Task<ServiceActionResult> GetQuotationRevision(Guid quotationId, Guid revisionId);
     Task<ServiceActionResult> UpdateQuotationStatus(Guid quotationId, string status);
     Task<ServiceActionResult> SearchUserQuotations(SearchUsingGetRequest request, string getJwtToken);
+    Task<ServiceActionResult> SearchStaffQuotations(SearchUsingGetRequest request, string token);
 }
