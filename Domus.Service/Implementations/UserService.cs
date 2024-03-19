@@ -214,14 +214,16 @@ public class UserService : IUserService
 
     public async Task<ServiceActionResult> GetAllStaff()
     {
-		var staffList = new List<DtoDomusUser>();
-		foreach (var user in _userManager.Users.ToList())
-		{
-			if (await _userManager.IsInRoleAsync(user, UserRoleConstants.STAFF) && !await _userManager.IsInRoleAsync(user, UserRoleConstants.ADMIN))
-				staffList.Add(_mapper.Map<DtoDomusUser>(user));
-		}
+	    var users = (await (await _userRepository.FindAsync(u => !u.IsDeleted && u.EmailConfirmed))
+		    .ToListAsync())
+		    .Where(u =>
+		    {
+			    var roles = _userManager.GetRolesAsync(u).Result;
+			    return roles.Contains(UserRoleConstants.STAFF) &&
+			           !roles.Contains(UserRoleConstants.ADMIN);
+		    });
 
-		return new ServiceActionResult(true) { Data = staffList };
+		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoDomusUser>>(users) };
     }
 
     public async Task<ServiceActionResult> SearchUsersUsingGet(SearchUsingGetRequest request)

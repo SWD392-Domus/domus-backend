@@ -13,11 +13,13 @@ public class AdminService : IAdminService
 {
 	private readonly IContractRepository _contractRepository;
 	private readonly IQuotationRevisionRepository _quotationRevisionRepository;
+	private readonly IUserRepository _userRepository;
 
-	public AdminService(IContractRepository contractRepository, IQuotationRevisionRepository quotationRevisionRepository)
+	public AdminService(IContractRepository contractRepository, IQuotationRevisionRepository quotationRevisionRepository, IUserRepository userRepository)
 	{
 		_contractRepository = contractRepository;
 		_quotationRevisionRepository = quotationRevisionRepository;
+		_userRepository = userRepository;
 	}
 
     public async Task<ServiceActionResult> GetDashboardInfo(GetDashboardInfoRequest request)
@@ -47,6 +49,7 @@ public class AdminService : IAdminService
 			});
 		}
 
+		dashboardResponse.NewUsersCount = await (await _userRepository.FindAsync(u => !u.IsDeleted && u.EmailConfirmed)).CountAsync();
 		dashboardResponse.TotalRevenue = dashboardResponse.RevenueByMonths.Select(rbm => rbm.Revenue).Sum();
 
         return new ServiceActionResult(true) { Data = dashboardResponse };
