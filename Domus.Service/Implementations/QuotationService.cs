@@ -107,28 +107,29 @@ public class QuotationService : IQuotationService
 
 		if (request.IsCustomerMessage)
 		{
-			_notificationRepository.AddAsync(new Notification()
+			await _notificationRepository.AddAsync(new Notification()
 				{
 					RecipientId = quotation.StaffId,
-					Content = NotificationHelper.CreateNegotiationMessageForStaff((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotationId),
+					Content = NotificationHelper.CreateNegotiationMessageForStaff((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email! : quotation.Customer.FullName),quotationId),
 					SentAt = DateTime.Now,
-					Image = quotation.Customer.ProfileImage,
+					Image = quotation.Customer.ProfileImage ?? string.Empty,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
 			);
 		}
 		else
 		{
-			_notificationRepository.AddAsync(new Notification()
+			await _notificationRepository.AddAsync(new Notification()
 				{
 					RecipientId = quotation.CustomerId,
-					Content = NotificationHelper.CreateNegotiationMessageForCustomer((quotation.Staff.FullName.Equals("N/A") ? quotation.Staff.Email : quotation.Staff.FullName),quotationId),
+					Content = NotificationHelper.CreateNegotiationMessageForCustomer((quotation.Staff.FullName.Equals("N/A") ? quotation.Staff.Email! : quotation.Staff.FullName),quotationId),
 					SentAt = DateTime.Now,
-					Image = quotation.Staff.ProfileImage,
+					Image = quotation.Staff.ProfileImage ?? string.Empty,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
 			);
 		}
+
 		await _unitOfWork.CommitAsync();
 		return new ServiceActionResult(true);
      }
