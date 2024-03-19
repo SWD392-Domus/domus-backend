@@ -703,4 +703,118 @@ public class QuotationService : IQuotationService
 
 	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
+
+	private async Task<ServiceActionResult> CreateQuotationGeneral(CreateQuotationRequest request, string staffId, string customerId, bool createdByStaff)
+	{
+		var quotation = new Quotation
+		{
+			CustomerId = customerId,
+			StaffId = staffId,
+			CreatedBy = createdByStaff ? staffId: customerId,
+			CreatedAt = DateTime.Now,
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
+			Status = QuotationStatusConstants.Requested,
+			IsDeleted = false,
+			PackageId = request.PackageId
+		};
+
+		var quotationRevision = new QuotationRevision
+		{
+			Quotation = quotation,
+			Version = 0,
+			CreatedAt = DateTime.Now
+		};
+
+		foreach (var productDetail in request.ProductDetails)
+		{
+			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetail.Id);
+			if (productDetailEntity == null)
+				throw new ProductDetailNotFoundException();
+
+
+			var productDetailQuotationRevision = new ProductDetailQuotationRevision
+			{
+				ProductDetailId = productDetail.Id,
+				QuotationRevision = quotationRevision,
+				Quantity = Math.Max(productDetail.Quantity, 1),
+				Price = productDetail.Price,
+				MonetaryUnit = "USD",
+				QuantityType = "Unit",
+			};
+
+			quotationRevision.ProductDetailQuotationRevisions.Add(productDetailQuotationRevision);
+			quotationRevision.TotalPrice += productDetailQuotationRevision.Price * productDetailQuotationRevision.Quantity;
+		}
+
+		foreach (var service in request.Services)
+		{
+			var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == service.ServiceId);
+			if (serviceEntity == null)
+				throw new ServiceNotFoundException();
+
+			var serviceQuotation = new ServiceQuotation
+			{
+				ServiceId = service.ServiceId,
+				QuotationId = quotation.Id,
+				Price = service.Price
+			};
+
+			quotation.ServiceQuotations.Add(serviceQuotation);
+			quotationRevision.TotalPrice += service.Price;
+		}
+
+		quotation.QuotationRevisions.Add(quotationRevision);
+		await _quotationRepository.AddAsync(quotation);
+		var customer = await _userRepository.GetAsync(x => !x.IsDeleted && x.Id == quotation.CustomerId) ??  throw new UserNotFoundException("Customer not found");
+		await _notificationRepository.AddAsync(new Notification()
+		{
+			RecipientId = NotificationHelper.ADMIN_ID,
+			Content = NotificationHelper.CreateNewQuotationMessage((string.IsNullOrEmpty(customer.FullName) || customer.FullName.Equals("N/A") ? customer.Email! : customer.FullName), quotation.Id),
+			SentAt = DateTime.Now,
+			Image = customer.ProfileImage ?? string.Empty,
+			RedirectString = $"staff/quotations/{quotation.Id}"
+		});
+
+		await _unitOfWork.CommitAsync();
+		// return await GetQuotationById(quotation.Id);
+		return new ServiceActionResult(true);
+	}
+
+    public async Task<ServiceActionResult> CreateQuotationByStaff(CreateQuotationRequest request, string customerId, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    
+	    if (request.PackageId != default && !await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+		    throw new PackageNotFoundException();
+	    
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
+	    var creator = await _userRepository.GetAsync(u => !u.IsDeleted && u.Id == userId) ?? throw new UserNotFoundException("Creator not found");
+		var creatorRoles = await _userManager.GetRolesAsync(creator);
+		var createdByStaff = creatorRoles.Contains(UserRoleConstants.STAFF);
+		if (!createdByStaff)
+			throw new Service.Exceptions.UnauthorizedAccessException("You are not authorized to create quotation");
+
+		return await CreateQuotationGeneral(request, creator.Id, customerId, createdByStaff);
+    }
+
+    public async Task<ServiceActionResult> CreateQuotationByCustomer(CreateQuotationRequest request, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    
+	    if (request.PackageId != default && !await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+		    throw new PackageNotFoundException();
+	    
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
+	    var creator = await _userRepository.GetAsync(u => !u.IsDeleted && u.Id == userId) ?? throw new UserNotFoundException("Creator not found");
+		var creatorRoles = await _userManager.GetRolesAsync(creator);
+		var createdByStaff = creatorRoles.Contains(UserRoleConstants.STAFF);
+		if (createdByStaff)
+			throw new Service.Exceptions.UnauthorizedAccessException("You are not authorized to create quotation");
+
+		return await CreateQuotationGeneral(request, "c713aacc-3582-4598-8670-22590d837179", creator.Id, createdByStaff);
+    }
 }

@@ -60,6 +60,22 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[HttpPost("/api/staff/quotations")]
+	public async Task<IActionResult> CreateQuotationByStaff(CreateQuotationRequest request, string customerId)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.CreateQuotationByStaff(request, customerId, GetJwtToken()).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpPost("/api/customer/quotations")]
+	public async Task<IActionResult> CreateQuotationByCustomer(CreateQuotationRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.CreateQuotationByCustomer(request, GetJwtToken()).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 	[HttpPut("{id:guid}")]
 	public async Task<IActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
 	{
