@@ -151,12 +151,10 @@ public class ContractService : IContractService
         contract.Signature = request.Signature ?? contract.Signature;
         contract.ClientId = request.ClientId;
         contract.ContractorId = request.ContractorId;
+
         await _contractRepository.UpdateAsync(contract);
         await _unitOfWork.CommitAsync();
 
-        
-
-        
         return new ServiceActionResult(true);
     }
 
@@ -169,8 +167,9 @@ public class ContractService : IContractService
         await _notificationRepository.AddAsync(new Notification()
         {
             RecipientId = contract.ClientId,
-            Image = contract.Contractor.ProfileImage,
-            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, (contract.Contractor.FullName.Equals("N/A")) ? contract.Contractor.Email : contract.Contractor.FullName),
+            Image = contract.Contractor.ProfileImage ?? string.Empty,
+            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, (contract.Contractor.FullName.Equals("N/A")) ? contract.Contractor.Email! : contract.Contractor.FullName),
+			SentAt = DateTime.Now.AddHours(7)
         });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
