@@ -119,9 +119,10 @@ public class AuthService : IAuthService
 	    await _otpRepository.UpdateAsync(otp);
 	    await _userRepository.UpdateAsync(user);
 	    await _unitOfWork.CommitAsync();
-
+	    
+	    var returnedUser = _mapper.Map<DtoDomusUser>(user);
 	    var tokenResponse = await GenerateAuthResponseAsync(user);
-	    return new ServiceActionResult(true) { Data = tokenResponse };
+	    return new ServiceActionResult(true) { Data = new { userInfo = returnedUser, token = tokenResponse } };
     }
 
     public async Task<ServiceActionResult> RegisterAsync(RegisterRequest request)
