@@ -180,7 +180,7 @@ public class QuotationService : IQuotationService
 				QuotationRevision = quotationRevision,
 				Quantity = Math.Max(productDetail.Quantity, 1),
 				Price = productDetail.Price,
-				MonetaryUnit = "USD",
+				MonetaryUnit = "VND",
 				QuantityType = "Unit",
 			};
 
@@ -605,7 +605,7 @@ public class QuotationService : IQuotationService
 			var productDetailInQuotaionRevision = new ProductDetailQuotationRevision
 			{
 				Price = requestProductDetail.Price,
-				MonetaryUnit = string.IsNullOrEmpty(requestProductDetail.MonetaryUnit) ? "USD" : requestProductDetail.MonetaryUnit,
+				MonetaryUnit = string.IsNullOrEmpty(requestProductDetail.MonetaryUnit) ? "VND" : requestProductDetail.MonetaryUnit,
 				Quantity = Math.Max(requestProductDetail.Quantity, 1),
 				QuantityType = string.IsNullOrEmpty(requestProductDetail.QuantityType) ? "Unit" : requestProductDetail.QuantityType,
 				IsDeleted = false,
@@ -738,7 +738,7 @@ public class QuotationService : IQuotationService
 				QuotationRevision = quotationRevision,
 				Quantity = Math.Max(productDetail.Quantity, 1),
 				Price = productDetail.Price,
-				MonetaryUnit = "USD",
+				MonetaryUnit = "VND",
 				QuantityType = "Unit",
 			};
 
