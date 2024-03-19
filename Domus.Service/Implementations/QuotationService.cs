@@ -154,7 +154,7 @@ public class QuotationService : IQuotationService
 			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
 			CreatedBy = userId,
 			CreatedAt = DateTime.Now.AddHours(7),
-			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddHours(7).AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
 			PackageId = request.PackageId
