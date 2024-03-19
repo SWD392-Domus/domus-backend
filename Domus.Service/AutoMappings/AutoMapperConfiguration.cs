@@ -215,7 +215,7 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLogWithoutMessages>();
 		
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
-			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));
+			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now.AddHours(7)));
 
 		mapper.CreateMap<UpdateQuotationRequest, Quotation>()
 			.ForMember(dest => dest.CustomerId,

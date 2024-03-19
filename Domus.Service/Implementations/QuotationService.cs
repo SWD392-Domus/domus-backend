@@ -92,7 +92,7 @@ public class QuotationService : IQuotationService
 			quotationNegotiationLog = new QuotationNegotiationLog
 			{
 				QuotationId = quotationId,
-				StartAt = DateTime.Now,
+				StartAt = DateTime.Now.AddHours(7),
 				IsClosed = false
 			};
 
@@ -111,7 +111,7 @@ public class QuotationService : IQuotationService
 				{
 					RecipientId = quotation.StaffId,
 					Content = NotificationHelper.CreateNegotiationMessageForStaff((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email! : quotation.Customer.FullName),quotationId),
-					SentAt = DateTime.Now,
+					SentAt = DateTime.Now.AddHours(7),
 					Image = quotation.Customer.ProfileImage ?? string.Empty,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
@@ -123,7 +123,7 @@ public class QuotationService : IQuotationService
 				{
 					RecipientId = quotation.CustomerId,
 					Content = NotificationHelper.CreateNegotiationMessageForCustomer((quotation.Staff.FullName.Equals("N/A") ? quotation.Staff.Email! : quotation.Staff.FullName),quotationId),
-					SentAt = DateTime.Now,
+					SentAt = DateTime.Now.AddHours(7),
 					Image = quotation.Staff.ProfileImage ?? string.Empty,
 					RedirectString = $"customer/settings/quotations/{quotationId}"
 				}
@@ -153,7 +153,7 @@ public class QuotationService : IQuotationService
 			CustomerId = createdByStaff ? "82542982-e958-4817-9a69-2fb8382df1f6" : userId,
 			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
 			CreatedBy = userId,
-			CreatedAt = DateTime.Now,
+			CreatedAt = DateTime.Now.AddHours(7),
 			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
@@ -164,7 +164,7 @@ public class QuotationService : IQuotationService
 		{
 			Quotation = quotation,
 			Version = 0,
-			CreatedAt = DateTime.Now
+			CreatedAt = DateTime.Now.AddHours(7)
 		};
 
 		foreach (var productDetail in request.ProductDetails)

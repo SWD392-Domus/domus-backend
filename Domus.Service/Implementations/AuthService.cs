@@ -153,7 +153,7 @@ public class AuthService : IAuthService
 		{
 			UserId = retrievedUser.Id,
 			Used = false,
-			CreatedAt= DateTime.Now,
+			CreatedAt= DateTime.Now.AddHours(7),
 			Code = RandomPasswordHelper.GenerateRandomPassword(10)
 		};
 		await _otpRepository.AddAsync(otp);

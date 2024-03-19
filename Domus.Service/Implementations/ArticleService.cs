@@ -63,8 +63,8 @@ public class ArticleService : IArticleService
 
 		var article = _mapper.Map<Article>(request);
 		article.CreatedBy = creator.Id;
-		article.CreatedAt = DateTime.Now;
-		article.LastUpdatedAt = DateTime.Now;
+		article.CreatedAt = DateTime.Now.AddHours(7);
+		article.LastUpdatedAt = DateTime.Now.AddHours(7);
 		await _articleRepository.AddAsync(article);
 		await _unitOfWork.CommitAsync();
 
@@ -78,7 +78,7 @@ public class ArticleService : IArticleService
 			throw new ArticleNotFoundException();
 
 		article.IsDeleted = true;
-		article.LastUpdatedAt = DateTime.Now;
+		article.LastUpdatedAt = DateTime.Now.AddHours(7);
 		await _articleRepository.UpdateAsync(article);
 		await _unitOfWork.CommitAsync();
 

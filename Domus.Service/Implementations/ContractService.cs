@@ -117,7 +117,7 @@ public class ContractService : IContractService
         
         var contract = _mapper.Map<Contract>(request);
         contract.Status = ContractStatus.SENT;
-        contract.SignedAt = request.SignedAt ?? DateTime.Now;
+        contract.SignedAt = request.SignedAt ?? DateTime.Now.AddHours(7);
         
         await _contractRepository.AddAsync(contract);
         await _unitOfWork.CommitAsync();
@@ -127,7 +127,7 @@ public class ContractService : IContractService
         {
             RecipientId = request.ClientId,
             Content = NotificationHelper.CreateContractMessage(contractorUser.FullName, newContract.Id, request.QuotationRevisionId),
-            SentAt = DateTime.Now,
+            SentAt = DateTime.Now.AddHours(7),
             RedirectString = $"customer/settings/contracts/{newContract.Id}",
             Image = contract.Contractor.ProfileImage
         });
@@ -321,7 +321,7 @@ public class ContractService : IContractService
         {
             RecipientId = contract.ContractorId,
             Content = NotificationHelper.CreateSignedContractMessage(contract.Client.FullName,contract.ClientId,contract.Id),
-            SentAt = DateTime.Now,
+            SentAt = DateTime.Now.AddHours(7),
             RedirectString = $"staff/contracts/{contractId}",
             Image = contract.Client.ProfileImage
         });
