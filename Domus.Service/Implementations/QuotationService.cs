@@ -136,6 +136,8 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request, string token)
     {
+		if (request.ProductDetails.Select(pd => pd.Quantity).Sum() < 4)
+			throw new BusinessRuleException("Package must have at least 4 products");
 	    var isValidToken = _jwtService.IsValidToken(token);
 	    if (!isValidToken)
 		    throw new InvalidTokenException();
@@ -548,6 +550,8 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
     {
+		if (request.ProductDetailQuotations.Select(pd => pd.Quantity).Sum() < 4)
+			throw new BusinessRuleException("Package must have at least 4 products");
 	    if (request.CustomerId != default && !await _userRepository.ExistsAsync(u => u.Id == request.CustomerId))
 		    throw new UserNotFoundException("Customer not found");
 	    if (request.StaffId != default && !await _userRepository.ExistsAsync(u => u.Id == request.StaffId))
