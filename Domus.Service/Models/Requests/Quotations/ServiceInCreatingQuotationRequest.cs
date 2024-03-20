@@ -8,6 +8,6 @@ public class ServiceInCreatingQuotationRequest
 	[RequiredGuid]
 	public Guid ServiceId { get; set; }
 
-	[Range(0, double.MaxValue)]
+	[Range(0f, 999999999999f)]
 	public double Price { get; set; }
 }

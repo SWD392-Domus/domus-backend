@@ -8,9 +8,9 @@ public class ProductDetailInCreatingQuotationRequest
     [RequiredGuid]
     public Guid Id { get; set; }
 
-	[Range(0, int.MaxValue)]
+	[Range(1f, 999f)]
     public int Quantity { get; set; }
 
-    [Range(0, double.MaxValue)]
+    [Range(0f, 999999999999f)]
     public double Price { get; set; }
 }
