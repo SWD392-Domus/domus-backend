@@ -153,7 +153,7 @@ public class QuotationService : IQuotationService
 		var quotation = new Quotation
 		{
 			CustomerId = createdByStaff ? "82542982-e958-4817-9a69-2fb8382df1f6" : userId,
-			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
+			StaffId = createdByStaff ? userId : "ba33e296-1ffa-402a-9495-fc70bb26e091",
 			CreatedBy = userId,
 			CreatedAt = DateTime.Now.AddHours(7),
 			ExpireAt = request.ExpireAt ?? DateTime.Now.AddHours(7).AddDays(30),
@@ -819,6 +819,6 @@ public class QuotationService : IQuotationService
 		if (createdByStaff)
 			throw new Service.Exceptions.UnauthorizedAccessException("You are not authorized to create quotation");
 
-		return await CreateQuotationGeneral(request, "c713aacc-3582-4598-8670-22590d837179", creator.Id, createdByStaff);
+		return await CreateQuotationGeneral(request, "ba33e296-1ffa-402a-9495-fc70bb26e091", creator.Id, createdByStaff);
     }
 }
