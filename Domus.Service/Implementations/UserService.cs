@@ -53,7 +53,7 @@ public class UserService : IUserService
 			throw new UserAlreadyExistsException("The username is already in use");
 		if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
 			throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
-		if (!string.IsNullOrEmpty(request.Role) && await _roleManager.RoleExistsAsync(request.Role))
+		if (!string.IsNullOrEmpty(request.Role) && !await _roleManager.RoleExistsAsync(request.Role))
 			throw new RoleNotFoundException();
 
 	    var user = _mapper.Map<DomusUser>(request);
