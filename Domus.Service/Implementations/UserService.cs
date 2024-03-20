@@ -85,11 +85,12 @@ public class UserService : IUserService
 		    throw new InvalidTokenException();
 
 	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
-	    var user = await _userManager.Users.Where(u => u.Id == userId)
-		    .ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider)
-		    .FirstOrDefaultAsync() ?? throw new UserNotFoundException();
+		var user = await _userRepository.GetAsync(u => u.Id == userId && !u.IsDeleted) ?? throw new UserNotFoundException();
+		var userRoles = await _userManager.GetRolesAsync(user);
+		var userDto = _mapper.Map<DtoDomusUserWithRole>(user);
+		userDto.Role = userRoles;
 
-	    return new ServiceActionResult(true) { Data = user };
+	    return new ServiceActionResult(true) { Data = userDto };
     }
 
     public async Task<ServiceActionResult> GetAllUsers()
