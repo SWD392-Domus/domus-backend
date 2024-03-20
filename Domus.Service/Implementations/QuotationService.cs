@@ -214,7 +214,7 @@ public class QuotationService : IQuotationService
 		{
 			RecipientId = NotificationHelper.ADMIN_ID,
 			Content = NotificationHelper.CreateNewQuotationMessage((string.IsNullOrEmpty(customer.FullName) || customer.FullName.Equals("N/A") ? customer.Email! : customer.FullName), quotation.Id),
-			SentAt = DateTime.Now,
+			SentAt = DateTime.Now.AddHours(7),
 			Image = customer.ProfileImage ?? string.Empty,
 			RedirectString = $"staff/quotations/{quotation.Id}"
 		});
@@ -251,7 +251,7 @@ public class QuotationService : IQuotationService
 			    RecipientId = x.CustomerId,
 			    Image = x.Staff.ProfileImage,
 			    Content = NotificationHelper.CreateDeletedQuotation(x.Id, (x.Staff.FullName.Equals("N/A")? x.Staff.Email : x.Staff.FullName)),
-			    SentAt = DateTime.Now,
+			    SentAt = DateTime.Now.AddHours(7)
 		    });
 	    }
 	    await _quotationRepository.UpdateManyAsync(quotations);
@@ -570,7 +570,7 @@ public class QuotationService : IQuotationService
 			Quotation = quotation,
 			Version = quotation.QuotationRevisions.Count,
 			IsDeleted = false,
-			CreatedAt = DateTime.Now
+			CreatedAt = DateTime.Now.AddHours(7)
 		};
 		
 		foreach (var requestService in request.Services)
@@ -622,13 +622,13 @@ public class QuotationService : IQuotationService
 		}
 		
 		quotation.QuotationRevisions.Add(newQuotationRevision);
-		quotation.LastUpdatedAt = DateTime.Now;
+		quotation.LastUpdatedAt = DateTime.Now.AddHours(7);
 		await _quotationRepository.UpdateAsync(quotation);
 		await _notificationRepository.AddAsync(new Notification()
 		{
 			RecipientId = quotation.StaffId,
 			Content = NotificationHelper.CreateUpdatedQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
-			SentAt = DateTime.Now,
+			SentAt = DateTime.Now.AddHours(7),
 			Image = quotation.Customer.ProfileImage,
 			RedirectString = $"staff/quotations/${quotation.Id}"
 		});
@@ -717,8 +717,8 @@ public class QuotationService : IQuotationService
 			CustomerId = customerId,
 			StaffId = staffId,
 			CreatedBy = createdByStaff ? staffId: customerId,
-			CreatedAt = DateTime.Now,
-			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
+			CreatedAt = DateTime.Now.AddHours(7),
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddHours(7).AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
 			PackageId = request.PackageId
@@ -728,7 +728,7 @@ public class QuotationService : IQuotationService
 		{
 			Quotation = quotation,
 			Version = 0,
-			CreatedAt = DateTime.Now
+			CreatedAt = DateTime.Now.AddHours(7)
 		};
 
 		foreach (var productDetail in request.ProductDetails)
@@ -776,7 +776,7 @@ public class QuotationService : IQuotationService
 		{
 			RecipientId = NotificationHelper.ADMIN_ID,
 			Content = NotificationHelper.CreateNewQuotationMessage((string.IsNullOrEmpty(customer.FullName) || customer.FullName.Equals("N/A") ? customer.Email! : customer.FullName), quotation.Id),
-			SentAt = DateTime.Now,
+			SentAt = DateTime.Now.AddHours(7),
 			Image = customer.ProfileImage ?? string.Empty,
 			RedirectString = $"staff/quotations/{quotation.Id}"
 		});
