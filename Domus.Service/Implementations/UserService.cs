@@ -124,8 +124,11 @@ public class UserService : IUserService
     public async Task<ServiceActionResult> GetUser(string userId)
     {
 		var user = await _userRepository.GetAsync(u => u.Id == userId && !u.IsDeleted) ?? throw new UserNotFoundException();
+		var userDto = _mapper.Map<DtoDomusUserWithRole>(user);
+		var userRols = await _userManager.GetRolesAsync(user);
+		userDto.Role = userRols;
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(user) };
+		return new ServiceActionResult(true) { Data = userDto };
     }
 
     public async Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId)
