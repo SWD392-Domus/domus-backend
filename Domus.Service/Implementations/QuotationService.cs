@@ -347,7 +347,7 @@ public class QuotationService : IQuotationService
 
 	    quotation.ProductDetailQuotations = _mapper.Map<ICollection<DtoProductDetailQuotationRevision>>(products);
 
-	    quotation.TotalPrice = revision.TotalPrice + quotation.ServiceQuotations.Sum(sq => sq.Price);
+	    quotation.TotalPrice = revision.TotalPrice;
 
 	    return new ServiceActionResult(true) { Data = quotation };
     }
