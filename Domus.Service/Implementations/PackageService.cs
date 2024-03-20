@@ -89,6 +89,8 @@ public class PackageService : IPackageService
 
     public async Task<ServiceActionResult> CreatePackage(PackageRequest packageRequest)
     {
+			if (packageRequest.ProductDetailIds.Count < 4)
+				throw new BusinessRuleException("Package must have at least 4 product");
             var package = _mapper.Map<Package>(packageRequest);
             package.Services =  (await _serviceService.GetServices(packageRequest.ServiceIds)).ToList();
             await _packageRepository.AddAsync(package);
@@ -119,6 +121,8 @@ public class PackageService : IPackageService
 
     public async Task<ServiceActionResult> UpdatePackage(PackageRequest request, Guid packageId)
     {
+		if (request.ProductDetailIds.Count < 4)
+			throw new BusinessRuleException("Package must have at least 4 product");
         var package = (await _packageRepository.FindAsync(pk => pk.Id == packageId && pk.IsDeleted == false))
                       .Include(pk => pk.PackageProductDetails)
                       .Include(pk => pk.PackageImages)
