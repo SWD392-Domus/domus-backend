@@ -53,10 +53,11 @@ public class UserService : IUserService
 			throw new UserAlreadyExistsException("The username is already in use");
 		if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
 			throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
-		if (!string.IsNullOrEmpty(request.Role) && !await _roleManager.RoleExistsAsync(request.Role.ToUpper()))
+		if (!string.IsNullOrEmpty(request.Role) && !await _roleManager.RoleExistsAsync(request.Role))
 			throw new RoleNotFoundException();
 
 	    var user = _mapper.Map<DomusUser>(request);
+		user.EmailConfirmed = true;
 
 	    var result = await _userManager.CreateAsync(user, request.Password);
 		if (string.IsNullOrEmpty(request.Role))
@@ -64,7 +65,7 @@ public class UserService : IUserService
 			await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
 			await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
 		}
-		else if (request.Role == UserRoleConstants.STAFF)
+		else if (string.Equals(request.Role, UserRoleConstants.STAFF, StringComparison.OrdinalIgnoreCase))
 		{
 			await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
 			await EnsureRoleExistsAsync(UserRoleConstants.STAFF);
@@ -73,8 +74,8 @@ public class UserService : IUserService
 		}
 		else 
 		{
-			await EnsureRoleExistsAsync(request.Role.ToUpper());
-			await _userManager.AddToRoleAsync(user, request.Role.ToUpper());
+			await EnsureRoleExistsAsync(request.Role);
+			await _userManager.AddToRoleAsync(user, request.Role);
 		}
 
 	    if (result.Succeeded)
