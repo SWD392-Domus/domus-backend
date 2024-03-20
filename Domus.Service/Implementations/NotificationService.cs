@@ -111,7 +111,7 @@ public class NotificationService : INotificationService
         if (!isValidToken)
             throw new InvalidTokenException();
         var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
-        var notifications = await (await _notificationRepository.FindAsync(x => x.RecipientId == userId))
+        var notifications = await (await _notificationRepository.FindAsync(x => x.RecipientId.Equals(userId)))
             .ProjectTo<DtoNotification>(_mapper.ConfigurationProvider)
             .ToListAsync();
         var paginatedList = PaginationHelper.BuildPaginatedResult(notifications.AsQueryable(), request.PageSize, request.PageIndex);

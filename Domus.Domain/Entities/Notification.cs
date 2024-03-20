@@ -9,8 +9,8 @@ public class Notification : BaseEntity<Guid>
     public string Content { get; set; }
     public DateTime SentAt { get; set; }
     public NotificationStatus Status { get; set; }
-    public string RedirectString { get; set; }
+    public string? RedirectString { get; set; }
 
     public string Image { get; set; }
-    public DomusUser Recipient { get; set; } = null!;
+    public DomusUser Recipient { get; set; }
 }
