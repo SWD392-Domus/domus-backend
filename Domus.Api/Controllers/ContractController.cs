@@ -1,14 +1,11 @@
-﻿using System.Diagnostics.Contracts;
-using Domus.Api.Controllers.Base;
+﻿using Domus.Api.Controllers.Base;
 using Domus.Service.Constants;
 using Domus.Service.Interfaces;
-using Domus.Service.Models.Common;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Contract = Domus.Domain.Entities.Contract;
 
 namespace Domus.Api.Controllers;
 
@@ -130,12 +127,20 @@ public class ContractController : BaseApiController
         return await ExecuteServiceLogic( async () => await _contractService.GetUsersContract(GetJwtToken())
             ).ConfigureAwait(false);
     }
+
     [HttpGet("my-contract/search")]
-   
     public async Task<IActionResult> SearchMyContractsUsingGetRequest([FromQuery] SearchUsingGetRequest request)
     {
         return await ExecuteServiceLogic(
             async () => await _contractService.SearchMyContractsUsingGet(request, GetJwtToken()).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+
+    [HttpGet("cancel/{contractId:guid}")]
+    public async Task<IActionResult> CancelContract(Guid contractId)
+    {
+        return await ExecuteServiceLogic(
+            async () => await _contractService.CancelContract(contractId).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 }

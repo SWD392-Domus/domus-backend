@@ -10,14 +10,11 @@ using Domus.Service.Enums;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
-using Domus.Service.Models.Common;
 using Domus.Service.Models.Email;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using UnauthorizedAccessException = Domus.Service.Exceptions.UnauthorizedAccessException;
 
@@ -402,5 +399,16 @@ public class ContractService : IContractService
         var contractorRoles = await _userManager.GetRolesAsync(contractorUser);
         if (!contractorRoles.Contains(UserRoleConstants.STAFF))
             throw new UnauthorizedAccessException($"Unauthorized ContractorId: {request.ContractorId}");
+    }
+
+    public async Task<ServiceActionResult> CancelContract(Guid contractId)
+    {
+		var contract = await _contractRepository.GetAsync(x => x.Id == contractId && !x.IsDeleted) ?? throw new Exception($"Not found contract: {contractId}");
+		contract.Status = ContractStatus.CANCELED;
+
+		await _contractRepository.UpdateAsync(contract);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
     }
 }
