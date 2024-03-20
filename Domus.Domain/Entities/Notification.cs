@@ -11,6 +11,6 @@ public class Notification : BaseEntity<Guid>
     public NotificationStatus Status { get; set; }
     public string? RedirectString { get; set; }
 
-    public string Image { get; set; }
+    public string? Image { get; set; }
     public DomusUser Recipient { get; set; }
 }
