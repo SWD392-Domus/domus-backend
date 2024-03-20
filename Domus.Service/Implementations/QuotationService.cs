@@ -710,6 +710,8 @@ public class QuotationService : IQuotationService
 
 	private async Task<ServiceActionResult> CreateQuotationGeneral(CreateQuotationRequest request, string staffId, string customerId, bool createdByStaff)
 	{
+		if (request.ProductDetails.Select(pd => pd.Quantity).Sum() < 4)
+			throw new BusinessRuleException("Package must have at least 4 products");
 		var quotation = new Quotation
 		{
 			CustomerId = customerId,
