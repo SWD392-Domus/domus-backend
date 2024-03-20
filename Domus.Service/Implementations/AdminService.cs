@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Domus.DAL.Interfaces;
+﻿using Domus.DAL.Interfaces;
 using Domus.Service.Enums;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
@@ -13,13 +12,15 @@ public class AdminService : IAdminService
 {
 	private readonly IContractRepository _contractRepository;
 	private readonly IQuotationRevisionRepository _quotationRevisionRepository;
+	private readonly IQuotationRepository _quotationRepository;
 	private readonly IUserRepository _userRepository;
 
-	public AdminService(IContractRepository contractRepository, IQuotationRevisionRepository quotationRevisionRepository, IUserRepository userRepository)
+	public AdminService(IContractRepository contractRepository, IQuotationRevisionRepository quotationRevisionRepository, IUserRepository userRepository, IQuotationRepository quotationRepository)
 	{
 		_contractRepository = contractRepository;
 		_quotationRevisionRepository = quotationRevisionRepository;
 		_userRepository = userRepository;
+		_quotationRepository = quotationRepository;
 	}
 
     public async Task<ServiceActionResult> GetDashboardInfo(GetDashboardInfoRequest request)
@@ -49,6 +50,8 @@ public class AdminService : IAdminService
 			});
 		}
 
+		dashboardResponse.ContractsCount = contracts.Count;
+		dashboardResponse.QuotationsCount = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.CreatedAt.Year == request.Year)).CountAsync();
 		dashboardResponse.NewUsersCount = await (await _userRepository.FindAsync(u => !u.IsDeleted && u.EmailConfirmed)).CountAsync();
 		dashboardResponse.TotalRevenue = dashboardResponse.RevenueByMonths.Select(rbm => rbm.Revenue).Sum();
 
