@@ -13,4 +13,11 @@ public static class RandomPasswordHelper
 			.ToArray()
 			.Append(sepecialChars[_random.Next(sepecialChars.Length)]).ToArray());
 	}
+	public static string GenerateRandomDigitPassword(int length)
+	{
+		const string digits = "0123456789";
+		return new string(Enumerable.Repeat(digits, length)
+			.Select(s => s[_random.Next(s.Length)])
+			.ToArray());
+	}
 }
