@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -10,6 +11,7 @@ using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Domus.Service.Models.Requests.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -51,12 +53,31 @@ public class UserService : IUserService
 			throw new UserAlreadyExistsException("The username is already in use");
 		if (!Regex.IsMatch(request.Password, PasswordConstants.PasswordPattern))
 			throw new PasswordTooWeakException(PasswordConstants.PasswordPatternErrorMessage);
+		if (!string.IsNullOrEmpty(request.Role) && !await _roleManager.RoleExistsAsync(request.Role))
+			throw new RoleNotFoundException();
 
 	    var user = _mapper.Map<DomusUser>(request);
+		user.EmailConfirmed = true;
 
 	    var result = await _userManager.CreateAsync(user, request.Password);
-	    await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
-	    await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
+		if (string.IsNullOrEmpty(request.Role))
+		{
+			await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
+			await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
+		}
+		else if (string.Equals(request.Role, UserRoleConstants.STAFF, StringComparison.OrdinalIgnoreCase))
+		{
+			await EnsureRoleExistsAsync(UserRoleConstants.CLIENT);
+			await EnsureRoleExistsAsync(UserRoleConstants.STAFF);
+			await _userManager.AddToRoleAsync(user, UserRoleConstants.CLIENT);
+			await _userManager.AddToRoleAsync(user, UserRoleConstants.STAFF);
+		}
+		else 
+		{
+			await EnsureRoleExistsAsync(request.Role);
+			await _userManager.AddToRoleAsync(user, request.Role);
+		}
+
 	    if (result.Succeeded)
 	    {
 		    var returnedUser = await _userRepository.GetAsync(u => u.Email == request.Email);
@@ -83,20 +104,30 @@ public class UserService : IUserService
 		    throw new InvalidTokenException();
 
 	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
-	    var user = await _userManager.Users.Where(u => u.Id == userId)
-		    .ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider)
-		    .FirstOrDefaultAsync() ?? throw new UserNotFoundException();
+		var user = await _userRepository.GetAsync(u => u.Id == userId && !u.IsDeleted) ?? throw new UserNotFoundException();
+		var userRoles = await _userManager.GetRolesAsync(user);
+		var userDto = _mapper.Map<DtoDomusUserWithRole>(user);
+		userDto.Role = userRoles;
 
-	    return new ServiceActionResult(true) { Data = user };
+	    return new ServiceActionResult(true) { Data = userDto };
     }
 
     public async Task<ServiceActionResult> GetAllUsers()
     {
-		var users = (await _userRepository.GetAllAsync())
-			.Where(u => !u.IsDeleted)
-			.ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider);
+	    // var clientUser = await _userRepository.GetAsync(x => x.Id.Equals(request.ClientId)&& !x.IsDeleted) ??
+	    //                  throw new Exception($"Not found Client: {request.ClientId}");
+	    // var clientRoles = await _userManager.GetRolesAsync(clientUser);
+	    var users = await (await _userRepository.FindAsync(u => !u.IsDeleted)).ToListAsync();
+	    var dtoList = new List<DtoDomusUserWithRole>();
+		foreach (var user in users)
+		{
+			var userRole = await _userManager.GetRolesAsync(user);
+			var x = _mapper.Map<DtoDomusUserWithRole>(user);
+			x.Role = userRole;
+			dtoList.Add(x);
+		}
 
-		return new ServiceActionResult(true) { Data = users };
+		return new ServiceActionResult(true) { Data = dtoList };
     }
 
     public async Task<ServiceActionResult> GetPaginatedUsers(BasePaginatedRequest request)
@@ -112,8 +143,11 @@ public class UserService : IUserService
     public async Task<ServiceActionResult> GetUser(string userId)
     {
 		var user = await _userRepository.GetAsync(u => u.Id == userId && !u.IsDeleted) ?? throw new UserNotFoundException();
+		var userDto = _mapper.Map<DtoDomusUserWithRole>(user);
+		var userRols = await _userManager.GetRolesAsync(user);
+		userDto.Role = userRols;
 
-		return new ServiceActionResult(true) { Data = _mapper.Map<DtoDomusUser>(user) };
+		return new ServiceActionResult(true) { Data = userDto };
     }
 
     public async Task<ServiceActionResult> UpdateUser(UpdateUserRequest request, string userId)
@@ -133,7 +167,7 @@ public class UserService : IUserService
 			user.ProfileImage = profileImageUrl.First();
 		}
 
-		await _userManager.UpdateAsync(user);
+		await _userRepository.UpdateAsync(user);
 		await _unitOfWork.CommitAsync();
 
 		return new ServiceActionResult(true) { Detail = "User updated successfully" };
@@ -203,13 +237,58 @@ public class UserService : IUserService
 
     public async Task<ServiceActionResult> GetAllStaff()
     {
-		var staffList = new List<DtoDomusUser>();
-		foreach (var user in _userManager.Users.ToList())
-		{
-			if (await _userManager.IsInRoleAsync(user, UserRoleConstants.STAFF) && !await _userManager.IsInRoleAsync(user, UserRoleConstants.ADMIN))
-				staffList.Add(_mapper.Map<DtoDomusUser>(user));
-		}
+	    var users = (await (await _userRepository.FindAsync(u => !u.IsDeleted && u.EmailConfirmed))
+		    .ToListAsync())
+		    .Where(u =>
+		    {
+			    var roles = _userManager.GetRolesAsync(u).Result;
+			    return roles.Contains(UserRoleConstants.STAFF) &&
+			           !roles.Contains(UserRoleConstants.ADMIN);
+		    });
 
-		return new ServiceActionResult(true) { Data = staffList };
+		return new ServiceActionResult(true) { Data = _mapper.Map<IEnumerable<DtoDomusUser>>(users) };
+    }
+
+    public async Task<ServiceActionResult> SearchUsersUsingGet(SearchUsingGetRequest request)
+    {
+	    var users = await (await _userRepository.FindAsync(p => !p.IsDeleted))
+		    .ProjectTo<DtoDomusUser>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+      
+        
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    users = users
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoDomusUser), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoDomusUser, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoDomusUser), request.SortField, p);
+		    users = request.Descending
+			    ? users.OrderByDescending(orderExpr.Compile()).ToList()
+			    : users.OrderBy(orderExpr.Compile()).ToList();
+	    }
+
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(users, request.PageSize, request.PageIndex);
+	    var finalUsers = (IEnumerable<DtoDomusUser>)paginatedResult.Items!;
+
+	    paginatedResult.Items = finalUsers;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+    public async Task<ServiceActionResult> DeleteUsers(List<string> userIds)
+    {
+	    var users = new List<DomusUser>();
+	    foreach (var userId in userIds)
+	    {
+		    var user = await _userRepository.GetAsync(y => y.Id.Equals(userId)) ?? throw new UserNotFoundException($"Not found user: {userId}");
+		    user.IsDeleted = true;
+		    users.Add(user); 
+	    }
+	    await _userRepository.UpdateManyAsync(users);
+	    await _unitOfWork.CommitAsync();
+	    return new ServiceActionResult(true);
     }
 }

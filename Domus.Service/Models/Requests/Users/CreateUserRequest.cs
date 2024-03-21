@@ -27,4 +27,6 @@ public class CreateUserRequest
     [Required]
     [MatchesPattern(PasswordConstants.PasswordPattern, PasswordConstants.PasswordPatternErrorMessage)]
     public string Password { get; set; } = null!;
+
+	public string? Role { get; set; }
 }

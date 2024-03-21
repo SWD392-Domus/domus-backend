@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Collections;
+using Microsoft.AspNetCore.Identity;
 
 namespace Domus.Domain.Entities;
 
@@ -28,5 +29,7 @@ public partial class DomusUser : IdentityUser
     public virtual ICollection<Contract> ClientContracts { get; set; } = new List<Contract>();
     public virtual ICollection<Contract> ContractorContracts { get; set; } = new List<Contract>();
     public ICollection<Otp> OtpCodes { get; set; } = new List<Otp>();
+
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
 }

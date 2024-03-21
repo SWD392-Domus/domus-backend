@@ -95,6 +95,12 @@
 	<EmbeddedResource Include="Scripts\34.Change_ColumnName_Contract.sql" />
 	<None Remove="Scripts\35.Add_FullName_Contract.sql" />
 	<EmbeddedResource Include="Scripts\35.Add_FullName_Contract.sql" />
+	<None Remove="Scripts\36.Add_Notification_Table.sql" />
+	<EmbeddedResource Include="Scripts\36.Add_Notification_Table.sql" />
+	<None Remove="Scripts\37.Add_Status_Notification.sql" />
+	<EmbeddedResource Include="Scripts\37.Add_Status_Notification.sql" />
+	<None Remove="Scripts\38.Add_Notification_Image.sql" />
+	<EmbeddedResource Include="Scripts\38.Add_Notification_Image.sql" />
 
   </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@ public class UpdateServiceRequest
     public string Name { get; set; } = null!;
 
     [Required]
-	[Range(0, double.MaxValue)]
+	[Range(0f, 999999999999f)]
     public double Price { get; set; }
 
     [Required]

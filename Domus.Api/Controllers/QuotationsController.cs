@@ -60,6 +60,22 @@ public class QuotationsController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[HttpPost("/api/staff/quotations")]
+	public async Task<IActionResult> CreateQuotationByStaff(CreateQuotationRequest request, string customerId)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.CreateQuotationByStaff(request, customerId, GetJwtToken()).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[HttpPost("/api/customer/quotations")]
+	public async Task<IActionResult> CreateQuotationByCustomer(CreateQuotationRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.CreateQuotationByCustomer(request, GetJwtToken()).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
 	[HttpPut("{id:guid}")]
 	public async Task<IActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
 	{
@@ -116,13 +132,21 @@ public class QuotationsController : BaseApiController
 		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
 	}
 
-	[HttpGet("history")]
+	[HttpGet("my-quotation")]
 	[Authorize(Roles = UserRoleConstants.CLIENT)]
 	public async Task<IActionResult> GetUserQuotationHistory()
 	{
 		return await ExecuteServiceLogic(async () => await _quotationService.GetUserQuotationHistory(GetJwtToken())).ConfigureAwait(false);
 	}
-
+	
+	[HttpGet("/api/customer/quotations/search")]
+	public async Task<IActionResult> GetMyQuotations([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.SearchUserQuotations(request, GetJwtToken()).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
 	[HttpGet("{id:guid}/negotiations")]
 	public async Task<IActionResult> GetQuotationPriceChangeHistory(Guid id)
 	{
@@ -152,6 +176,15 @@ public class QuotationsController : BaseApiController
 	{
 		return await ExecuteServiceLogic(
 			async () => await _quotationService.UpdateQuotationStatus(quotationId, request.Status).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+
+	[Authorize(Roles = UserRoleConstants.STAFF)]
+	[HttpGet("/api/staff/quotations/search")]
+	public async Task<IActionResult> GetStaffQuotations([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _quotationService.SearchStaffQuotations(request, GetJwtToken()).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 }

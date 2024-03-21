@@ -3,12 +3,13 @@ using Domus.Service.Constants;
 using Domus.Service.Interfaces;
 using Domus.Service.Models.Requests.Articles;
 using Domus.Service.Models.Requests.Base;
+using Domus.Service.Models.Requests.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Domus.Api.Controllers; 
 
-[Authorize(Roles = UserRoleConstants.INTERNAL_USER, AuthenticationSchemes = "Bearer")]
+[Authorize(AuthenticationSchemes = "Bearer")]
 [Route("api/[controller]")]
 public class ArticlesController : BaseApiController
 {
@@ -46,27 +47,54 @@ public class ArticlesController : BaseApiController
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpPost]
 	public async Task<IActionResult> CreateArticle(CreateArticleRequest request)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.CreateArticle(request).ConfigureAwait(false)
+			async () => await _articleService.CreateArticle(request, GetJwtToken()).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpPut("{id:guid}")]
-	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid articleId)
+	public async Task<IActionResult> UpdateArticle(UpdateArticleRequest request, Guid id)
 	{
 		return await ExecuteServiceLogic(
-			async () => await _articleService.UpdateArticle(request, articleId).ConfigureAwait(false)
+			async () => await _articleService.UpdateArticle(request, id).ConfigureAwait(false)
 		).ConfigureAwait(false);
 	}
 
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
 	[HttpDelete("{id:guid}")]
 	public async Task<IActionResult> DeleteArticle(Guid id)
 	{
 		return await ExecuteServiceLogic(
 			async () => await _articleService.DeleteArticle(id).ConfigureAwait(false)
 		).ConfigureAwait(false);
+	}
+
+	[AllowAnonymous]
+	[HttpGet("search")]
+	public async Task<IActionResult> SearchArticlesUsingGetRequest([FromQuery] SearchUsingGetRequest request)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _articleService.SearchArticlesUsingGet(request).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	[Authorize(Roles = UserRoleConstants.INTERNAL_USER)]
+	[HttpDelete("many")]
+	public async Task<IActionResult> DeleteMultipleArticles(List<Guid> articleIds)
+	{
+		return await ExecuteServiceLogic(
+			async () => await _articleService.DeleteArticles(articleIds).ConfigureAwait(false)
+		).ConfigureAwait(false);
+	}
+	
+	private string GetJwtToken()
+	{
+		var authorizationHeader = HttpContext.Request.Headers["Authorization"].ToString();
+		return authorizationHeader.Remove(authorizationHeader.IndexOf("Bearer", StringComparison.Ordinal), "Bearer".Length).Trim();
 	}
 }

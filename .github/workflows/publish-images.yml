@@ -69,5 +69,6 @@ jobs:
                       docker ps -q | xargs -r docker stop &&
                       docker container prune -f &&
                       echo ${{ secrets.DOCKER_PAT_KEY }} | docker login ghcr.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin &&
-                      docker pull ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }} &&
-                      docker run -d -p 443:80 ${{ env.IMAGE_NAME }}:${{ needs.publish.outputs.version }}'
+                      export API_VERSION=${{ needs.publish.outputs.version }} &&
+                      export DOMAIN=${{ secrets.VM_WEB_DOMAIN }} &&
+                      docker-compose -f /app/docker-compose.yml up -d'

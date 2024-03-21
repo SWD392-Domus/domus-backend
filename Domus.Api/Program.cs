@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
 using Domus.Api.Extensions;
+using Domus.Api.Hub;
 using Domus.Common.Constants;
 using Domus.Common.Helpers;
+using Domus.Domain.Entities;
 using NLog;
 
 LogManager.Setup()
@@ -18,6 +21,8 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddDefaultCorsPolicy(builder.Configuration);
 builder.Services.RegisterServices();
 builder.Services.AddGgAuthentication(builder.Configuration);
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options => options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 var app = builder.Build();
 
 // if (app.Environment.IsDevelopment())
@@ -29,9 +34,12 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors(CorsConstants.APP_CORS_POLICY);
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();  
 app.UseAuthentication();
 app.UseAuthorization();
+
+    app.MapHub<NotificationHub>("/notification");
+
 app.MapControllers();
 
 DataAccessHelper.EnsureMigrations(AppDomain.CurrentDomain.FriendlyName);

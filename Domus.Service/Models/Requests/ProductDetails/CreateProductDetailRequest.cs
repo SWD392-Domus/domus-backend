@@ -11,14 +11,15 @@ public class CreateProductDetailRequest
 
 	public string? Description { get; set; }
 
-	[Range(0, float.MaxValue)]
+	[Range(0f, 999999999999f)]
 	public float Price { get; set; }
 
-	[Range(0, float.MaxValue)]
+	[Range(0f, 999999999999f)]
 	public float DisplayPrice { get; set; }
 
 	public string MonetaryUnit { get; set; } = null!;
 
+	[Range(1f, 999f)]
 	public float Quantity { get; set; }
 
 	[JsonIgnore]

@@ -33,6 +33,8 @@ public static class AutoMapperConfiguration
 		CreatePackageMaps(mapper);
 		
 		CreateContractMaps(mapper);
+
+		CreateNotificationMaps(mapper);
 	}
 
 	private static void CreateUserMaps(IMapperConfigurationExpression mapper)
@@ -41,6 +43,7 @@ public static class AutoMapperConfiguration
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom((src) => src.Email))
 			.ForMember(dest => dest.FullName, opt => opt.MapFrom((_) => "N/A"));
 		mapper.CreateMap<LoginRequest, DomusUser>();
+		mapper.CreateMap<DomusUser, DtoDomusUserWithRole>();
 		mapper.CreateMap<CreateUserRequest, DomusUser>();
 		
 		mapper.CreateMap<UpdateUserRequest, DomusUser>()
@@ -70,6 +73,16 @@ public static class AutoMapperConfiguration
 
 		mapper.CreateMap<ArticleCategory, DtoArticleCategory>();
 		mapper.CreateMap<ArticleImage, DtoArticleImage>();
+
+		mapper.CreateMap<UpdateArticleRequest, Article>()
+			.ForMember(dest => dest.ArticleImages,
+				opt => opt.Ignore())
+			.ForMember(dest => dest.ArticleCategoryId,
+				opt => opt.Condition((req, _) => req.ArticleCategoryId != default))
+			.ForMember(dest => dest.Content,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.Content)))
+			.ForMember(dest => dest.Title,
+				opt => opt.Condition((req, _) => !string.IsNullOrEmpty(req.Title)));
 	}
 	
 	private static void CreateProductMaps(IMapperConfigurationExpression mapper)
@@ -202,7 +215,7 @@ public static class AutoMapperConfiguration
 		mapper.CreateMap<QuotationNegotiationLog, DtoQuotationNegotiationLogWithoutMessages>();
 		
 		mapper.CreateMap<CreateNegotiationMessageRequest, NegotiationMessage>()
-			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now));
+			.ForMember(dest => dest.SentAt, opt => opt.MapFrom(src => DateTime.Now.AddHours(7)));
 
 		mapper.CreateMap<UpdateQuotationRequest, Quotation>()
 			.ForMember(dest => dest.CustomerId,
@@ -248,4 +261,10 @@ public static class AutoMapperConfiguration
 			// .ForMember(d => d.QuotationRevision.ProductDetailQuotationRevisions,opt => opt.MapFrom(src => src.QuotationRevision.ProductDetailQuotationRevisions));
 			;
 	}
+	private static void CreateNotificationMaps(IMapperConfigurationExpression mapper)
+	{
+		mapper.CreateMap<DtoNotification, Notification>().ReverseMap();
+		
+	}
+	
 }

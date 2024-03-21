@@ -34,6 +34,7 @@ public class QuotationService : IQuotationService
 	private readonly IServiceQuotationRepository _serviceQuotationRepository;
 	private readonly IQuotationRevisionRepository _quotationRevisionRepository;
 	private readonly IProductDetailQuotationRevisionRepository _productDetailQuotationRevisionRepository;
+	private readonly INotificationRepository _notificationRepository;
 
 	public QuotationService(
 		IQuotationRepository quotationRepository,
@@ -49,7 +50,9 @@ public class QuotationService : IQuotationService
 		IPackageRepository packageRepository,
 		IQuotationRevisionRepository quotationRevisionRepository,
 		IProductDetailQuotationRevisionRepository productDetailQuotationRevisionRepository,
-		IServiceQuotationRepository serviceQuotationRepository)
+		IServiceQuotationRepository serviceQuotationRepository,
+		
+		INotificationRepository notificationRepository)
 	{
 		_quotationRepository = quotationRepository;
 		_unitOfWork = unitOfWork;
@@ -65,12 +68,18 @@ public class QuotationService : IQuotationService
 		_quotationRevisionRepository = quotationRevisionRepository;
 		_productDetailQuotationRevisionRepository = productDetailQuotationRevisionRepository;
 		_mapper = mapper;
+		_notificationRepository = notificationRepository;
 	}
 
 	public async Task<ServiceActionResult> CreateNegotiationMessage(CreateNegotiationMessageRequest request, Guid quotationId)
 	{
-		if (!await _quotationRepository.ExistsAsync(q => !q.IsDeleted && q.Id == quotationId))
-			throw new QuotationNotFoundException();
+		// if (!await _quotationRepository.ExistsAsync(q => !q.IsDeleted && q.Id == quotationId))
+		// 	throw new QuotationNotFoundException();
+		
+		var quotation = (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == quotationId))
+			.Include(x => x.Customer)
+			.Include(x => x.Staff).FirstOrDefault()?? throw new QuotationNotFoundException();
+		
 		
 		var quotationNegotiationLog = await (await _quotationNegotiationLogRepository.GetAllAsync())
 			.Include(qnl => qnl.NegotiationMessages)
@@ -83,7 +92,7 @@ public class QuotationService : IQuotationService
 			quotationNegotiationLog = new QuotationNegotiationLog
 			{
 				QuotationId = quotationId,
-				StartAt = DateTime.Now,
+				StartAt = DateTime.Now.AddHours(7),
 				IsClosed = false
 			};
 
@@ -96,12 +105,39 @@ public class QuotationService : IQuotationService
 			await _quotationNegotiationLogRepository.UpdateAsync(quotationNegotiationLog);
 		}
 
+		if (request.IsCustomerMessage)
+		{
+			await _notificationRepository.AddAsync(new Notification()
+				{
+					RecipientId = quotation.StaffId,
+					Content = NotificationHelper.CreateNegotiationMessageForStaff((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email! : quotation.Customer.FullName),quotationId),
+					SentAt = DateTime.Now.AddHours(7),
+					Image = quotation.Customer.ProfileImage ?? string.Empty,
+					RedirectString = $"customer/settings/quotations/{quotationId}"
+				}
+			);
+		}
+		else
+		{
+			await _notificationRepository.AddAsync(new Notification()
+				{
+					RecipientId = quotation.CustomerId,
+					Content = NotificationHelper.CreateNegotiationMessageForCustomer((quotation.Staff.FullName.Equals("N/A") ? quotation.Staff.Email! : quotation.Staff.FullName),quotationId),
+					SentAt = DateTime.Now.AddHours(7),
+					Image = quotation.Staff.ProfileImage ?? string.Empty,
+					RedirectString = $"customer/settings/quotations/{quotationId}"
+				}
+			);
+		}
+
 		await _unitOfWork.CommitAsync();
 		return new ServiceActionResult(true);
      }
 
     public async Task<ServiceActionResult> CreateQuotation(CreateQuotationRequest request, string token)
     {
+		if (request.ProductDetails.Select(pd => pd.Quantity).Sum() < 4)
+			throw new BusinessRuleException("Quotation must have at least 4 products");
 	    var isValidToken = _jwtService.IsValidToken(token);
 	    if (!isValidToken)
 		    throw new InvalidTokenException();
@@ -117,10 +153,10 @@ public class QuotationService : IQuotationService
 		var quotation = new Quotation
 		{
 			CustomerId = createdByStaff ? "82542982-e958-4817-9a69-2fb8382df1f6" : userId,
-			StaffId = createdByStaff ? userId : "c713aacc-3582-4598-8670-22590d837179",
+			StaffId = createdByStaff ? userId : "ba33e296-1ffa-402a-9495-fc70bb26e091",
 			CreatedBy = userId,
-			CreatedAt = DateTime.Now,
-			ExpireAt = request.ExpireAt ?? DateTime.Now.AddDays(30),
+			CreatedAt = DateTime.Now.AddHours(7),
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddHours(7).AddDays(30),
 			Status = QuotationStatusConstants.Requested,
 			IsDeleted = false,
 			PackageId = request.PackageId
@@ -130,7 +166,7 @@ public class QuotationService : IQuotationService
 		{
 			Quotation = quotation,
 			Version = 0,
-			CreatedAt = DateTime.Now
+			CreatedAt = DateTime.Now.AddHours(7)
 		};
 
 		foreach (var productDetail in request.ProductDetails)
@@ -146,7 +182,7 @@ public class QuotationService : IQuotationService
 				QuotationRevision = quotationRevision,
 				Quantity = Math.Max(productDetail.Quantity, 1),
 				Price = productDetail.Price,
-				MonetaryUnit = "USD",
+				MonetaryUnit = "VND",
 				QuantityType = "Unit",
 			};
 
@@ -173,16 +209,55 @@ public class QuotationService : IQuotationService
 
 		quotation.QuotationRevisions.Add(quotationRevision);
 		await _quotationRepository.AddAsync(quotation);
-		await _unitOfWork.CommitAsync();
+		var customer = await _userRepository.GetAsync(x => !x.IsDeleted && x.Id == quotation.CustomerId) ??  throw new UserNotFoundException("Customer not found");
+		await _notificationRepository.AddAsync(new Notification()
+		{
+			RecipientId = NotificationHelper.ADMIN_ID,
+			Content = NotificationHelper.CreateNewQuotationMessage((string.IsNullOrEmpty(customer.FullName) || customer.FullName.Equals("N/A") ? customer.Email! : customer.FullName), quotation.Id),
+			SentAt = DateTime.Now.AddHours(7),
+			Image = customer.ProfileImage ?? string.Empty,
+			RedirectString = $"staff/quotations/{quotation.Id}"
+		});
 
+		await _unitOfWork.CommitAsync();
 		return new ServiceActionResult(true);
     }
 
     public async Task<ServiceActionResult> DeleteMultipleQuotations(IEnumerable<Guid> ids)
-    {
-	    await _quotationRepository.DeleteManyAsync(p => !p.IsDeleted && ids.Contains(p.Id));
+	    {
+	    // await _quotationRepository.DeleteManyAsync(p => !p.IsDeleted && ids.Contains(p.Id));
+	    // await _unitOfWork.CommitAsync();
+	    //
+	    var quotations = new List<Quotation>();
+	    var notifications = new List<Notification>();
+	    foreach (var id in ids)
+	    {
+		    var x = (await _quotationRepository.FindAsync(x => !x.IsDeleted && x.Id == id))
+		            .Include(x => x.QuotationNegotiationLog)
+		            .Include(x => x.QuotationRevisions)
+		            .Include(x=> x.Staff)
+		            .FirstOrDefault()
+			    ?? throw new QuotationNotFoundException($"Not Found Quotation: {id}");
+		    x.IsDeleted = true;
+		    foreach (var xQuotationRevision in x.QuotationRevisions)
+		    {
+			    xQuotationRevision.IsDeleted = true;
+		    }
+		    if (x.QuotationNegotiationLog != null) 
+			    x.QuotationNegotiationLog.IsClosed = true;
+		    quotations.Add(x);
+		    notifications.Add(new Notification()
+		    {
+			    RecipientId = x.CustomerId,
+			    Image = x.Staff.ProfileImage,
+			    Content = NotificationHelper.CreateDeletedQuotation(x.Id, (x.Staff.FullName.Equals("N/A")? x.Staff.Email : x.Staff.FullName)),
+			    SentAt = DateTime.Now.AddHours(7)
+		    });
+	    }
+	    await _quotationRepository.UpdateManyAsync(quotations);
+	    await _notificationRepository.AddManyAsync(notifications.AsEnumerable());
 	    await _unitOfWork.CommitAsync();
-	    
+
 	    return new ServiceActionResult(true) { Detail = "Quotations deleted successfully"};
     }
 
@@ -274,7 +349,7 @@ public class QuotationService : IQuotationService
 
 	    quotation.ProductDetailQuotations = _mapper.Map<ICollection<DtoProductDetailQuotationRevision>>(products);
 
-	    quotation.TotalPrice = revision.TotalPrice + quotation.ServiceQuotations.Sum(sq => sq.Price);
+	    quotation.TotalPrice = revision.TotalPrice;
 
 	    return new ServiceActionResult(true) { Data = quotation };
     }
@@ -288,6 +363,56 @@ public class QuotationService : IQuotationService
 	    await _unitOfWork.CommitAsync();
 	    
 	    return new ServiceActionResult(true);
+    }
+
+    public async Task<ServiceActionResult> SearchUserQuotations(SearchUsingGetRequest request, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userRepository.GetAsync(x => x.Id == userId) ?? throw new UserNotFoundException();
+	    var userRole = await _userManager.GetRolesAsync(user);
+	    if (!userRole.Contains(UserRoleConstants.CLIENT) || userRole.Count != 1)
+		    throw new Service.Exceptions.UnauthorizedAccessException();
+	    
+	    var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted && p.CustomerId == userId))
+		    .OrderByDescending(p => p.CreatedAt)
+		    .ProjectTo<DtoQuotationWithoutProductsAndServices>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+	    
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    quotations = quotations 
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoQuotationWithoutProductsAndServices, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SortField, p);
+		    quotations = request.Descending
+			    ? quotations.OrderByDescending(orderExpr.Compile()).ToList()
+			    : quotations.OrderBy(orderExpr.Compile()).ToList();
+	    }
+		
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(quotations, request.PageSize, request.PageIndex);
+
+	    var paginatedQuotations = (ICollection<DtoQuotationWithoutProductsAndServices>)paginatedResult.Items!;
+	    var quotationList = new List<DtoQuotationWithoutProductsAndServices>();
+
+	    foreach (var quotation in paginatedQuotations)
+	    {
+		    var quotationRevisions = (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotation.Id))
+			    .ProjectTo<DtoQuotationRevisionWithPriceAndVersion>(_mapper.ConfigurationProvider);
+			
+		    quotation.TotalPrice = quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefault()?.TotalPrice ?? 0;
+		    quotationList.Add(quotation);
+	    }
+
+	    paginatedResult.Items = quotationList;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
     }
 
     public async Task<ServiceActionResult> DeleteQuotation(Guid id)
@@ -425,6 +550,8 @@ public class QuotationService : IQuotationService
 
     public async Task<ServiceActionResult> UpdateQuotation(UpdateQuotationRequest request, Guid id)
     {
+		if (request.ProductDetailQuotations.Select(pd => pd.Quantity).Sum() < 4)
+			throw new BusinessRuleException("Quotation must have at least 4 products");
 	    if (request.CustomerId != default && !await _userRepository.ExistsAsync(u => u.Id == request.CustomerId))
 		    throw new UserNotFoundException("Customer not found");
 	    if (request.StaffId != default && !await _userRepository.ExistsAsync(u => u.Id == request.StaffId))
@@ -433,6 +560,7 @@ public class QuotationService : IQuotationService
 		var quotation = await (await _quotationRepository.FindAsync(q => !q.IsDeleted && q.Id == id))
 			.Include(q => q.ServiceQuotations)
 			.Include(q => q.QuotationRevisions)
+			.Include(q => q.Customer)
 			.FirstOrDefaultAsync() ?? throw new QuotationNotFoundException();
 	 
 		_mapper.Map(request, quotation);
@@ -442,7 +570,7 @@ public class QuotationService : IQuotationService
 			Quotation = quotation,
 			Version = quotation.QuotationRevisions.Count,
 			IsDeleted = false,
-			CreatedAt = DateTime.Now
+			CreatedAt = DateTime.Now.AddHours(7)
 		};
 		
 		foreach (var requestService in request.Services)
@@ -481,7 +609,7 @@ public class QuotationService : IQuotationService
 			var productDetailInQuotaionRevision = new ProductDetailQuotationRevision
 			{
 				Price = requestProductDetail.Price,
-				MonetaryUnit = string.IsNullOrEmpty(requestProductDetail.MonetaryUnit) ? "USD" : requestProductDetail.MonetaryUnit,
+				MonetaryUnit = string.IsNullOrEmpty(requestProductDetail.MonetaryUnit) ? "VND" : requestProductDetail.MonetaryUnit,
 				Quantity = Math.Max(requestProductDetail.Quantity, 1),
 				QuantityType = string.IsNullOrEmpty(requestProductDetail.QuantityType) ? "Unit" : requestProductDetail.QuantityType,
 				IsDeleted = false,
@@ -494,8 +622,16 @@ public class QuotationService : IQuotationService
 		}
 		
 		quotation.QuotationRevisions.Add(newQuotationRevision);
-		quotation.LastUpdatedAt = DateTime.Now;
+		quotation.LastUpdatedAt = DateTime.Now.AddHours(7);
 		await _quotationRepository.UpdateAsync(quotation);
+		await _notificationRepository.AddAsync(new Notification()
+		{
+			RecipientId = quotation.StaffId,
+			Content = NotificationHelper.CreateUpdatedQuotationMessage((quotation.Customer.FullName.Equals("N/A") ? quotation.Customer.Email : quotation.Customer.FullName),quotation.Id),
+			SentAt = DateTime.Now.AddHours(7),
+			Image = quotation.Customer.ProfileImage,
+			RedirectString = $"staff/quotations/${quotation.Id}"
+		});
 		await _unitOfWork.CommitAsync();
 	 
 		return new ServiceActionResult(true);
@@ -520,5 +656,171 @@ public class QuotationService : IQuotationService
 		    .Sum();
 
 	    return totalProductPrice + totalServicePrice;
+    }
+
+    public async Task<ServiceActionResult> SearchStaffQuotations(SearchUsingGetRequest request, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? throw new UserNotFoundException();
+	    var user = await _userRepository.GetAsync(x => x.Id == userId) ?? throw new UserNotFoundException();
+	    var userRoles = await _userManager.GetRolesAsync(user);
+	    if (!userRoles.Contains(UserRoleConstants.STAFF))
+		    throw new Service.Exceptions.UnauthorizedAccessException();
+	    
+	    var quotations = await (await _quotationRepository.FindAsync(p => !p.IsDeleted && p.StaffId == user.Id))
+		    .OrderByDescending(p => p.CreatedAt)
+		    .ProjectTo<DtoQuotationWithoutProductsAndServices>(_mapper.ConfigurationProvider)
+		    .ToListAsync();
+	    
+	    if (!string.IsNullOrEmpty(request.SearchField))
+	    {
+		    quotations = quotations 
+			    .Where(p => ReflectionHelper.GetStringValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SearchField, p).Contains(request.SearchValue ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+			    .ToList();
+	    }
+
+	    if (!string.IsNullOrEmpty(request.SortField))
+	    {
+		    Expression<Func<DtoQuotationWithoutProductsAndServices, object>> orderExpr = p => ReflectionHelper.GetValueByName(typeof(DtoQuotationWithoutProductsAndServices), request.SortField, p);
+		    quotations = request.Descending
+			    ? quotations.OrderByDescending(orderExpr.Compile()).ToList()
+			    : quotations.OrderBy(orderExpr.Compile()).ToList();
+	    }
+		
+	    var paginatedResult = PaginationHelper.BuildPaginatedResult(quotations, request.PageSize, request.PageIndex);
+
+	    var paginatedQuotations = (ICollection<DtoQuotationWithoutProductsAndServices>)paginatedResult.Items!;
+	    var quotationList = new List<DtoQuotationWithoutProductsAndServices>();
+
+	    foreach (var quotation in paginatedQuotations)
+	    {
+		    var quotationRevisions = (await _quotationRevisionRepository.FindAsync(r => !r.IsDeleted && r.QuotationId == quotation.Id))
+			    .ProjectTo<DtoQuotationRevisionWithPriceAndVersion>(_mapper.ConfigurationProvider);
+			
+		    quotation.TotalPrice = quotationRevisions.OrderByDescending(qr => qr.Version).FirstOrDefault()?.TotalPrice ?? 0;
+		    quotationList.Add(quotation);
+	    }
+
+	    paginatedResult.Items = quotationList;
+
+	    return new ServiceActionResult(true) { Data = paginatedResult };
+    }
+
+	private async Task<ServiceActionResult> CreateQuotationGeneral(CreateQuotationRequest request, string staffId, string customerId, bool createdByStaff)
+	{
+		if (request.ProductDetails.Select(pd => pd.Quantity).Sum() < 4)
+			throw new BusinessRuleException("Quotation must have at least 4 products");
+		var quotation = new Quotation
+		{
+			CustomerId = customerId,
+			StaffId = staffId,
+			CreatedBy = createdByStaff ? staffId: customerId,
+			CreatedAt = DateTime.Now.AddHours(7),
+			ExpireAt = request.ExpireAt ?? DateTime.Now.AddHours(7).AddDays(30),
+			Status = QuotationStatusConstants.Requested,
+			IsDeleted = false,
+			PackageId = request.PackageId
+		};
+
+		var quotationRevision = new QuotationRevision
+		{
+			Quotation = quotation,
+			Version = 0,
+			CreatedAt = DateTime.Now.AddHours(7)
+		};
+
+		foreach (var productDetail in request.ProductDetails)
+		{
+			var productDetailEntity = await _productDetailRepository.GetAsync(pd => pd.Id == productDetail.Id);
+			if (productDetailEntity == null)
+				throw new ProductDetailNotFoundException();
+
+
+			var productDetailQuotationRevision = new ProductDetailQuotationRevision
+			{
+				ProductDetailId = productDetail.Id,
+				QuotationRevision = quotationRevision,
+				Quantity = Math.Max(productDetail.Quantity, 1),
+				Price = productDetail.Price,
+				MonetaryUnit = "VND",
+				QuantityType = "Unit",
+			};
+
+			quotationRevision.ProductDetailQuotationRevisions.Add(productDetailQuotationRevision);
+			quotationRevision.TotalPrice += productDetailQuotationRevision.Price * productDetailQuotationRevision.Quantity;
+		}
+
+		foreach (var service in request.Services)
+		{
+			var serviceEntity = await _serviceRepository.GetAsync(pd => pd.Id == service.ServiceId);
+			if (serviceEntity == null)
+				throw new ServiceNotFoundException();
+
+			var serviceQuotation = new ServiceQuotation
+			{
+				ServiceId = service.ServiceId,
+				QuotationId = quotation.Id,
+				Price = service.Price
+			};
+
+			quotation.ServiceQuotations.Add(serviceQuotation);
+			quotationRevision.TotalPrice += service.Price;
+		}
+
+		quotation.QuotationRevisions.Add(quotationRevision);
+		await _quotationRepository.AddAsync(quotation);
+		var customer = await _userRepository.GetAsync(x => !x.IsDeleted && x.Id == quotation.CustomerId) ??  throw new UserNotFoundException("Customer not found");
+		await _notificationRepository.AddAsync(new Notification()
+		{
+			RecipientId = NotificationHelper.ADMIN_ID,
+			Content = NotificationHelper.CreateNewQuotationMessage((string.IsNullOrEmpty(customer.FullName) || customer.FullName.Equals("N/A") ? customer.Email! : customer.FullName), quotation.Id),
+			SentAt = DateTime.Now.AddHours(7),
+			Image = customer.ProfileImage ?? string.Empty,
+			RedirectString = $"staff/quotations/{quotation.Id}"
+		});
+
+		await _unitOfWork.CommitAsync();
+		// return await GetQuotationById(quotation.Id);
+		return new ServiceActionResult(true);
+	}
+
+    public async Task<ServiceActionResult> CreateQuotationByStaff(CreateQuotationRequest request, string customerId, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    
+	    if (request.PackageId != default && !await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+		    throw new PackageNotFoundException();
+	    
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
+	    var creator = await _userRepository.GetAsync(u => !u.IsDeleted && u.Id == userId) ?? throw new UserNotFoundException("Creator not found");
+		var creatorRoles = await _userManager.GetRolesAsync(creator);
+		var createdByStaff = creatorRoles.Contains(UserRoleConstants.STAFF);
+		if (!createdByStaff)
+			throw new Service.Exceptions.UnauthorizedAccessException("You are not authorized to create quotation");
+
+		return await CreateQuotationGeneral(request, creator.Id, customerId, createdByStaff);
+    }
+
+    public async Task<ServiceActionResult> CreateQuotationByCustomer(CreateQuotationRequest request, string token)
+    {
+	    var isValidToken = _jwtService.IsValidToken(token);
+	    if (!isValidToken)
+		    throw new InvalidTokenException();
+	    
+	    if (request.PackageId != default && !await _packageRepository.ExistsAsync(p => !p.IsDeleted && p.Id == request.PackageId))
+		    throw new PackageNotFoundException();
+	    
+	    var userId = _jwtService.GetTokenClaim(token, TokenClaimConstants.SUBJECT)?.ToString() ?? string.Empty;
+	    var creator = await _userRepository.GetAsync(u => !u.IsDeleted && u.Id == userId) ?? throw new UserNotFoundException("Creator not found");
+		var creatorRoles = await _userManager.GetRolesAsync(creator);
+		var createdByStaff = creatorRoles.Contains(UserRoleConstants.STAFF);
+		if (createdByStaff)
+			throw new Service.Exceptions.UnauthorizedAccessException("You are not authorized to create quotation");
+
+		return await CreateQuotationGeneral(request, "ba33e296-1ffa-402a-9495-fc70bb26e091", creator.Id, createdByStaff);
     }
 }

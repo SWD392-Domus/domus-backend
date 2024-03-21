@@ -8,4 +8,5 @@ public interface IEmailService : IAutoRegisterable
 {
     Task<ServiceActionResult> SendEmail(BaseEmail baseEmail);
     Task<ServiceActionResult> SendSeveralEmail(ServeralEmail email);
+    Task<ServiceActionResult> SendOtpEmail(OtpEmail email);
 }

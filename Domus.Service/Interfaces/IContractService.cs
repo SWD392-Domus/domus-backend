@@ -1,11 +1,8 @@
 ﻿using Domus.Common.Interfaces;
-using Domus.Domain.Entities;
 using Domus.Service.Models;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
-using Domus.Service.Models.Requests.OfferedPackages;
 using Domus.Service.Models.Requests.Products;
-using Microsoft.AspNetCore.Http;
 
 namespace Domus.Service.Interfaces;
 
@@ -26,4 +23,5 @@ public interface IContractService : IAutoRegisterable
     Task<ServiceActionResult> SignContract(Guid contractId, SignedContractRequest request);
     Task<ServiceActionResult> GetUsersContract(string token);
     Task<ServiceActionResult> SearchMyContractsUsingGet(SearchUsingGetRequest request, string token);
+    Task<ServiceActionResult> CancelContract(Guid contractId);
 }

@@ -10,12 +10,10 @@ using Domus.Service.Enums;
 using Domus.Service.Exceptions;
 using Domus.Service.Interfaces;
 using Domus.Service.Models;
-using Domus.Service.Models.Common;
 using Domus.Service.Models.Email;
 using Domus.Service.Models.Requests.Base;
 using Domus.Service.Models.Requests.Contracts;
 using Domus.Service.Models.Requests.Products;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UnauthorizedAccessException = Domus.Service.Exceptions.UnauthorizedAccessException;
@@ -34,9 +32,15 @@ public class ContractService : IContractService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IJwtService _jwtService;
+    private readonly INotificationRepository _notificationRepository;
+    // private readonly IHubContext _hubContext;
 
 
-    public ContractService(IContractRepository contractRepository, IJwtService jwtService, IUnitOfWork unitOfWork, IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, UserManager<DomusUser> userManager, IEmailService emailService)
+    public ContractService(IContractRepository contractRepository, IJwtService jwtService, IUnitOfWork unitOfWork, 
+        IMapper mapper, IUserRepository userRepository, IQuotationRepository quotationRepository, 
+        IQuotationRevisionRepository quotationRevisionRepository, IFileService fileService, 
+        UserManager<DomusUser> userManager, IEmailService emailService,
+        INotificationRepository notificationRepository)
     {
         _contractRepository = contractRepository;
         _unitOfWork = unitOfWork;
@@ -48,6 +52,8 @@ public class ContractService : IContractService
         _userManager = userManager;
         _emailService = emailService;
         _jwtService = jwtService;
+        _notificationRepository = notificationRepository;
+        // _hubContext = hubContext;
     }
     
     public async Task<ServiceActionResult> GetAllContracts()
@@ -103,12 +109,25 @@ public class ContractService : IContractService
             Subject = "Contract Email",
             To = clientUser.Email!,
             ContractName = request.Name,
-            ContractorName = contractorUser.FullName,
+            ContractorName = contractorUser. FullName,
         });
+        
         var contract = _mapper.Map<Contract>(request);
         contract.Status = ContractStatus.SENT;
-        contract.SignedAt = request.SignedAt ?? DateTime.Now;
+        contract.SignedAt = request.SignedAt ?? DateTime.Now.AddHours(7);
+        
         await _contractRepository.AddAsync(contract);
+        await _unitOfWork.CommitAsync();
+        var newContract =(await _contractRepository.FindAsync(x => !x.IsDeleted && x.ClientId == request.ClientId 
+                                                                         && x.QuotationRevisionId == request.QuotationRevisionId)).Include(x => x.Contractor).FirstOrDefault();
+        await _notificationRepository.AddAsync(new Notification()
+        {
+            RecipientId = request.ClientId,
+            Content = NotificationHelper.CreateContractMessage(contractorUser.FullName, newContract.Id, request.QuotationRevisionId),
+            SentAt = DateTime.Now.AddHours(7),
+            RedirectString = $"customer/settings/contracts/{newContract.Id}",
+            Image = contract.Contractor.ProfileImage
+        });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }
@@ -129,16 +148,26 @@ public class ContractService : IContractService
         contract.Signature = request.Signature ?? contract.Signature;
         contract.ClientId = request.ClientId;
         contract.ContractorId = request.ContractorId;
+
         await _contractRepository.UpdateAsync(contract);
         await _unitOfWork.CommitAsync();
+
         return new ServiceActionResult(true);
     }
 
     public async Task<ServiceActionResult> DeleteContract(Guid ContractId)
     {
-        var contract = (await _contractRepository.GetAsync(x => !x.IsDeleted && x.Id == ContractId)) ?? throw new Exception("Contract Not Found");
+        var contract = (await _contractRepository.FindAsync(x => !x.IsDeleted && x.Id == ContractId))
+            .Include(x => x.Contractor).FirstOrDefault()?? throw new Exception("Contract Not Found");
         contract.IsDeleted = true;
         await _contractRepository.UpdateAsync(contract);
+        await _notificationRepository.AddAsync(new Notification()
+        {
+            RecipientId = contract.ClientId,
+            Image = contract.Contractor.ProfileImage ?? string.Empty,
+            Content = NotificationHelper.CreateDeletedContractMessage(ContractId, (contract.Contractor.FullName.Equals("N/A")) ? contract.Contractor.Email! : contract.Contractor.FullName),
+			SentAt = DateTime.Now.AddHours(7)
+        });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }
@@ -274,13 +303,24 @@ public class ContractService : IContractService
 
     public async Task<ServiceActionResult> SignContract(Guid contractId, SignedContractRequest request)
     {
-        var contract = await _contractRepository.GetAsync(x => x.Id == contractId && !x.IsDeleted) ??
+        var contract = (await _contractRepository.FindAsync(x => x.Id == contractId && !x.IsDeleted))
+            .Include(x => x.Contractor)
+            .Include(x => x.Client)
+            .FirstOrDefault()??
                        throw new Exception("Contract Not Found");
         contract.Signature = await _fileService.UploadFile(request.Signature);
         contract.FullName = request.FullName;
         contract.Status = ContractStatus.SIGNED;
         _emailService.SendEmail(new ContractEmail(){});
         await _contractRepository.UpdateAsync(contract);
+        await _notificationRepository.AddAsync(new Notification()
+        {
+            RecipientId = contract.ContractorId,
+            Content = NotificationHelper.CreateSignedContractMessage(contract.Client.FullName,contract.ClientId,contract.Id),
+            SentAt = DateTime.Now.AddHours(7),
+            RedirectString = $"staff/contracts/{contractId}",
+            Image = contract.Client.ProfileImage
+        });
         await _unitOfWork.CommitAsync();
         return new ServiceActionResult(true);
     }
@@ -359,5 +399,16 @@ public class ContractService : IContractService
         var contractorRoles = await _userManager.GetRolesAsync(contractorUser);
         if (!contractorRoles.Contains(UserRoleConstants.STAFF))
             throw new UnauthorizedAccessException($"Unauthorized ContractorId: {request.ContractorId}");
+    }
+
+    public async Task<ServiceActionResult> CancelContract(Guid contractId)
+    {
+		var contract = await _contractRepository.GetAsync(x => x.Id == contractId && !x.IsDeleted) ?? throw new Exception($"Not found contract: {contractId}");
+		contract.Status = ContractStatus.CANCELED;
+
+		await _contractRepository.UpdateAsync(contract);
+		await _unitOfWork.CommitAsync();
+
+		return new ServiceActionResult(true);
     }
 }
